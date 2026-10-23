@@ -1,0 +1,6 @@
+numpy>=1.26
+scikit-learn>=1.4
+torch>=2.2
+matplotlib>=3.8
+# For real data only (scripts/load_allen.py), ideally in a Python 3.10 or 3.11 venv:
+# allensdk
