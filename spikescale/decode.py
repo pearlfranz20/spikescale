@@ -48,6 +48,30 @@ def fit_clf(x_train, y_train, c: float = 1.0, n_pca: int = 0):
     return clf
 
 
+C_GRID = (0.001, 0.003, 0.01, 0.03, 0.1, 0.3, 1.0)
+
+
+def fit_clf_nested(x_train, y_train, c_grid=C_GRID, n_pca: int = 0, inner_frac: float = 0.25,
+                   n_jobs: int = 1):
+    """fit_clf with C chosen per call on an inner time-blocked split of the training set.
+
+    The last inner_frac of each stimulus's training repeats are held out, every
+    C in c_grid is scored on them, and the best C is refit on all training
+    trials. With the per-level feature count varying 50-fold across levels, a
+    fixed C under- or over-regularizes somewhere; choosing it per level makes
+    the per-level curve capacity-matched by construction (notes/decoder_bakeoff.md).
+    Returns (clf, chosen_c).
+    """
+    from joblib import Parallel, delayed
+
+    itr, ite = blocked_split(len(y_train), y_train, test_frac=inner_frac)
+    scores = Parallel(n_jobs=n_jobs)(
+        delayed(fit_decode)(x_train[itr], y_train[itr], x_train[ite], y_train[ite], c, n_pca)
+        for c in c_grid)
+    best = c_grid[int(np.argmax(scores))]
+    return fit_clf(x_train, y_train, best, n_pca), best
+
+
 def score(clf, x, y) -> float:
     return float(clf.score(x.reshape(len(x), -1), y))
 

@@ -63,3 +63,13 @@ Chosen C under nested CV falls with level in every family: 0.1 or 0.03 at L1,
 Recommendation: make nested-C logistic on cumulative features the E3 decoder
 (keep PCA-100 as the secondary), and state the per-level result as "no gain
 below 50 ms" rather than reading the L4 to L6 decline as information.
+
+## Addendum, 28 Oct 2026
+
+The nested-C decoder is now the primary E3 decoder (`fit_clf_nested` in
+`spikescale/decode.py`, `cum_nested_logreg` in the E3 JSON). In the first E3
+run with it, the chosen C sat at the grid floor (0.003) at L4 to L6 for the
+continuous pyramid in every seed. A probe on seed 0 with C down to 0.0001
+found at most 0.015 more at L5 to L6 from C = 0.001 and losses below that,
+so the grid was extended to start at 0.001 and E3 rerun. The decline from
+L3 to L6 is not a grid artefact.

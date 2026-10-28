@@ -24,6 +24,7 @@ information appears. The idea follows Next-Concept Modeling
 - [x] E2 on synthetic data (gate 1), see `results/`
 - [x] E3 and E3b on one Allen Visual Coding Neuropixels session (VISp), see `results/`
 - [x] Quantized pyramid and PCA decoder in E3; comparison with published VISp decoding
+- [x] Decoder bake-off; nested-C cumulative logistic as the E3 decoder
 - [ ] E4 fixed-resolution ladder comparison
 
 ## Layout
@@ -43,6 +44,7 @@ scripts/
   compare_external.py  pyramid decoding under random 10-fold CV and all units, to set beside published numbers
 notes/
   diagnostics.md how the tokenizer design was debugged, and where it departs from the plan
+  decoder_bakeoff.md  twelve decoders on the continuous pyramid; why nested-C cumulative logistic is the E3 decoder
 ```
 
 ## Quick start (synthetic, CPU, about 30 minutes)
@@ -87,10 +89,14 @@ without downloading anything.
   only change rates at its own resolution.
 - **Each level is scored on counts pooled to its own length.** At 5 ms bins,
   Poisson noise otherwise drowns the training signal.
-- **Two decoders per readout.** Plain L2 logistic on the raw features, and
-  PCA to 100 components then logistic. On real data the raw decoder sees up
-  to 60 x 50 features with 40 training trials per image and overfits at fine
-  levels, so the PCA decoder is the one to read per-level curves from.
+- **Cumulative features, C chosen per level.** The level-k readout is the
+  concatenation of level-1 to level-k features, so the coarse counts stay
+  explicit and a level cannot score below the levels above it for reasons of
+  decoder geometry. The L2 logistic's C is chosen per level on an inner
+  time-blocked split of the training set, so capacity is matched across
+  levels by construction. A fixed-C PCA-100 decoder on the same features is
+  the secondary; plain per-level logistic is kept for continuity. See
+  `notes/decoder_bakeoff.md` for the comparison of twelve decoders.
 - **Codes are the primary readout.** The reconstruction is computed from the
   codes, so decoding from it only adds decoder capacity. It is reported as a
   secondary check.
