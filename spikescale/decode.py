@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import numpy as np
+from sklearn.decomposition import PCA
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
@@ -30,12 +31,20 @@ def pool_counts(counts: np.ndarray, length: int) -> np.ndarray:
     return counts.reshape(n, u, length, t // length).sum(-1)
 
 
-def fit_clf(x_train, y_train, c: float = 1.0):
-    clf = make_pipeline(
-        StandardScaler(),
-        LogisticRegression(C=c, max_iter=3000),
-    )
-    clf.fit(x_train.reshape(len(x_train), -1), y_train)
+def fit_clf(x_train, y_train, c: float = 1.0, n_pca: int = 0):
+    """Standardize, optionally project to n_pca components, then L2 logistic.
+
+    n_pca caps decoder capacity at fine levels, where the raw feature count
+    (units * L_k) can exceed the number of training trials per class many
+    times over. The PCA is fit on training trials only.
+    """
+    x = x_train.reshape(len(x_train), -1)
+    steps = [StandardScaler()]
+    if n_pca:
+        steps.append(PCA(n_components=min(n_pca, x.shape[1], len(x) - 1), random_state=0))
+    steps.append(LogisticRegression(C=c, max_iter=3000))
+    clf = make_pipeline(*steps)
+    clf.fit(x, y_train)
     return clf
 
 
@@ -43,35 +52,58 @@ def score(clf, x, y) -> float:
     return float(clf.score(x.reshape(len(x), -1), y))
 
 
-def fit_decode(x_train, y_train, x_test, y_test, c: float = 1.0) -> float:
-    return score(fit_clf(x_train, y_train, c), x_test, y_test)
+def fit_decode(x_train, y_train, x_test, y_test, c: float = 1.0, n_pca: int = 0) -> float:
+    return score(fit_clf(x_train, y_train, c, n_pca), x_test, y_test)
 
 
-def quantized_pyramid_features(counts, train, codebook_sizes, seed: int = 0):
+class QuantizedPyramid:
     """Matched-bits, no-learning baseline: residual k-means on pooled log-counts.
 
     Same level lengths and codebook sizes as the tokenizer, but the "encoder"
     is the identity on log1p counts and each codebook is plain k-means fit on
-    training trials. Returns, for each level k, the cumulative reconstruction
-    pooled to L_k (trials, units * L_k).
+    training trials. `transform` returns, for each level k, the cumulative
+    reconstruction pooled to L_k (trials, units * L_k), the same readout as
+    the tokenizer's code features.
     """
-    from sklearn.cluster import MiniBatchKMeans
 
-    x = np.log1p(counts).astype(np.float32)  # (trials, units, T)
-    n, u, t = x.shape
-    recon = np.zeros_like(x)
-    feats = []
-    for L, V in zip(LEVEL_LENGTHS, codebook_sizes):
-        resid = x - recon
-        pooled = resid.reshape(n, u, L, t // L).mean(-1)  # (n, u, L)
-        vecs = pooled.transpose(0, 2, 1).reshape(n * L, u)
-        train_vecs = vecs.reshape(n, L, u)[train].reshape(-1, u)
-        km = MiniBatchKMeans(n_clusters=V, random_state=seed, n_init=3, batch_size=2048)
-        km.fit(train_vecs)
-        q = km.cluster_centers_[km.predict(vecs)].reshape(n, L, u).transpose(0, 2, 1)
-        recon = recon + np.repeat(q, t // L, axis=2)
-        feats.append(recon.reshape(n, u, L, t // L).mean(-1).reshape(n, -1))
-    return feats
+    def __init__(self, codebook_sizes, seed: int = 0):
+        self.codebook_sizes = tuple(codebook_sizes)
+        self.seed = seed
+        self.kms = []
+
+    def _residual_levels(self, counts, fit: bool):
+        from sklearn.cluster import MiniBatchKMeans
+
+        x = np.log1p(counts).astype(np.float32)  # (trials, units, T)
+        n, u, t = x.shape
+        recon = np.zeros_like(x)
+        feats = []
+        for k, (L, V) in enumerate(zip(LEVEL_LENGTHS, self.codebook_sizes)):
+            resid = x - recon
+            pooled = resid.reshape(n, u, L, t // L).mean(-1)  # (n, u, L)
+            vecs = pooled.transpose(0, 2, 1).reshape(n * L, u)
+            if fit:
+                km = MiniBatchKMeans(n_clusters=V, random_state=self.seed, n_init=3, batch_size=2048)
+                km.fit(vecs)
+                self.kms.append(km)
+            km = self.kms[k]
+            q = km.cluster_centers_[km.predict(vecs)].reshape(n, L, u).transpose(0, 2, 1)
+            recon = recon + np.repeat(q, t // L, axis=2)
+            feats.append(recon.reshape(n, u, L, t // L).mean(-1).reshape(n, -1))
+        return feats
+
+    def fit(self, counts_train):
+        self.kms = []
+        self._residual_levels(counts_train, fit=True)
+        return self
+
+    def transform(self, counts):
+        return self._residual_levels(counts, fit=False)
+
+
+def quantized_pyramid_features(counts, train, codebook_sizes, seed: int = 0):
+    """Fit the quantized pyramid on `train` trials and return features for all trials."""
+    return QuantizedPyramid(codebook_sizes, seed).fit(counts[train]).transform(counts)
 
 
 def pyramid_curve(counts, labels, train, test, c: float = 1.0) -> list[float]:

@@ -23,6 +23,7 @@ information appears. The idea follows Next-Concept Modeling
 - [x] Tokenizer, pyramid baselines, per-level decoding
 - [x] E2 on synthetic data (gate 1), see `results/`
 - [x] E3 and E3b on one Allen Visual Coding Neuropixels session (VISp), see `results/`
+- [x] Quantized pyramid and PCA decoder in E3; comparison with published VISp decoding
 - [ ] E4 fixed-resolution ladder comparison
 
 ## Layout
@@ -37,7 +38,9 @@ scripts/
   run_e2.py      E2 synthetic level attribution (gate 1)
   plot_e2.py     E2 figure
   load_allen.py  extract natural-scenes trials from one Allen session
-  run_e3.py      E3 and E3b on an extracted session
+  run_e3.py      E3 and E3b on an extracted session (codes, recon, both pyramids, two decoders)
+  merge_e3.py    merge E3 runs split over seeds
+  compare_external.py  pyramid decoding under random 10-fold CV and all units, to set beside published numbers
 notes/
   diagnostics.md how the tokenizer design was debugged, and where it departs from the plan
 ```
@@ -64,7 +67,11 @@ python scripts/load_allen.py --list                       # BO 1.1 sessions, uni
 python scripts/load_allen.py --session <id> --area VISp   # writes data/allen_<id>_VISp.npz
 deactivate
 PYTHONPATH=. python scripts/run_e3.py --data data/allen_<id>_VISp.npz --n-units 60 --repeats 5
+PYTHONPATH=. python scripts/compare_external.py --data data/allen_<id>_VISp.npz
 ```
+
+E3 repeats can run in parallel: `--repeats 1 --seed k --tag sk` per process,
+then `scripts/merge_e3.py` to combine the files.
 
 On Windows the venv's interpreter is `.venv-allen\Scripts\python.exe`.
 
@@ -80,6 +87,10 @@ without downloading anything.
   only change rates at its own resolution.
 - **Each level is scored on counts pooled to its own length.** At 5 ms bins,
   Poisson noise otherwise drowns the training signal.
+- **Two decoders per readout.** Plain L2 logistic on the raw features, and
+  PCA to 100 components then logistic. On real data the raw decoder sees up
+  to 60 x 50 features with 40 training trials per image and overfits at fine
+  levels, so the PCA decoder is the one to read per-level curves from.
 - **Codes are the primary readout.** The reconstruction is computed from the
   codes, so decoding from it only adds decoder capacity. It is reported as a
   secondary check.
