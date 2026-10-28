@@ -1,6 +1,6 @@
-# Results so far, 23 Oct 2026
+# Results so far, 27 Oct 2026
 
-All on synthetic data: 60 units, 16 stimuli, 100 trials each, time-blocked
+Sections up to the E3b pipeline check are on synthetic data: 60 units, 16 stimuli, 100 trials each, time-blocked
 holdout, 2 seeds. Chance is 0.06. Figure: `e2.png`. Raw numbers: `e2.json`.
 
 ## Gate 1 (E2): 6 of 7 pass, 1 fails
@@ -61,17 +61,81 @@ Jitter destroys the planted code as intended. The surrogate leaves it intact,
 which is correct here because synthetic units are independent. Codes are more
 fragile to jitter than counts.
 
+## E3 and E3b on Allen VISp, session 732592105 (27 Oct 2026)
+
+Brain Observatory 1.1, natural scenes, 118 images, 50 repeats each, 0 to 250 ms
+from onset. 113 units pass the quality filters; 60 are subsampled per repeat,
+5 repeats, 60 epochs, time-blocked holdout (last 10 repeats of each image).
+Chance is 0.008. Raw numbers: `e3_allen_732592105_VISp_n60.json`.
+
+### Per-level accuracy, clean test set (mean of 5 repeats)
+
+| readout | L1 | L2 | L3 | L4 | L5 | L6 |
+| --- | --- | --- | --- | --- | --- | --- |
+| tokenizer codes | 0.06 | 0.11 | 0.16 | 0.17 | 0.16 | 0.17 |
+| tokenizer reconstruction | 0.06 | 0.12 | 0.15 | 0.16 | 0.15 | 0.15 |
+| continuous pyramid | 0.40 | 0.43 | 0.39 | 0.34 | 0.27 | 0.20 |
+| cumulative bits (codes) | 5 | 17 | 47 | 117 | 292 | 642 |
+
+Repeats agree to within about 0.03 everywhere.
+
+**The codes keep far less than the counts.** Plain 250 ms counts decode the
+image at 0.40, the codes at 0.06. Level 1 has only 32 codes for 118 images,
+which caps it, but the gap stays at 0.2 or more at every level and the codes
+plateau at 0.17 from L4 on while 117 to 642 bits are available. The quantized
+pyramid is not part of the E3 script, so the matched-bits comparison from gate
+2 was not rerun here, but the continuous pyramid already shows the learned
+codes discard most of the stimulus information on real data. All codebooks are
+fully used (perplexity 26 of 32 at L1, 98 to 114 of 128 at L4 to L6), so this
+is not dead codes.
+
+**The pyramid curve falls with level.** 0.43 at L2 down to 0.20 at L6. The
+decoder sees 60 x 50 = 3000 features at L6 with 40 training trials per image,
+so this is decoder overfitting, not evidence that fine bins carry less
+information. On real data the pyramid curve is therefore not a clean per-level
+information measure, which the synthetic runs (at ceiling everywhere) did not
+reveal.
+
+### E3b: jitter and PSTH-matched surrogates (pyramid readout)
+
+| test set | L1 | L2 | L3 | L4 | L5 | L6 |
+| --- | --- | --- | --- | --- | --- | --- |
+| clean | 0.40 | 0.43 | 0.39 | 0.34 | 0.27 | 0.20 |
+| jitter 5 ms | 0.40 | 0.43 | 0.39 | 0.34 | 0.26 | 0.20 |
+| jitter 10 ms | 0.40 | 0.43 | 0.38 | 0.33 | 0.25 | 0.20 |
+| jitter 25 ms | 0.40 | 0.42 | 0.37 | 0.30 | 0.23 | 0.18 |
+| PSTH surrogate | 0.34 | 0.38 | 0.36 | 0.33 | 0.26 | 0.21 |
+
+Codes behave the same way at a lower level: jitter of 5 and 10 ms changes them
+by at most 0.01, and 25 ms jitter costs 0.01 to 0.02 at L3 to L6.
+
+**Little decodable timing information below 25 ms.** Jitter at 5 and 10 ms
+leaves every readout unchanged. Jitter at 25 ms costs the pyramid 0.02 to 0.04
+at L3 to L6, so image identity depends on spike timing only at the 25 ms scale
+and coarser, with this decoder and unit count.
+
+**Noise correlations help at coarse levels.** The PSTH-matched surrogate, which
+keeps each unit's per-image PSTH but breaks trial-wise co-variation across
+units, lowers L1 and L2 accuracy by 0.05 to 0.06 and leaves L4 to L6 alone. For
+the codes the surrogate slightly raises accuracy (0.17 to 0.18 at L6).
+
 ## Caveats
 
 - Synthetic codes are easy (the continuous pyramid is at 1.00), so they test
   localization better than retention.
-- 60 epochs on CPU, 2 seeds. Not tuned.
-- No real data yet. Allen hosts are unreachable from the build environment.
+- 60 epochs on CPU, 2 synthetic seeds and 5 real-data unit subsamples. Not tuned.
+- One Allen session, one area. The fixed logistic decoder overfits at fine
+  levels on real data (40 training trials per image), so per-level curves
+  there mix information with decoder capacity.
 
 ## Suggested next steps
 
-1. Run E3 on one Allen session locally (README, "Real data").
-2. Before more tuning, decide whether gate 2 can still be met. Options:
-   longer training, codebooks fit to the quantized-pyramid init, or reframing
-   the project around the analysis (E2 and E3b) with the quantized pyramid as
-   the tokenizer.
+1. Decide whether gate 2 can still be met. Real data widens the gap: codes
+   retain 0.17 of a possible 0.43. Options: longer training, codebooks fit to
+   the quantized-pyramid init, or reframing the project around the analysis
+   (E3b with the quantized pyramid as the tokenizer).
+2. Add the quantized pyramid to E3 so the matched-bits comparison exists on
+   real data.
+3. Use a decoder that does not overfit at fine levels (stronger regularization
+   or PCA before the classifier) so the real-data pyramid curve measures
+   information, not capacity.

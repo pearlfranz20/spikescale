@@ -22,7 +22,7 @@ information appears. The idea follows Next-Concept Modeling
 - [x] Synthetic spike generator with planted codes at known timescales (validated)
 - [x] Tokenizer, pyramid baselines, per-level decoding
 - [x] E2 on synthetic data (gate 1), see `results/`
-- [ ] E3 and E3b on Allen Visual Coding Neuropixels (needs a local run, below)
+- [x] E3 and E3b on one Allen Visual Coding Neuropixels session (VISp), see `results/`
 - [ ] E4 fixed-resolution ladder comparison
 
 ## Layout
@@ -52,16 +52,21 @@ python scripts/plot_e2.py results/e2.json results/e2.png
 
 ## Real data (run locally)
 
-Allen data needs a download of about 2 to 3 GB per session. AllenSDK works
-best in a Python 3.10 or 3.11 venv.
+Allen data needs a download of about 2 to 3 GB per session. AllenSDK pins
+numpy below 1.24 and pandas 1.5.3, which conflicts with `requirements.txt`, so
+it gets its own Python 3.10 or 3.11 venv used only for extraction. The npz it
+writes is then analysed with the main environment.
 
 ```bash
 python3.11 -m venv .venv-allen && source .venv-allen/bin/activate
-pip install allensdk -r requirements.txt
+pip install --prefer-binary allensdk "marshmallow<4" "hdmf<4"   # newer versions break allensdk 2.16
 python scripts/load_allen.py --list                       # BO 1.1 sessions, units per area
 python scripts/load_allen.py --session <id> --area VISp   # writes data/allen_<id>_VISp.npz
+deactivate
 PYTHONPATH=. python scripts/run_e3.py --data data/allen_<id>_VISp.npz --n-units 60 --repeats 5
 ```
+
+On Windows the venv's interpreter is `.venv-allen\Scripts\python.exe`.
 
 Use `--synthetic timing_p10` in place of `--data` to test the E3 pipeline
 without downloading anything.

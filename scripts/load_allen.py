@@ -44,7 +44,7 @@ def get_cache(manifest_dir: Path):
 def list_sessions(cache):
     sessions = cache.get_session_table()
     bo = sessions[sessions["session_type"] == "brain_observatory_1.1"]
-    units = cache.get_unit_table()
+    units = cache.get_units()
     units = units[
         (units["isi_violations"] < 0.5)
         & (units["amplitude_cutoff"] < 0.1)
@@ -80,8 +80,12 @@ def extract(cache, session_id: int, area: str, out_dir: Path):
     stim = stim.sort_values(["frame", "start_time"])
     pres_ids = stim.index.to_numpy()
 
+    # AllenSDK's query assumes chronologically ordered presentation ids and
+    # silently drops almost every spike otherwise, so query in time order and
+    # map back to the image-sorted layout through pres_pos below.
     spk = session.presentationwise_spike_times(
-        stimulus_presentation_ids=pres_ids, unit_ids=unit_ids
+        stimulus_presentation_ids=stim.sort_values("start_time").index.to_numpy(),
+        unit_ids=unit_ids,
     )
     pres_pos = {p: i for i, p in enumerate(pres_ids)}
     unit_pos = {u: i for i, u in enumerate(unit_ids)}
