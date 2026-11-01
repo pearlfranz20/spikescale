@@ -25,7 +25,10 @@ information appears. The idea follows Next-Concept Modeling
 - [x] E3 and E3b on one Allen Visual Coding Neuropixels session (VISp), see `results/`
 - [x] Quantized pyramid and PCA decoder in E3; comparison with published VISp decoding
 - [x] Decoder bake-off; nested-C cumulative logistic as the E3 decoder
-- [ ] E4 fixed-resolution ladder comparison
+- [x] E3 figure; published comparison rerun with the nested-C decoder
+- ~~E4 fixed-resolution ladder comparison~~ dropped on 1 Nov 2026: what the
+  ladder should compare was never written down, and the decoder bake-off and
+  E3b already answer the per-level question on real data
 
 ## Layout
 
@@ -39,8 +42,9 @@ scripts/
   run_e2.py      E2 synthetic level attribution (gate 1)
   plot_e2.py     E2 figure
   load_allen.py  extract natural-scenes trials from one Allen session
-  run_e3.py      E3 and E3b on an extracted session (codes, recon, both pyramids, two decoders)
+  run_e3.py      E3 and E3b on an extracted session (codes, recon, both pyramids, four decoders)
   merge_e3.py    merge E3 runs split over seeds
+  plot_e3.py     E3 and E3b figure
   compare_external.py  pyramid decoding under random 10-fold CV and all units, to set beside published numbers
 notes/
   diagnostics.md how the tokenizer design was debugged, and where it departs from the plan
@@ -73,7 +77,8 @@ PYTHONPATH=. python scripts/compare_external.py --data data/allen_<id>_VISp.npz
 ```
 
 E3 repeats can run in parallel: `--repeats 1 --seed k --tag sk` per process,
-then `scripts/merge_e3.py` to combine the files.
+then `scripts/merge_e3.py` to combine the files. `scripts/plot_e3.py` draws the
+figure from the merged JSON.
 
 On Windows the venv's interpreter is `.venv-allen\Scripts\python.exe`.
 

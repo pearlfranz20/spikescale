@@ -1,4 +1,4 @@
-# Results so far, 28 Oct 2026
+# Results so far, 1 Nov 2026
 
 Sections up to the E3b pipeline check are on synthetic data: 60 units, 16 stimuli, 100 trials each, time-blocked
 holdout, 2 seeds. Chance is 0.06. Figure: `e2.png`. Raw numbers: `e2.json`.
@@ -66,7 +66,9 @@ fragile to jitter than counts.
 Brain Observatory 1.1, natural scenes, 118 images, 50 repeats each, 0 to 250 ms
 from onset. 113 units pass the quality filters; 60 are subsampled per seed,
 5 seeds, 60 epochs, time-blocked holdout (last 10 repeats of each image).
-Chance is 0.008. Raw numbers: `e3_allen_732592105_VISp_n60.json`.
+Chance is 0.008. Figure: `e3_allen_732592105_VISp_n60.png` (A: the four
+readouts, B: the pyramid under the four decoders, C and D: E3b test sets).
+Raw numbers: `e3_allen_732592105_VISp_n60.json`.
 
 Four readouts: tokenizer codes (primary), tokenizer reconstruction, the
 continuous pyramid (pooled log-counts, unbounded bits, a ceiling) and the
@@ -194,7 +196,7 @@ surrogate raises accuracy by 0.01 to 0.03 at L3 to L6. Under the PCA-100
 decoder the surrogate had only lowered accuracy; the fine-level gain is
 visible once the decoder is strong enough to use the fine features.
 
-## Comparison with published VISp decoding (27 Oct 2026)
+## Comparison with published VISp decoding (27 Oct 2026, nested-C decoder added 1 Nov)
 
 There is no benchmark for 118-image natural-scene decoding on Allen
 Neuropixels. The closest published number is Table I of
@@ -203,17 +205,31 @@ all VISp units of a session, 10-fold cross-validation, seven Brain
 Observatory 1.1 sessions. The paper does not state its window or bin size
 and calls the task 128-way, so treat it as a ballpark. `compare_external.py`
 runs the continuous pyramid on this session under both protocols, with both
-unit counts and all three decoders. Raw numbers: `external_allen_732592105_VISp.json`.
+unit counts and all four E3 decoders. Raw numbers: `external_allen_732592105_VISp.json`.
 
 ### Continuous pyramid, best level, this session
 
 | units | split | decoder | best level | top-1 |
 | --- | --- | --- | --- | --- |
-| 60 | time-blocked | logistic | L2 (125 ms) | 0.43 |
-| 60 | random 10-fold | logistic | L2 | 0.49 |
-| 113 (all) | time-blocked | logistic | L2 | 0.54 |
-| 113 (all) | random 10-fold | logistic | L2 | 0.59 |
-| 113 (all) | random 10-fold | cumulative PCA | L3 (50 ms) | 0.56 |
+| 60 | time-blocked | nested-C cumulative (primary) | L2 to L3 (125 to 50 ms) | 0.45 |
+| 60 | random 10-fold | nested-C cumulative | L3 (50 ms) | 0.52 |
+| 113 (all) | time-blocked | nested-C cumulative | L3 | 0.59 |
+| 113 (all) | random 10-fold | nested-C cumulative | L3 | 0.63 |
+| 60 | time-blocked | plain logistic, C = 0.1 | L2 (125 ms) | 0.43 |
+| 60 | random 10-fold | plain logistic | L2 | 0.49 |
+| 113 (all) | time-blocked | plain logistic | L2 | 0.54 |
+| 113 (all) | random 10-fold | plain logistic | L2 | 0.59 |
+| 113 (all) | random 10-fold | cumulative PCA-100, C = 0.1 | L1 to L3 | 0.56 |
+
+Full per-level curves for the primary decoder (fold std 0.01 to 0.02 under
+random folds):
+
+| units | split | L1 | L2 | L3 | L4 | L5 | L6 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 60 | time-blocked | 0.39 | 0.45 | 0.45 | 0.44 | 0.39 | 0.35 |
+| 60 | random 10-fold | 0.44 | 0.50 | 0.52 | 0.50 | 0.46 | 0.42 |
+| 113 | time-blocked | 0.53 | 0.58 | 0.59 | 0.57 | 0.53 | 0.48 |
+| 113 | random 10-fold | 0.58 | 0.62 | 0.63 | 0.62 | 0.58 | 0.54 |
 
 ### Published, same task
 
@@ -223,12 +239,16 @@ unit counts and all three decoders. Raw numbers: `external_allen_732592105_VISp.
 | same paper, Table III | several areas pooled, 2 sessions | 0.88 to 0.96 |
 
 Under the matching protocol (all units, random folds) this session reaches
-0.59, above the best of the paper's seven sessions. So the extraction and the
-plain count decoder are at least as good as the published single-area
+0.63 with the primary decoder and 0.59 with plain logistic on whole-window
+counts, both above the best of the paper's seven sessions. So the extraction
+and the count decoders are at least as good as the published single-area
 baseline, and the gap between the tokenizer codes and the pyramid is not a
-weak pipeline. Random folds add 0.05 over the time-blocked split at 60 units
-and 113 units alike, which is the drift the blocked split is there to
-exclude. Going from 60 to 113 units adds 0.11. The multi-region numbers pool
+weak pipeline. The nested-C decoder adds 0.02 to 0.04 over plain logistic
+in every unit count and split, the same margin as in the bake-off. Random
+folds add 0.04 to 0.06 over the time-blocked split at 60 units and 113 units
+alike, which is the drift the blocked split is there to exclude. Going from
+60 to 113 units adds 0.11 to 0.14. The chosen C falls with level here as in
+E3 (median 0.1 or 0.03 at L1, 0.001 at L6). The multi-region numbers pool
 hundreds of units across areas and are not comparable to a single-area
 readout.
 
@@ -238,8 +258,8 @@ The per-level shape agrees with the literature too.
 Allen Neuropixels at bin widths from milliseconds up and found that 125 ms bins
 maximized accuracy across the brain, with the optimum shifting along the
 sensory-to-associative hierarchy. Here the peak is at L2 (125 ms) for the
-plain decoder and L2 to L3 (125 to 50 ms) for the cumulative decoder, in
-every unit count and split. Together with the E3b jitter result (no loss
+plain decoder and L3 (50 ms, with L2 within 0.01 at 60 units) for the
+cumulative decoders, in every unit count and split. Together with the E3b jitter result (no loss
 below 25 ms), VISp image identity in this window is a 50 to 125 ms code.
 
 Not done: the paper's seven sessions were not downloaded (about 3 GB each),
@@ -255,8 +275,8 @@ so the comparison is one session against their distribution, not per session.
 - The primary decoder was chosen on 28 Oct after the first real-data run,
   from a bake-off on the continuous pyramid only (`notes/decoder_bakeoff.md`),
   and then applied to all four readouts. All four decoders are in the JSON
-  and the earlier ones are still reported. The published comparison in the
-  next section still uses the fixed-C decoders.
+  and the earlier ones are still reported. The published comparison was
+  rerun with it on 1 Nov; the fixed-C rows are kept.
 - Per-level C is chosen inside the training set, so the per-level curve is
   capacity-matched within the L2 logistic family. The remaining L3 to L6
   decline is the best any linear decoder tested can do with 40 training
