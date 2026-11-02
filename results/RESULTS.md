@@ -443,6 +443,129 @@ as L2 overtaking L3, and it is not seen. VISpm and VISrl from the same
 session (68 and 66 units) and a second session with VISam and VISl
 (794812542) would extend the test further up.
 
+## VISpm and VISrl from the same session: four areas, one scale (2 Nov 2026)
+
+The remaining higher visual areas of session 732592105 with enough quality
+units, VISpm (69 units, 7.6 Hz mean in the window, 12 below 1 Hz) and VISrl
+(66 units, 6.8 Hz, 14 below 1 Hz), through the same pipeline as VISal: 60
+units per seed, 5 seeds, time-blocked holdout. Figures:
+`e3_allen_732592105_VISpm_n60.png`, `e3_allen_732592105_VISrl_n60.png`. Raw
+numbers: the `e3_`, `external_` and `residual_allen_732592105_<area>.json`
+files.
+
+### Continuous pyramid, nested-C cumulative decoder, 60 units, time-blocked
+
+| area | L1 | L2 | L3 | L4 | L5 | L6 | L3 minus L1, per seed |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| VISp | 0.40 | 0.45 | 0.47 | 0.45 | 0.41 | 0.37 | 0.06 to 0.07 |
+| VISpm | 0.38 | 0.43 | 0.45 | 0.44 | 0.40 | 0.36 | 0.05 to 0.08 |
+| VISal | 0.22 | 0.27 | 0.30 | 0.30 | 0.27 | 0.23 | 0.08 to 0.09 |
+| VISrl | 0.18 | 0.22 | 0.24 | 0.24 | 0.21 | 0.18 | 0.04 to 0.07 |
+
+Seed std is 0.015 or less. In every area and every seed L3 (50 ms) is above L2 (by 0.01 to 0.03 in
+VISpm and VISrl, 0.02 to 0.04 in VISal) and L4 is within 0.02 of L3 (above
+it by under 0.01 in two VISrl seeds); the fall from L3 to L6 is 0.04 to
+0.10.
+VISpm with 60 units is within 0.02 of VISp at every level; VISal and VISrl
+carry about half as much, VISrl the least.
+
+### Discrete readouts, 60 units, nested-C cumulative decoder
+
+| area | readout | L1 | L2 | L3 | L4 | L5 | L6 | codes ahead of quantized pyramid |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| VISpm | tokenizer codes | 0.05 | 0.10 | 0.14 | 0.18 | 0.20 | 0.21 | 19 of 30 seed-level pairs |
+| VISpm | quantized pyramid | 0.05 | 0.09 | 0.13 | 0.17 | 0.20 | 0.22 | |
+| VISrl | tokenizer codes | 0.03 | 0.05 | 0.07 | 0.09 | 0.10 | 0.10 | 20 of 30 seed-level pairs |
+| VISrl | quantized pyramid | 0.03 | 0.05 | 0.06 | 0.08 | 0.09 | 0.10 | |
+
+Codebooks are fully used in both areas (perplexity 27 of 32 at L1, 101 to
+119 of 128 at L4 to L6 in VISpm, 105 to 115 in VISrl). In VISpm the codes lead the quantized
+pyramid by 0.01 at L2 to L4 (ahead in 4 seeds of 5 at each) and trail by
+0.01 at L6; over all pairs it is a tie. In VISrl the codes lead by 0.01 at L3 to L5 and tie at L6. Across the
+four areas the learned codes' edge over residual k-means at matched bits is
+0.03 in VISp, 0.01 to 0.02 at the coarse levels elsewhere and nil or
+negative at 5 to 10 ms, so gate 2 stays unmet everywhere.
+
+### E3b, continuous pyramid, clean minus perturbed, mean over seeds
+
+| area | test set | L1 | L2 | L3 | L4 | L5 | L6 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| VISpm | jitter 25 ms | 0.00 | 0.01 | 0.01 | 0.02 | 0.02 | 0.03 |
+| VISpm | PSTH surrogate | 0.05 | 0.04 | 0.01 | 0.00 | -0.02 | -0.01 |
+| VISrl | jitter 25 ms | 0.00 | 0.01 | 0.01 | 0.02 | 0.02 | 0.02 |
+| VISrl | PSTH surrogate | 0.01 | 0.02 | 0.01 | 0.01 | 0.00 | 0.00 |
+
+Jitter of 5 and 10 ms changes nothing in either area (per-seed differences
+within 0.01 of either sign, except 0.01 at L6 for 10 ms in VISpm). Jitter
+of 25 ms costs VISpm 0.01 at L3 (every seed, 0.005 to 0.014) and 0.02 to
+0.03 at L4 to L6 (every seed, up to 0.05), the same size as VISp and VISal.
+VISrl loses 0.01 at L2 to L3 and 0.02 at L4 to L6 (every seed at L5 and
+L6). The PSTH-matched surrogate lowers VISpm by 0.02 to 0.07
+at L1 and 0.03 to 0.04 at L2 in every seed, the largest coarse-level
+correlation effect of the four areas, and raises L5 by 0.00 to 0.03; for
+the codes it raises every level by 0.01 to 0.02. In VISrl the surrogate lowers L1 to L4 by 0.01 to 0.02 (every seed at L1,
+L2 and L4) and leaves L5 to L6 unchanged; the codes move by under 0.01.
+
+### Random folds and all units, continuous pyramid, nested-C decoder
+
+| area | units | split | L1 | L2 | L3 | L4 | L5 | L6 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| VISpm | 60 | time-blocked | 0.39 | 0.44 | 0.46 | 0.45 | 0.41 | 0.37 |
+| VISpm | 60 | random 10-fold | 0.43 | 0.48 | 0.52 | 0.50 | 0.46 | 0.41 |
+| VISpm | 69 (all) | time-blocked | 0.40 | 0.45 | 0.48 | 0.46 | 0.42 | 0.39 |
+| VISpm | 69 (all) | random 10-fold | 0.44 | 0.50 | 0.53 | 0.52 | 0.47 | 0.43 |
+| VISrl | 60 | time-blocked | 0.19 | 0.23 | 0.25 | 0.24 | 0.22 | 0.19 |
+| VISrl | 60 | random 10-fold | 0.22 | 0.26 | 0.29 | 0.28 | 0.26 | 0.22 |
+| VISrl | 66 (all) | time-blocked | 0.20 | 0.23 | 0.26 | 0.26 | 0.24 | 0.20 |
+| VISrl | 66 (all) | random 10-fold | 0.24 | 0.29 | 0.31 | 0.30 | 0.27 | 0.24 |
+
+Best level L3 in every row; plain logistic peaks at L2 (0.42 to 0.48 in
+VISpm). Random folds add 0.03 to 0.06 in VISpm and all 69 units add 0.01
+to 0.03 over 60. In VISrl plain logistic peaks at L2 (0.22 to 0.27), random folds add 0.03 to
+0.05, and all 66 units add 0.01 to 0.02.
+
+### Detail of level k alone, 60 units, 5 seeds, nested-C logistic
+
+| area | readout | L1 (250) | L2 (125) | L3 (50) | L4 (25) | L5 (10) | L6 (5 ms) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| VISp | detail alone | 0.41 | 0.21 | 0.17 | 0.07 | 0.05 | 0.03 |
+| VISpm | detail alone | 0.41 | 0.16 | 0.15 | 0.05 | 0.03 | 0.02 |
+| VISal | detail alone | 0.22 | 0.12 | 0.11 | 0.04 | 0.02 | 0.02 |
+| VISrl | detail alone | 0.18 | 0.08 | 0.08 | 0.03 | 0.02 | 0.02 |
+| all four | time-shuffled control | = L1 | 0.01 to 0.02 | 0.01 to 0.02 | 0.01 to 0.02 | 0.01 to 0.02 | 0.01 to 0.02 |
+| VISp | detail as a share of L1 | 1 | 0.51 | 0.42 | 0.17 | 0.11 | 0.07 |
+| VISpm | detail as a share of L1 | 1 | 0.38 | 0.37 | 0.12 | 0.07 | 0.04 |
+| VISal | detail as a share of L1 | 1 | 0.54 | 0.51 | 0.17 | 0.10 | 0.09 |
+| VISrl | detail as a share of L1 | 1 | 0.45 | 0.47 | 0.18 | 0.11 | 0.09 |
+
+All units (69 VISpm, 66 VISrl, one seed): VISpm 0.42, 0.17, 0.16, 0.05,
+0.04, 0.02; VISrl 0.20, 0.09, 0.09, 0.03, 0.02, 0.01. Detail minus control
+per seed: VISpm 0.14 to 0.15 at L2, 0.12 to 0.15 at L3, 0.03 to 0.04 at L4,
+0.01 to 0.02 at L5, 0.00 at L6; VISrl 0.06 to 0.07 at L2, 0.06 to 0.08 at
+L3, 0.01 to 0.03 at L4, 0.00 to 0.02 at L5 (above the control in four
+seeds of five), 0.00 to 0.01 at L6.
+
+**Four areas, one temporal code.** In every area the 125 ms detail and the
+50 ms detail each identify the image on their own, far above the
+shuffled control; the 25 ms detail is small but above the control in every
+seed; the 10 ms detail is marginal; the 5 ms detail is within the control.
+The continuous pyramid peaks at 50 ms, with 25 ms within 0.02 and 125 ms
+within 0.04, in every area, unit count and split. What differs
+between areas is the amount of information, which runs VISp about equal to
+VISpm, then VISal, then VISrl, and the balance between rate and shape:
+VISpm leans most on whole-window counts (its 125 and 50 ms details are 0.38
+and 0.37 of its rate-only accuracy, against 0.42 to 0.54 elsewhere), which
+is the direction NeuroPixelHD's shift toward coarser bins would predict,
+but the optimum itself does not move. Within this session the
+sensory-to-associative shift is at most a change in the rate-to-shape
+balance, not in the scale of the shape.
+
+**What this does not settle.** All four areas come from one animal and
+one session, VISpm, VISal and VISrl have fewer and sparser units than
+VISp, and the higher areas sampled here are all one step above VISp in the
+anatomical hierarchy. A second session with VISam and VISl (794812542)
+would add two more areas and a second animal.
+
 ## Caveats
 
 - Synthetic codes are easy (the continuous pyramid is at 1.00), so they test
@@ -463,9 +586,9 @@ session (68 and 66 units) and a second session with VISam and VISl
 - The per-scale detail analysis uses a sqrt transform on 5 ms bins and a
   single session; the synthetic checks cover planted codes of one kind at a
   time, not mixtures.
-- The VISp to VISal comparison is within one session and one hierarchical
-  step; VISal has fewer and sparser units, so its lower accuracy mixes area
-  and sampling.
+- The comparison across VISp, VISpm, VISal and VISrl is within one session
+  and one hierarchical step; the higher areas have fewer and sparser units,
+  so their lower accuracy mixes area and sampling.
 
 ## Suggested next steps
 
@@ -476,11 +599,12 @@ session (68 and 66 units) and a second session with VISam and VISl
    group) so the bit budget scales with the population, or codebooks in the
    thousands with product quantization. Otherwise reframe around the
    analysis, with the quantized pyramid as a drop-in tokenizer.
-2. VISal showed no shift of the optimum. VISpm and VISrl from the same
-   session (68 and 66 quality units), then a second session (794812542 has
-   131 VISp, 105 VISl and 114 VISam units), with the same pyramid, jitter
-   and per-scale detail pipeline, to see whether the 50 to 125 ms optimum
-   shifts further up the hierarchy as NeuroPixelHD reports.
+2. VISal, VISpm and VISrl showed no shift of the optimum within this
+   session. A second session (794812542 has 131 VISp, 105 VISl and 114
+   VISam units, a second animal) with the same pyramid, jitter and
+   per-scale detail pipeline, to see whether the 50 to 125 ms optimum
+   shifts further up the hierarchy as NeuroPixelHD reports, and whether
+   the rate-to-shape balance seen in VISpm repeats.
 3. The detail analysis's first caveat is testable: regress each level's
    detail on the whole-window count per unit before decoding, to separate
    temporal shape that covaries with rate from shape that does not.

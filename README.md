@@ -27,7 +27,7 @@ information appears. The idea follows Next-Concept Modeling
 - [x] Decoder bake-off; nested-C cumulative logistic as the E3 decoder
 - [x] E3 figure; published comparison rerun with the nested-C decoder
 - [x] Unique information per scale: each level's orthogonal detail decoded alone, with a time-shuffled control
-- [x] Same pipeline on VISal from the same session: half the information, same 50 to 125 ms scale
+- [x] Same pipeline on VISal, VISpm and VISrl from the same session: four areas, one 50 to 125 ms scale
 - ~~E4 fixed-resolution ladder comparison~~ dropped on 1 Nov 2026: what the
   ladder should compare was never written down, and the decoder bake-off and
   E3b already answer the per-level question on real data
