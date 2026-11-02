@@ -26,6 +26,7 @@ information appears. The idea follows Next-Concept Modeling
 - [x] Quantized pyramid and PCA decoder in E3; comparison with published VISp decoding
 - [x] Decoder bake-off; nested-C cumulative logistic as the E3 decoder
 - [x] E3 figure; published comparison rerun with the nested-C decoder
+- [x] Unique information per scale: each level's orthogonal detail decoded alone, with a time-shuffled control
 - ~~E4 fixed-resolution ladder comparison~~ dropped on 1 Nov 2026: what the
   ladder should compare was never written down, and the decoder bake-off and
   E3b already answer the per-level question on real data
@@ -46,6 +47,7 @@ scripts/
   merge_e3.py    merge E3 runs split over seeds
   plot_e3.py     E3 and E3b figure
   compare_external.py  pyramid decoding under random 10-fold CV and all units, to set beside published numbers
+  residual_levels.py   decode from each level's orthogonal detail alone (is the information at a scale unique to it?)
 notes/
   diagnostics.md how the tokenizer design was debugged, and where it departs from the plan
   decoder_bakeoff.md  twelve decoders on the continuous pyramid; why nested-C cumulative logistic is the E3 decoder
@@ -74,6 +76,7 @@ python scripts/load_allen.py --session <id> --area VISp   # writes data/allen_<i
 deactivate
 PYTHONPATH=. python scripts/run_e3.py --data data/allen_<id>_VISp.npz --n-units 60 --repeats 5
 PYTHONPATH=. python scripts/compare_external.py --data data/allen_<id>_VISp.npz
+PYTHONPATH=. python scripts/residual_levels.py --data data/allen_<id>_VISp.npz --n-units 60 --repeats 5 --all-units
 ```
 
 E3 repeats can run in parallel: `--repeats 1 --seed k --tag sk` per process,

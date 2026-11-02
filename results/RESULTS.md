@@ -265,6 +265,68 @@ below 25 ms), VISp image identity in this window is a 50 to 125 ms code.
 Not done: the paper's seven sessions were not downloaded (about 3 GB each),
 so the comparison is one session against their distribution, not per session.
 
+## Unique information per scale: decoding from each level's detail alone (1 Nov 2026)
+
+The cumulative curve says the 125 and 50 ms levels add information over
+whole-window counts, but not whether that information is unique to each
+scale or a re-expression of coarser structure. `scripts/residual_levels.py`
+splits every unit's 5 ms count vector (sqrt-transformed) into six orthogonal
+pieces, the level-k detail being the part of levels 1 to k that is orthogonal
+to levels 1 to k-1 (1, 1, 4, 4, 20 and 20 dimensions per unit; the level
+lengths do not all nest, so the pieces come from Gram-Schmidt on the pooling
+bases rather than Haar differences). Each detail is decoded alone with the
+primary nested-C decoder, same split and unit subsets as E3. The control is
+the same detail after the 5 ms bins of every trial and unit are permuted,
+which keeps each unit's count and destroys all timing: it measures how much
+a detail can be decoded from the size of the fluctuations alone. Raw numbers:
+`residual_allen_732592105_VISp.json` and `residual_<code>.json` for the
+synthetic checks.
+
+Synthetic checks (60 units, 16 stimuli, chance 0.06, one seed): the rate
+code decodes at 1.00 from the L1 detail and at chance from every other
+detail; the 25 ms timing code is at chance for L1 to L3 and 1.00 from the L4
+detail; the 10 ms code is at chance except 1.00 from the L5 detail. The
+shuffled control is at chance everywhere. So a detail scores only when its
+scale carries the code.
+
+### Allen VISp, detail of level k alone, nested-C logistic
+
+| units | readout | L1 (250) | L2 (125) | L3 (50) | L4 (25) | L5 (10) | L6 (5 ms) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 60, 5 seeds | detail alone | 0.41 | 0.21 | 0.17 | 0.07 | 0.05 | 0.03 |
+| 60, 5 seeds | time-shuffled control | 0.41 | 0.02 | 0.02 | 0.02 | 0.02 | 0.02 |
+| 60, 5 seeds | details 1 to k, cumulative | 0.41 | 0.45 | 0.39 | 0.35 | 0.25 | 0.19 |
+| 113 (all) | detail alone | 0.55 | 0.30 | 0.24 | 0.11 | 0.06 | 0.03 |
+| 113 (all) | time-shuffled control | 0.55 | 0.02 | 0.02 | 0.02 | 0.01 | 0.02 |
+| 113 (all) | details 1 to k, cumulative | 0.55 | 0.57 | 0.51 | 0.46 | 0.34 | 0.28 |
+
+Chance is 0.008. Seed std is at most 0.02. Detail minus control per seed
+(60 units): 0.17 to 0.22 at L2, 0.14 to 0.17 at L3, 0.04 to 0.06 at L4, 0.02
+to 0.03 at L5, and -0.01 to 0.02 at L6.
+
+**Image identity is multiplexed over three scales, and each is unique.** The
+125 ms detail is one number per unit, the difference between the first and
+second half of the window, and on its own it identifies the image at 0.21
+(60 units) or 0.30 (all units), 25 to 35 times chance, with the whole-window
+count removed by construction. The 50 ms detail adds 0.17 or 0.24 on its
+own, orthogonal to both the count and the 125 ms shape. The 25 ms detail is
+worth 0.05 to 0.09 and the 10 ms detail 0.03 to 0.04, both above the control
+in every seed. At 5 ms the detail is within the control's range. The
+control stays at 0.02, so none of this is fluctuation size masquerading as
+timing. This is the same ordering the cumulative curve and the jitter test
+gave, now with each scale's contribution separated: rate carries most, the
+125 ms temporal shape and the 50 ms shape each carry a large independent
+share, and there is a small but real component between 10 and 25 ms.
+
+Two caveats. Orthogonality is in time, not in statistics: a detail can be
+decodable because its shape covaries with rate across images, and the
+control only rules out the size of fluctuations, not their shape. And the
+cumulative detail readout is linear in near-raw counts (sqrt of 0 or 1
+spikes per 5 ms bin), so it falls below the log1p pooled pyramid from L3 on
+(0.39 against 0.47 at L3, 60 units); the pyramid's per-level log transform
+is worth up to 0.08 at fine levels. Read the detail rows against each other
+and against the control, not against the pyramid.
+
 ## Caveats
 
 - Synthetic codes are easy (the continuous pyramid is at 1.00), so they test
@@ -282,6 +344,9 @@ so the comparison is one session against their distribution, not per session.
   decline is the best any linear decoder tested can do with 40 training
   trials per image; whether a nonlinear or trial-pooled decoder would recover
   it is not tested.
+- The per-scale detail analysis uses a sqrt transform on 5 ms bins and a
+  single session; the synthetic checks cover planted codes of one kind at a
+  time, not mixtures.
 
 ## Suggested next steps
 
@@ -292,7 +357,11 @@ so the comparison is one session against their distribution, not per session.
    group) so the bit budget scales with the population, or codebooks in the
    thousands with product quantization. Otherwise reframe around the
    analysis, with the quantized pyramid as a drop-in tokenizer.
-2. A second VISp session and one higher area (VISl or VISam) with the same
-   pipeline, to see whether the 50 to 125 ms optimum shifts with the
+2. A higher area from the same session (VISal has 89 quality units, VISpm
+   68, VISrl 66), then a second VISp session (794812542 has 131 VISp, 105
+   VISl and 114 VISam units), with the same pyramid, jitter and per-scale
+   detail pipeline, to see whether the 50 to 125 ms optimum shifts with the
    hierarchy as NeuroPixelHD reports.
-3. E4, the fixed-resolution ladder, is still open.
+3. The detail analysis's first caveat is testable: regress each level's
+   detail on the whole-window count per unit before decoding, to separate
+   temporal shape that covaries with rate from shape that does not.
