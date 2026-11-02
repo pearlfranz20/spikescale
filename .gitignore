@@ -5,3 +5,4 @@ data/
 allen_cache/
 *.npz
 .DS_Store
+logs/

@@ -84,7 +84,7 @@ def main(path_in, path_out):
         style(ax, title, chance, ymax, loc=loc)
     c.set_ylabel("Held-out top-1 accuracy (118 images)")
 
-    fig.suptitle(f"E3 and E3b: Allen VISp {res['name'].split('_')[1]}, {res['n_units']} units, "
+    fig.suptitle(f"E3 and E3b: Allen {res['name'].split('_')[2]} {res['name'].split('_')[1]}, {res['n_units']} units, "
                  f"{res['repeats']} seeds, time-blocked holdout (dotted: chance)", fontsize=11)
     fig.tight_layout()
     fig.savefig(path_out, dpi=150)
