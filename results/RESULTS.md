@@ -1111,7 +1111,8 @@ pupil) in the regression would be the direct check.
    VISam. VISam tilts toward the 125 ms shape; LGd, below VISp, tilts the
    other way, with a 25 to 50 ms tie and 10 ms jitter costing accuracy; LP
    tilts like LGd despite its high hierarchical rank. Open: VISam and LGd
-   in a second animal (sessions with both LGd and VISam exist), an explicit
+   in a second animal (session 763673393 has 73 VISp, 74 VISam and 77 LGd
+   units; 755434585 has 94 VISam, 44 LGd and 62 VISpm), an explicit
    latency readout to say how much of the 125 and 50 ms details is onset
    latency, and a running or pupil covariate in the rate regression for the
    drift this third session shows.
