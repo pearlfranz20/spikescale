@@ -877,6 +877,20 @@ sessions) to say whether the tilt grows with hierarchical distance.
   single session; the synthetic checks cover planted codes of one kind at a
   time, not mixtures. The rate regression is linear and uses the window
   count only.
+- The 125 and 50 ms details are, in large part, old quantities in new
+  coordinates. The level-2 detail of a unit is its second-half minus
+  first-half count, so it measures how transient or sustained the response
+  is; the level-3 detail (the 50 ms profile with the whole-window and
+  half-window means removed) is dominated by where in the window the response
+  rises, that is, by onset latency. Image information in response latency and
+  in the transient-to-sustained ratio is well established (first-spike
+  latency in retina, Gollisch and Meister 2008; temporal waveform coding in
+  IT and V1, Optican and Richmond 1987, Reich, Mechler and Victor 2001).
+  What this analysis adds is the population scale, the matched-capacity
+  decoder, the time-shuffled control and the rate regression, not the
+  existence of a latency or transience code. A readout built from an
+  explicit per-unit latency estimate would say how much of the level-2 and
+  level-3 detail is latency alone; it has not been run.
 - The comparison across areas is within two sessions (one per animal);
   the amount of information per area varies with the penetration (VISal is
   half of VISp in one animal and equal to it in the other), so between-area
