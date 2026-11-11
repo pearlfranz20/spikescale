@@ -53,6 +53,7 @@ information appears. The idea follows Next-Concept Modeling
 - [x] Third session 754829445 (VISp, LGd, LP; a third animal): VISp unchanged; LGd tilts finer (25 to 50 ms tie, 10 ms jitter costs accuracy); LP tilts like LGd
 - [x] Fourth session 763673393 (VISp, VISam, LGd; a fourth animal): LGd's finer scale replicates (25 ms optimum every seed); VISam's 125 ms tilt does not, this VISam matches VISp
 - [x] Fifth session 757216464 (LP, VISp; a fifth animal): LP's flat 50 to 10 ms profile and 25 ms share replicate with 116 units; thalamus against cortex, not hierarchical rank
+- [x] Explicit latency readout on all sixteen samples: first-spike latency and centre of mass do not substitute for the pooled counts and leave the 125 and 50 ms details above the control in every seed
 - ~~E4 fixed-resolution ladder comparison~~ dropped on 1 Nov 2026: what the
   ladder should compare was never written down, and the decoder bake-off and
   E3b already answer the per-level question on real data
@@ -75,6 +76,7 @@ scripts/
   compare_external.py  pyramid decoding under random 10-fold CV and all units, to set beside published numbers
   residual_levels.py   decode from each level's orthogonal detail alone (is the information at a scale unique to it?),
                        with rate-regressed readouts (--readouts detail_unitrate,detail_poprate,shuffled_unitrate --tag rate)
+  latency_readout.py   are the 125 and 50 ms details just first-spike latency and centre of mass? (no)
 notes/
   diagnostics.md how the tokenizer design was debugged, and where it departs from the plan
   decoder_bakeoff.md  twelve decoders on the continuous pyramid; why nested-C cumulative logistic is the E3 decoder

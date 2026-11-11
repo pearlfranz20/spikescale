@@ -101,6 +101,8 @@ def regress_out(feats, cov, tr, mode):
     The regression is fit on the training trials tr and applied to all trials.
     mode "unit": unit u's detail on unit u's own covariates. mode "pop": every
     detail feature on the covariates of all units. Level 1 is returned as is.
+    cov may hold any number of covariates per unit (scripts/latency_readout.py
+    adds first-spike latency and spike-time centre of mass).
     """
     n, u, _ = cov.shape
     out = [feats[0]]
@@ -110,7 +112,7 @@ def regress_out(feats, cov, tr, mode):
             f3 = f.reshape(n, u, d)
             x = np.concatenate([np.ones((n, u, 1)), cov], axis=-1)  # (n, u, 3)
             xt = x[tr]
-            gram = np.einsum("nup,nuq->upq", xt, xt) + 1e-8 * np.eye(3)
+            gram = np.einsum("nup,nuq->upq", xt, xt) + 1e-8 * np.eye(x.shape[-1])
             xty = np.einsum("nup,nud->upd", xt, f3[tr])
             beta = np.linalg.solve(gram, xty)  # (u, 3, d)
             out.append((f3 - np.einsum("nup,upd->nud", x, beta)).reshape(n, -1))

@@ -1372,6 +1372,95 @@ share and the large share of shape relative to rate, and disagree with
 LGd on the 50 to 125 ms balance. The division in the data is thalamus
 against cortex, not position in the cortical hierarchy.
 
+## An explicit latency readout: the details are not first-spike latency (11 Nov 2026)
+
+The caveat below says the 125 ms detail is transience and the 50 ms detail
+is largely onset latency, both long known to carry image information. This
+section tests how much of the two details an explicit per-unit timing
+summary accounts for, on all sixteen samples (60 units, 5 seeds, same
+subsets and split as everything else). From the 1 ms spike array, three
+per-unit, per-trial summaries: first-spike time (1.0 when silent), a silent
+indicator, and the centre of mass of the unit's spike times (0.5 when
+silent). About half of unit-trial pairs are silent in the window. Two
+tests, both through the nested-C logistic (`scripts/latency_readout.py`,
+raw numbers in `latency_allen_<session>_<area>.json`):
+
+1. In the pyramid's own coordinates (cumulative log pooled counts): the
+   gain from L1 to L3 (the number every section above reports), the gain
+   from adding the timing summaries to L1, and the gain from L3 counts
+   once the timing summaries are already in. If the details were latency,
+   the second would match the first and the third would be near zero.
+2. In the detail coordinates: each detail decoded alone, after regression
+   on the population rate vector (the control of the rate-regression
+   section), and after regression on rate and the timing summaries of
+   every unit together.
+
+| sample | centre of mass alone | pyramid L3 minus L1 | L1 + timing minus L1 | L3 + timing minus L1 + timing | 125 ms detail: alone / rate-regressed / rate-and-timing-regressed | 50 ms detail: same | timing-regressed minus control, per seed |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| VISp 105 | 0.25 | 0.07 | -0.03 | 0.07 | 0.21 / 0.11 / 0.07 | 0.17 / 0.09 / 0.07 | 0.04 to 0.06, 0.05 to 0.06 |
+| VISp 424 | 0.28 | 0.08 | -0.02 | 0.08 | 0.21 / 0.12 / 0.06 | 0.15 / 0.08 / 0.06 | 0.04 to 0.05, 0.04 to 0.05 |
+| VISp 445 | 0.24 | 0.09 | -0.03 | 0.10 | 0.18 / 0.11 / 0.05 | 0.19 / 0.09 / 0.07 | 0.03 to 0.05, 0.05 to 0.07 |
+| VISp 393 | 0.38 | 0.08 | -0.02 | 0.09 | 0.28 / 0.13 / 0.08 | 0.21 / 0.12 / 0.09 | 0.05 to 0.07, 0.07 to 0.08 |
+| VISp 464 | 0.28 | 0.09 | -0.01 | 0.08 | 0.20 / 0.10 / 0.07 | 0.20 / 0.11 / 0.09 | 0.05 to 0.06, 0.06 to 0.08 |
+| VISal 105 | 0.17 | 0.08 | +0.01 | 0.07 | 0.12 / 0.08 / 0.05 | 0.11 / 0.06 / 0.05 | 0.02 to 0.03, 0.03 to 0.04 |
+| VISal 424 | 0.25 | 0.11 | -0.00 | 0.09 | 0.20 / 0.13 / 0.06 | 0.17 / 0.10 / 0.08 | 0.02 to 0.05, 0.05 to 0.08 |
+| VISl 424 | 0.31 | 0.11 | +0.01 | 0.09 | 0.20 / 0.12 / 0.06 | 0.18 / 0.10 / 0.07 | 0.05 to 0.06, 0.04 to 0.06 |
+| VISrl 105 | 0.12 | 0.06 | -0.01 | 0.05 | 0.08 / 0.06 / 0.04 | 0.08 / 0.06 / 0.04 | 0.02 to 0.03, 0.02 to 0.04 |
+| VISpm 105 | 0.20 | 0.07 | -0.04 | 0.08 | 0.16 / 0.09 / 0.06 | 0.15 / 0.07 / 0.05 | 0.04 to 0.05, 0.03 to 0.04 |
+| VISam 424 | 0.11 | 0.06 | -0.00 | 0.05 | 0.10 / 0.08 / 0.03 | 0.06 / 0.05 / 0.04 | 0.02 to 0.03, 0.02 to 0.03 |
+| VISam 393 | 0.20 | 0.11 | -0.03 | 0.11 | 0.18 / 0.11 / 0.06 | 0.16 / 0.09 / 0.07 | 0.05 to 0.06, 0.05 to 0.07 |
+| LGd 445 | 0.16 | 0.10 | -0.04 | 0.12 | 0.12 / 0.06 / 0.04 | 0.16 / 0.07 / 0.07 | 0.02 to 0.04, 0.04 to 0.07 |
+| LGd 393 | 0.31 | 0.12 | -0.05 | 0.15 | 0.23 / 0.10 / 0.05 | 0.30 / 0.12 / 0.09 | 0.03 to 0.05, 0.07 to 0.09 |
+| LP 445 | 0.06 | 0.06 | -0.00 | 0.06 | 0.06 / 0.05 / 0.03 | 0.07 / 0.05 / 0.04 | 0.01 to 0.02, 0.02 to 0.03 |
+| LP 464 | 0.10 | 0.14 | +0.01 | 0.11 | 0.12 / 0.08 / 0.05 | 0.12 / 0.08 / 0.06 | 0.03 to 0.04, 0.04 to 0.06 |
+
+Sample names end in the last three digits of the session id. Chance is
+0.008; the time-shuffled controls are 0.01 to 0.02.
+
+**Timing summaries do not substitute for the pooled counts.** The centre
+of mass alone identifies the image at 0.06 to 0.38 and first-spike
+latency alone at 0.04 to 0.24, so the summaries carry image information.
+Added to the whole-window count they change accuracy by -0.05 to 0.01,
+nothing or a small loss from the extra dimensions, in every sample, while
+the 125 and 50 ms counts added on top of count and timing still gain
+0.05 to 0.15, the same as their gain without the timing summaries. What
+the timing summaries know about the image, the count already knows; what
+the pooled counts know, the summaries do not.
+
+**Regressing the details on timing removes more than rate alone, and
+leaves a shape component in every sample and seed.** After regression on
+rate and the timing summaries of every unit, the 125 ms detail keeps
+0.23 to 0.49 of its accuracy and the 50 ms detail 0.31 to 0.59, against
+0.44 to 0.81 and 0.40 to 0.73 after rate alone. Relative to the
+rate-regressed detail, the timing summaries account for a further
+0.30 to 0.57 of the 125 ms detail and
+0.13 to 0.31 of the 50 ms detail. What is left is
+0.03 to 0.09 absolute, above the shuffled control by at least
+0.01 (125 ms) and 0.02 (50 ms) in every seed of
+every sample, 4 to 11 times chance in the cortical samples and the second
+LGd. Both details together, timing-regressed, decode 0.04 to 0.12.
+
+**Reading.** First-spike latency and the centre of mass are the natural
+single-trial summaries of when a unit's response happens, and they do
+capture part of what the details carry: about a third to a half of the
+rate-independent 125 ms detail and about a fifth of the rate-independent
+50 ms detail, more at 125 ms because transience moves the centre of mass
+directly. The remainder is temporal structure within the window that
+neither the count nor the timing of the response as a whole describes:
+whether the response has one peak or two, how fast it decays, whether it
+rebounds. The caveat stands in its weaker form: the details overlap with
+latency and transience, and a reader who prefers to think of them as
+latency codes is describing part of them. Two limits. Single-trial
+latency estimates from units that fire one or two spikes in the window
+are noisy, and linear regression on a noisy covariate removes less than
+the covariate's true share, so the "further share" above is a lower
+bound; the pyramid test is less exposed to this, since the decoder can
+weight the summaries however it likes, and it shows the same thing. And
+the summaries are per unit; a population-level latency (the time at which
+the population response rises) is not among them, though the population
+rate regression, which includes every unit's count and timing, covers the
+linear part of that.
+
 ## Caveats
 
 - Synthetic codes are easy (the continuous pyramid is at 1.00), so they test
@@ -1406,9 +1495,11 @@ against cortex, not position in the cortical hierarchy.
   IT and V1, Optican and Richmond 1987, Reich, Mechler and Victor 2001).
   What this analysis adds is the population scale, the matched-capacity
   decoder, the time-shuffled control and the rate regression, not the
-  existence of a latency or transience code. A readout built from an
-  explicit per-unit latency estimate would say how much of the level-2 and
-  level-3 detail is latency alone; it has not been run.
+  existence of a latency or transience code. The explicit latency readout
+  (section above) finds that first-spike latency and centre of mass
+  account for a third to a half of the rate-independent 125 ms detail and
+  a fifth of the 50 ms detail, and that what remains is above the control
+  in every seed of every sample.
 - The comparison across areas is within five sessions (one per animal);
   the amount of information per area varies with the penetration (VISal is
   half of VISp in one animal and equal to it in the other; VISam is 0.20 in
@@ -1434,10 +1525,12 @@ against cortex, not position in the cortical hierarchy.
    detail); the first VISam's tilt toward 125 ms did not replicate in the
    second. LP in a second animal (757216464, 116 units) replicates the
    flat 50 to 10 ms profile and the 25 ms share, so the thalamus differs
-   from cortex in the same direction in all four thalamic samples. Open: an
-   explicit latency readout to say how much of the 125 and 50 ms details is
-   onset latency, and a running or pupil covariate in the rate regression
-   for the drift the third session shows.
+   from cortex in the same direction in all four thalamic samples. The
+   explicit latency readout is done (11 Nov): the details are not reducible
+   to first-spike latency or centre of mass. Open: a running or pupil
+   covariate in the rate regression for the drift the third session shows,
+   and a population-level latency (time of the population rise) as one
+   more covariate.
 3. Done on 11 Nov 2026 (rate-regressed details): about half of the 125 and
    50 ms detail information survives regression on the population rate
    vector. A nonlinear version (regress on rate with a flexible model, or
