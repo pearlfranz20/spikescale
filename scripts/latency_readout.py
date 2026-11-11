@@ -53,6 +53,21 @@ each a fraction of the window.
   detail3_popall    the population timing
   d23_popall        both details, so regressed, together
 
+Behavioural state (--readouts ... --tag state; needs data/allen_<session>_state.npz
+from scripts/load_allen_state.py): per-trial running speed and pupil area,
+z-scored on the training trials, with a missing indicator for pupil.
+
+  state             running and pupil alone (should be near chance)
+  rate_state        L1 detail + state
+  pyr3_state        pyramid L3 + state
+  detail2_popstate  detail regressed on every unit's rate (L1 coefficient and
+  detail3_popstate  sqrt count) plus the state covariates
+  d23_popstate      both details, so regressed, together
+  run_pyr<k>        pyramid level k decoded within running trials only
+  still_pyr<k>      (speed above 5 cm/s) and within stationary trials only,
+                    the larger set subsampled to the smaller's size; NaN when
+                    the smaller state has under 8 repeats of some image
+
     PYTHONPATH=. python scripts/latency_readout.py --data data/allen_<id>_VISp.npz --n-units 60 --repeats 5
 """
 from __future__ import annotations
@@ -76,7 +91,10 @@ READOUTS = ("rate", "latency", "com", "timing", "rate_timing", "rate_timing_d23"
             "detail2", "detail3", "detail2_unitlat", "detail3_unitlat",
             "detail2_poplat", "detail3_poplat", "d23_poplat",
             "pyr1", "pyr3", "pyr1_timing", "pyr3_timing",
-            "poptiming", "pyr1_timing_pop", "pyr3_timing_pop", "detail2_popall", "detail3_popall", "d23_popall")
+            "poptiming", "pyr1_timing_pop", "pyr3_timing_pop", "detail2_popall", "detail3_popall", "d23_popall",
+            "state", "rate_state", "pyr3_state", "detail2_popstate", "detail3_popstate", "d23_popstate",
+            *[f"{st}_pyr{k}" for st in ("run", "still") for k in range(1, 7)])
+RUN_CMS = 5.0
 
 
 def timing_summaries(spikes_ms):
@@ -107,8 +125,41 @@ def population_timing(spikes_ms):
     return np.stack([first, com, half], axis=-1)
 
 
-def features(readout, counts, spikes_ms, bases, tr):
+def state_feats(state, tr):
+    """(trials, 2 or 3): running and pupil z-scored on the training trials, NaN to 0 plus an indicator."""
+    cols = []
+    for name in ("running", "pupil"):
+        v = state[name].astype(float)
+        ok = np.isfinite(v)
+        if ok[tr].sum() < 2:
+            continue
+        z = (v - np.nanmean(v[tr])) / (np.nanstd(v[tr]) + 1e-9)
+        cols.append(np.where(ok, z, 0.0))
+        if not ok.all():
+            cols.append((~ok).astype(float))
+    return np.stack(cols, axis=1)
+
+
+def pyramid(counts, k):
+    n = len(counts)
+    return np.concatenate([np.log1p(pool_counts(counts, L)).reshape(n, -1) for L in (1, 2, 5, 10, 25, 50)[:k]], axis=1)
+
+
+def features(readout, counts, spikes_ms, bases, tr, state=None):
     n, u, _ = counts.shape
+    if readout == "state":
+        return state_feats(state, tr)
+    if readout.endswith("_state"):
+        st = state_feats(state, tr)
+        base = detail_feats(counts, bases)[0] if readout == "rate_state" else pyramid(counts, 3)
+        return np.concatenate([base, st], axis=1)
+    if readout.endswith("_popstate"):
+        feats = detail_feats(counts, bases)
+        cov = np.stack([feats[0], np.sqrt(counts.sum(-1))], axis=-1)
+        reg = regress_out(feats, cov, tr, "pop", extra=state_feats(state, tr))
+        if readout == "d23_popstate":
+            return np.concatenate([reg[1], reg[2]], axis=1)
+        return reg[int(readout[6]) - 1]
     feats = detail_feats(counts, bases)
     tim = timing_summaries(spikes_ms)
     ptim = population_timing(spikes_ms)
@@ -151,9 +202,31 @@ def features(readout, counts, spikes_ms, bases, tr):
     raise ValueError(readout)
 
 
-def one(counts, spikes_ms, labels, readout, bases):
-    tr, te = blocked_split(len(labels), labels)
-    x = features(readout, counts, spikes_ms, bases, tr)
+def state_subset(labels, state, which, seed):
+    """Trial indices of one state, the larger state subsampled to the smaller's size; None if too few repeats."""
+    running = state["running"] > RUN_CMS
+    sets = {"run": np.nonzero(running)[0], "still": np.nonzero(~running)[0]}
+    small = min(sets.values(), key=len)
+    if np.bincount(labels[small], minlength=labels.max() + 1).min() < 8:
+        return None
+    idx = sets[which]
+    if len(idx) > len(small):
+        idx = np.sort(np.random.default_rng(100 + seed).choice(idx, len(small), replace=False))
+    return idx
+
+
+def one(counts, spikes_ms, labels, readout, bases, state=None, seed=0):
+    if readout.startswith(("run_pyr", "still_pyr")):
+        which, k = readout.split("_pyr")
+        idx = state_subset(labels, state, which, seed)
+        if idx is None:
+            return float("nan"), None
+        counts, labels = counts[idx], labels[idx]
+        tr, te = blocked_split(len(labels), labels)
+        x = pyramid(counts, int(k))
+    else:
+        tr, te = blocked_split(len(labels), labels)
+        x = features(readout, counts, spikes_ms, bases, tr, state)
     clf, c = fit_clf_nested(x[tr], labels[tr])
     return score(clf, x[te], labels[te]), c
 
@@ -174,6 +247,7 @@ def main():
     if bad:
         ap.error(f"unknown readouts {sorted(bad)}")
 
+    state = None
     if args.synthetic:
         name = args.synthetic
         cfg = (SynthConfig(code="timing", precision_ms=int(name.split("p")[1]))
@@ -184,6 +258,15 @@ def main():
         d = np.load(args.data)
         counts_all, spikes_all, labels = d["counts"], d["spikes_ms"], d["labels"]
         name = Path(args.data).stem
+        sp = Path(args.data).with_name(f"allen_{name.split('_')[1]}_state.npz")
+        if sp.exists():
+            st = np.load(sp)
+            assert np.allclose(st["start_time"], d["start_time"])
+            state = {"running": st["running"], "pupil": st["pupil"]}
+            print(f"state: {np.mean(state['running'] > RUN_CMS):.2f} of trials running, pupil on "
+                  f"{np.isfinite(state['pupil']).mean():.2f}", flush=True)
+    if any(ro == "state" or ro.endswith(("_state", "_popstate")) or ro.startswith(("run_", "still_")) for ro in readouts) and state is None:
+        ap.error("state readouts need data/allen_<session>_state.npz (scripts/load_allen_state.py)")
     counts_all = counts_all.astype(np.float64)
     spikes_all = spikes_all.astype(np.int16)  # kept small: each worker receives a copy of its subset
     bases = detail_bases(t=counts_all.shape[2])
@@ -203,15 +286,15 @@ def main():
     assert np.array_equal(sub(0)[0], subsample(counts_all, args.n_units, 0))  # same subsets as run_e3
     t0 = time.time()
     res = Parallel(n_jobs=args.jobs, verbose=5)(
-        delayed(one)(*sub(seed), labels, ro, bases) for seed, ro in jobs)
+        delayed(one)(*sub(seed), labels, ro, bases, state, seed) for seed, ro in jobs)
     print(f"{len(jobs)} fits in {time.time() - t0:.0f}s", flush=True)
 
     result = {"name": name, "chance": 1 / len(np.unique(labels)), "n_units": args.n_units or counts_all.shape[1],
               "readouts": list(readouts), "runs": {}}
     for (seed, ro), (acc, c) in zip(jobs, res):
         result["runs"].setdefault(f"seed{seed}", {})[ro] = {"acc": acc, "c": c}
-    result["mean"] = {ro: float(np.mean([r[ro]["acc"] for r in result["runs"].values()])) for ro in readouts}
-    result["std"] = {ro: float(np.std([r[ro]["acc"] for r in result["runs"].values()])) for ro in readouts}
+    result["mean"] = {ro: float(np.nanmean([r[ro]["acc"] for r in result["runs"].values()])) for ro in readouts}
+    result["std"] = {ro: float(np.nanstd([r[ro]["acc"] for r in result["runs"].values()])) for ro in readouts}
     for ro in readouts:
         print(f"{ro:17s} {result['mean'][ro]:.3f} +- {result['std'][ro]:.3f}")
     out = Path(args.out) / f"latency_{name}{'_' + args.tag if args.tag else ''}.json"

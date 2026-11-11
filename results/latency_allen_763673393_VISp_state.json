@@ -1,0 +1,437 @@
+{
+ "name": "allen_763673393_VISp",
+ "chance": 0.00847457627118644,
+ "n_units": 60,
+ "readouts": [
+  "state",
+  "rate_state",
+  "pyr3_state",
+  "detail2_popstate",
+  "detail3_popstate",
+  "d23_popstate",
+  "run_pyr1",
+  "run_pyr2",
+  "run_pyr3",
+  "run_pyr4",
+  "run_pyr5",
+  "run_pyr6",
+  "still_pyr1",
+  "still_pyr2",
+  "still_pyr3",
+  "still_pyr4",
+  "still_pyr5",
+  "still_pyr6"
+ ],
+ "runs": {
+  "seed0": {
+   "state": {
+    "acc": 0.005084745762711864,
+    "c": 0.1
+   },
+   "rate_state": {
+    "acc": 0.5754237288135593,
+    "c": 0.1
+   },
+   "pyr3_state": {
+    "acc": 0.6254237288135593,
+    "c": 0.01
+   },
+   "detail2_popstate": {
+    "acc": 0.13983050847457626,
+    "c": 0.03
+   },
+   "detail3_popstate": {
+    "acc": 0.12033898305084746,
+    "c": 0.003
+   },
+   "d23_popstate": {
+    "acc": 0.1864406779661017,
+    "c": 0.01
+   },
+   "run_pyr1": {
+    "acc": NaN,
+    "c": null
+   },
+   "run_pyr2": {
+    "acc": NaN,
+    "c": null
+   },
+   "run_pyr3": {
+    "acc": NaN,
+    "c": null
+   },
+   "run_pyr4": {
+    "acc": NaN,
+    "c": null
+   },
+   "run_pyr5": {
+    "acc": NaN,
+    "c": null
+   },
+   "run_pyr6": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr1": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr2": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr3": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr4": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr5": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr6": {
+    "acc": NaN,
+    "c": null
+   }
+  },
+  "seed1": {
+   "state": {
+    "acc": 0.005084745762711864,
+    "c": 0.1
+   },
+   "rate_state": {
+    "acc": 0.5576271186440678,
+    "c": 0.1
+   },
+   "pyr3_state": {
+    "acc": 0.611864406779661,
+    "c": 0.01
+   },
+   "detail2_popstate": {
+    "acc": 0.12203389830508475,
+    "c": 0.03
+   },
+   "detail3_popstate": {
+    "acc": 0.12033898305084746,
+    "c": 0.01
+   },
+   "d23_popstate": {
+    "acc": 0.17033898305084746,
+    "c": 0.01
+   },
+   "run_pyr1": {
+    "acc": NaN,
+    "c": null
+   },
+   "run_pyr2": {
+    "acc": NaN,
+    "c": null
+   },
+   "run_pyr3": {
+    "acc": NaN,
+    "c": null
+   },
+   "run_pyr4": {
+    "acc": NaN,
+    "c": null
+   },
+   "run_pyr5": {
+    "acc": NaN,
+    "c": null
+   },
+   "run_pyr6": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr1": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr2": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr3": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr4": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr5": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr6": {
+    "acc": NaN,
+    "c": null
+   }
+  },
+  "seed2": {
+   "state": {
+    "acc": 0.005084745762711864,
+    "c": 0.1
+   },
+   "rate_state": {
+    "acc": 0.5822033898305085,
+    "c": 0.1
+   },
+   "pyr3_state": {
+    "acc": 0.635593220338983,
+    "c": 0.01
+   },
+   "detail2_popstate": {
+    "acc": 0.13474576271186442,
+    "c": 0.1
+   },
+   "detail3_popstate": {
+    "acc": 0.12542372881355932,
+    "c": 0.01
+   },
+   "d23_popstate": {
+    "acc": 0.16864406779661018,
+    "c": 0.003
+   },
+   "run_pyr1": {
+    "acc": NaN,
+    "c": null
+   },
+   "run_pyr2": {
+    "acc": NaN,
+    "c": null
+   },
+   "run_pyr3": {
+    "acc": NaN,
+    "c": null
+   },
+   "run_pyr4": {
+    "acc": NaN,
+    "c": null
+   },
+   "run_pyr5": {
+    "acc": NaN,
+    "c": null
+   },
+   "run_pyr6": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr1": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr2": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr3": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr4": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr5": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr6": {
+    "acc": NaN,
+    "c": null
+   }
+  },
+  "seed3": {
+   "state": {
+    "acc": 0.005084745762711864,
+    "c": 0.1
+   },
+   "rate_state": {
+    "acc": 0.5457627118644067,
+    "c": 0.1
+   },
+   "pyr3_state": {
+    "acc": 0.597457627118644,
+    "c": 0.01
+   },
+   "detail2_popstate": {
+    "acc": 0.13050847457627118,
+    "c": 0.03
+   },
+   "detail3_popstate": {
+    "acc": 0.11016949152542373,
+    "c": 0.03
+   },
+   "d23_popstate": {
+    "acc": 0.18305084745762712,
+    "c": 0.01
+   },
+   "run_pyr1": {
+    "acc": NaN,
+    "c": null
+   },
+   "run_pyr2": {
+    "acc": NaN,
+    "c": null
+   },
+   "run_pyr3": {
+    "acc": NaN,
+    "c": null
+   },
+   "run_pyr4": {
+    "acc": NaN,
+    "c": null
+   },
+   "run_pyr5": {
+    "acc": NaN,
+    "c": null
+   },
+   "run_pyr6": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr1": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr2": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr3": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr4": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr5": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr6": {
+    "acc": NaN,
+    "c": null
+   }
+  },
+  "seed4": {
+   "state": {
+    "acc": 0.005084745762711864,
+    "c": 0.1
+   },
+   "rate_state": {
+    "acc": 0.5847457627118644,
+    "c": 0.1
+   },
+   "pyr3_state": {
+    "acc": 0.6322033898305085,
+    "c": 0.01
+   },
+   "detail2_popstate": {
+    "acc": 0.1288135593220339,
+    "c": 0.01
+   },
+   "detail3_popstate": {
+    "acc": 0.12457627118644068,
+    "c": 0.01
+   },
+   "d23_popstate": {
+    "acc": 0.1847457627118644,
+    "c": 0.01
+   },
+   "run_pyr1": {
+    "acc": NaN,
+    "c": null
+   },
+   "run_pyr2": {
+    "acc": NaN,
+    "c": null
+   },
+   "run_pyr3": {
+    "acc": NaN,
+    "c": null
+   },
+   "run_pyr4": {
+    "acc": NaN,
+    "c": null
+   },
+   "run_pyr5": {
+    "acc": NaN,
+    "c": null
+   },
+   "run_pyr6": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr1": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr2": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr3": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr4": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr5": {
+    "acc": NaN,
+    "c": null
+   },
+   "still_pyr6": {
+    "acc": NaN,
+    "c": null
+   }
+  }
+ },
+ "mean": {
+  "state": 0.005084745762711864,
+  "rate_state": 0.5691525423728814,
+  "pyr3_state": 0.6205084745762711,
+  "detail2_popstate": 0.1311864406779661,
+  "detail3_popstate": 0.12016949152542374,
+  "d23_popstate": 0.17864406779661016,
+  "run_pyr1": NaN,
+  "run_pyr2": NaN,
+  "run_pyr3": NaN,
+  "run_pyr4": NaN,
+  "run_pyr5": NaN,
+  "run_pyr6": NaN,
+  "still_pyr1": NaN,
+  "still_pyr2": NaN,
+  "still_pyr3": NaN,
+  "still_pyr4": NaN,
+  "still_pyr5": NaN,
+  "still_pyr6": NaN
+ },
+ "std": {
+  "state": 0.0,
+  "rate_state": 0.015051381880876846,
+  "pyr3_state": 0.014103487500145584,
+  "detail2_popstate": 0.0059539552780509455,
+  "detail3_popstate": 0.005423728813559322,
+  "d23_popstate": 0.0075685130717851185,
+  "run_pyr1": NaN,
+  "run_pyr2": NaN,
+  "run_pyr3": NaN,
+  "run_pyr4": NaN,
+  "run_pyr5": NaN,
+  "run_pyr6": NaN,
+  "still_pyr1": NaN,
+  "still_pyr2": NaN,
+  "still_pyr3": NaN,
+  "still_pyr4": NaN,
+  "still_pyr5": NaN,
+  "still_pyr6": NaN
+ }
+}

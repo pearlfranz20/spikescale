@@ -1481,6 +1481,84 @@ Whatever the details carry, it is not when the population responds; it
 is how the response of each unit is distributed within the window,
 relative to the others.
 
+## Behavioural state: running and pupil as covariates, and the pyramid within running and stationary trials (11 Nov 2026)
+
+`scripts/load_allen_state.py` reads each session's running speed and, where
+the session has eye tracking (four of five; not 732592105), pupil area, and
+averages them over the 0 to 250 ms window of every trial
+(`data/allen_<session>_state.npz`). The fraction of trials with the mouse
+running above 5 cm/s is 0.50, 0.39, 0.20, 0.12 and 0.56 in sessions
+732592105, 798911424, 754829445, 763673393 and 757216464. Two uses, through
+`scripts/latency_readout.py --tag state` (`latency_allen_<session>_<area>_state.json`),
+60 units, 5 seeds as everywhere:
+
+1. State as a covariate: decoded alone, added to the whole-window count and
+   to the L3 pyramid, and added to the population rate regression of the
+   125 and 50 ms details (z-scored on the training trials).
+2. The pyramid decoded within running trials only and within stationary
+   trials only, the larger set subsampled to the smaller's size so the two
+   decoders see the same number of trials. Done where the smaller state has
+   at least 8 repeats of every image: the ten samples of sessions
+   732592105, 798911424 and 757216464. Sessions 754829445 and 763673393,
+   with the mouse running on 0.20 and 0.12 of trials, have too few running
+   trials, which takes both LGd samples and one LP out of this test.
+
+**State explains none of the stimulus information.** Running and pupil
+alone decode the image at 0.003 to 0.007 (chance 0.008). Added to the
+count they change accuracy by -0.003 to 0.005, added to the L3 pyramid
+by -0.003 to 0.007, and added to the rate regression they move the
+125 ms detail by -0.003 to 0.003 and the 50 ms detail by -0.002 to 0.001,
+in every one of the sixteen samples. This is the expected outcome: state
+is not image-specific, so it can neither carry image identity nor, as a
+linear covariate, account for any of what the details carry. The drift
+that inflates random folds in the third animal is therefore not something
+a linear running or pupil term absorbs; the time-blocked split remains the
+guard against it.
+
+### Pyramid within one behavioural state, 60 units, 5 seeds, equal trial counts
+
+| sample | running fraction | trials per state | running L1 to L6 | stationary L1 to L6 | L3 minus L1, running / stationary | L3 minus L6, running / stationary |
+| --- | --- | --- | --- | --- | --- | --- |
+| VISp 105 | 0.50 | 2950 | 0.45 0.50 0.52 0.50 0.46 0.41 | 0.31 0.33 0.34 0.30 0.28 0.23 | 0.07 / 0.03 | 0.12 / 0.11 |
+| VISp 424 | 0.39 | 2301 | 0.53 0.61 0.63 0.59 0.54 0.47 | 0.28 0.32 0.32 0.30 0.26 0.22 | 0.10 / 0.03 | 0.16 / 0.10 |
+| VISp 445 | 0.20 | too few running trials (1180, under 8 repeats of some image) | | | | |
+| VISp 393 | 0.12 | too few running trials (708, under 8 repeats of some image) | | | | |
+| VISp 464 | 0.56 | 2596 | 0.48 0.55 0.57 0.55 0.52 0.46 | 0.33 0.35 0.37 0.33 0.28 0.24 | 0.09 / 0.04 | 0.12 / 0.13 |
+| VISal 105 | 0.50 | 2950 | 0.22 0.29 0.32 0.30 0.27 0.23 | 0.16 0.21 0.24 0.22 0.20 0.16 | 0.10 / 0.08 | 0.09 / 0.08 |
+| VISal 424 | 0.39 | 2301 | 0.43 0.52 0.55 0.53 0.47 0.40 | 0.26 0.31 0.33 0.30 0.26 0.22 | 0.12 / 0.06 | 0.14 / 0.11 |
+| VISl 424 | 0.39 | 2301 | 0.43 0.50 0.54 0.52 0.48 0.41 | 0.29 0.36 0.37 0.35 0.30 0.25 | 0.11 / 0.08 | 0.13 / 0.12 |
+| VISrl 105 | 0.50 | 2950 | 0.17 0.20 0.22 0.21 0.18 0.14 | 0.17 0.20 0.20 0.18 0.16 0.14 | 0.06 / 0.03 | 0.08 / 0.06 |
+| VISpm 105 | 0.50 | 2950 | 0.42 0.49 0.52 0.51 0.48 0.40 | 0.27 0.29 0.31 0.30 0.25 0.20 | 0.10 / 0.04 | 0.12 / 0.10 |
+| VISam 424 | 0.39 | 2301 | 0.17 0.22 0.23 0.20 0.17 0.14 | 0.09 0.11 0.12 0.10 0.10 0.08 | 0.06 / 0.03 | 0.08 / 0.04 |
+| VISam 393 | 0.12 | too few running trials (708, under 8 repeats of some image) | | | | |
+| LGd 445 | 0.20 | too few running trials (1180, under 8 repeats of some image) | | | | |
+| LGd 393 | 0.12 | too few running trials (708, under 8 repeats of some image) | | | | |
+| LP 445 | 0.20 | too few running trials (1180, under 8 repeats of some image) | | | | |
+| LP 464 | 0.56 | 2596 | 0.20 0.27 0.33 0.34 0.33 0.29 | 0.14 0.20 0.22 0.23 0.21 0.18 | 0.13 / 0.08 | 0.04 / 0.04 |
+
+**Locomotion scales the information up; the temporal profile does not
+move.** With equal numbers of trials, the running trials decode the image
+better at every level in every sample, by a factor of 1.12 to 1.98 at
+the 50 ms level (the known gain increase of mouse visual cortex under
+locomotion, here as decodable image identity). The best level is 50 ms in
+both states in every cortical sample (125 ms ties it in the stationary
+trials of one VISp), with LP's optimum at 25 ms in both; the fall from 50 to 5 ms is 0.04 to 0.16 running against
+0.04 to 0.13 stationary, and LP is flat below 50 ms in both states.
+The gain from the count to the 50 ms level is larger when running in
+absolute terms, 0.06 to 0.13 against 0.03 to 0.08, in
+47 of 50 seed-sample pairs; relative to
+the count it is not consistently larger, so locomotion raises the shape
+information at least in proportion to the count and perhaps a little
+more. The scale at which the code sits is a property of the tissue, not
+of the behavioural state the animal is in.
+
+Caveats: a 5 cm/s threshold and a single binary split; stationary trials
+include the quiet-wakefulness and drowsy states the pupil distinguishes,
+which are not separated here; each state's decoder trains on 1,800 to
+2,400 trials against about 4,700 for the full-data numbers, so the
+absolute accuracies in this table are not comparable with the rest of the
+results, only the two states with each other.
+
 ## Caveats
 
 - Synthetic codes are easy (the continuous pyramid is at 1.00), so they test
@@ -1548,8 +1626,15 @@ relative to the others.
    from cortex in the same direction in all four thalamic samples. The
    explicit latency readout is done (11 Nov): the details are not reducible
    to first-spike latency or centre of mass, nor to the timing of the
-   population response as a whole. Open: a running or pupil covariate in
-   the rate regression for the drift the third session shows.
+   population response as a whole. Running and pupil as covariates (11
+   Nov) explain none of it, and the pyramid's profile is the same within
+   running and within stationary trials, with locomotion scaling the
+   information up. Nothing from this list is open. Candidates beyond it:
+   a nonlinear rate regression (decode the details within rate-matched
+   trial strata), a longer window on a stimulus with a gray gap (the
+   drifting gratings or the natural movies) to see whether the 50 ms
+   scale is tied to the 250 ms presentation, and the state split in the
+   thalamus with a session where the mouse runs more.
 3. Done on 11 Nov 2026 (rate-regressed details): about half of the 125 and
    50 ms detail information survives regression on the population rate
    vector. A nonlinear version (regress on rate with a flexible model, or
