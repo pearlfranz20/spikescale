@@ -95,14 +95,15 @@ def rate_covariates(counts, feats):
     return np.stack([feats[0], np.sqrt(counts.sum(-1))], axis=-1)
 
 
-def regress_out(feats, cov, tr, mode):
+def regress_out(feats, cov, tr, mode, extra=None):
     """Remove from every detail (levels 2 on) the part linearly predictable from rate.
 
     The regression is fit on the training trials tr and applied to all trials.
     mode "unit": unit u's detail on unit u's own covariates. mode "pop": every
     detail feature on the covariates of all units. Level 1 is returned as is.
     cov may hold any number of covariates per unit (scripts/latency_readout.py
-    adds first-spike latency and spike-time centre of mass).
+    adds first-spike latency and spike-time centre of mass). extra (n, e) are
+    population-level covariates appended in mode "pop" only.
     """
     n, u, _ = cov.shape
     out = [feats[0]]
@@ -117,7 +118,7 @@ def regress_out(feats, cov, tr, mode):
             beta = np.linalg.solve(gram, xty)  # (u, 3, d)
             out.append((f3 - np.einsum("nup,upd->nud", x, beta)).reshape(n, -1))
         elif mode == "pop":
-            x = np.concatenate([np.ones((n, 1)), cov.reshape(n, -1)], axis=1)
+            x = np.concatenate([np.ones((n, 1)), cov.reshape(n, -1)] + ([extra] if extra is not None else []), axis=1)
             beta, *_ = np.linalg.lstsq(x[tr], f[tr], rcond=None)
             out.append(f - x @ beta)
         else:
