@@ -3,14 +3,14 @@
 Where in time does a population's stimulus information sit? This repository
 decodes image identity from Allen Neuropixels responses one temporal scale at
 a time, from whole-window counts down to 5 ms bins, and asks which scales
-carry information that the coarser ones do not. The answer so far, in eleven
-area samples from three mice (VISp, VISl, VISal, VISrl, VISpm, VISam, LGd,
-LP): a 50 to 125 ms code in cortex, with the 125 ms and 50 ms shapes each
-decodable on their own, about half of that shape information not a linear
-function of firing rate, a small component at 25 ms and nothing at 5 ms.
-The balance between the shapes runs with the pathway: the thalamic relay
-LGd tilts toward 50 and 25 ms, the highest cortical area VISam toward
-125 ms, while the best bin width stays between 25 and 50 ms
+carry information that the coarser ones do not. The answer so far, in fourteen
+area samples from four mice (VISp, VISl, VISal, VISrl, VISpm, VISam, LGd,
+LP): one profile across cortex from VISp to VISam, a 50 to 125 ms code
+with the 125 ms and 50 ms shapes each decodable on their own, about half
+of that shape information not a linear function of firing rate, a small
+component at 25 ms and nothing at 5 ms. The thalamic relay LGd is one
+level finer in both animals sampled: a 25 ms optimum, a decodable 10 ms
+shape, and a cost from 10 ms jitter that no cortical sample shows
 (`results/RESULTS.md`).
 
 The analysis started as a test of a multiscale residual VQ tokenizer for
@@ -50,6 +50,7 @@ information appears. The idea follows Next-Concept Modeling
 - [x] Rate-regressed per-scale details: temporal shape not linearly predictable from firing rate
 - [x] Second session 798911424 (VISp, VISl, VISal, VISam; a second animal): same 50 ms optimum, same three-scale multiplexing; VISam tilts toward 125 ms
 - [x] Third session 754829445 (VISp, LGd, LP; a third animal): VISp unchanged; LGd tilts finer (25 to 50 ms tie, 10 ms jitter costs accuracy); LP tilts like LGd
+- [x] Fourth session 763673393 (VISp, VISam, LGd; a fourth animal): LGd's finer scale replicates (25 ms optimum every seed); VISam's 125 ms tilt does not, this VISam matches VISp
 - ~~E4 fixed-resolution ladder comparison~~ dropped on 1 Nov 2026: what the
   ladder should compare was never written down, and the decoder bake-off and
   E3b already answer the per-level question on real data
