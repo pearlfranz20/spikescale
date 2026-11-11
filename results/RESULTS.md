@@ -658,13 +658,211 @@ depends nonlinearly on rate (a threshold, a saturating latency shift) would
 pass through it. The rate here is the window count; a shape that covaries
 with a unit's rate in a different window is not controlled.
 
+## A second animal: VISp, VISl, VISal and VISam of session 798911424 (11 Nov 2026)
+
+Brain Observatory 1.1 session 798911424, a different mouse, with 96 VISp,
+78 VISl, 92 VISal and 140 VISam units passing the quality filters (5.4 to
+6.6 Hz mean in the window; 12, 13, 22 and 35 units below 1 Hz). Same 118
+images and 50 repeats, same pipeline as before: E3 and E3b (60 units per
+seed, 5 seeds, time-blocked holdout), the random-fold and all-unit
+comparison, and the per-scale detail analysis plain and rate-regressed. VISl
+is new (the first session had 40 units there), VISam is new and is the
+highest area in the anatomical hierarchy sampled so far, and VISal is a
+replication across animals. Figures: `e3_allen_798911424_<area>_n60.png`.
+Raw numbers: the `e3_`, `external_` and `residual_allen_798911424_<area>`
+files. Chance is 0.008.
+
+### Continuous pyramid, nested-C cumulative decoder, 60 units, time-blocked
+
+| area | L1 | L2 | L3 | L4 | L5 | L6 | L3 minus L1, per seed | L3 minus L2, per seed |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| VISp | 0.38 | 0.45 | 0.46 | 0.44 | 0.41 | 0.35 | 0.07 to 0.08 | -0.01 to 0.03 |
+| VISl | 0.39 | 0.48 | 0.50 | 0.48 | 0.45 | 0.40 | 0.09 to 0.13 | 0.01 to 0.04 |
+| VISal | 0.35 | 0.44 | 0.46 | 0.45 | 0.41 | 0.36 | 0.08 to 0.15 | 0.02 to 0.04 |
+| VISam | 0.14 | 0.19 | 0.20 | 0.19 | 0.17 | 0.13 | 0.05 to 0.07 | 0.00 to 0.03 |
+
+Seed std is at most 0.03 (VISp and VISal), 0.014 in VISam. L4 is below L3
+by 0.00 to 0.03 in every area and seed, and the fall from L3 to L6 is 0.06
+to 0.12. Chosen C falls with level as before (0.03 to 0.1 at L1, 0.001 at
+L5 to L6).
+
+### Random folds and all units, continuous pyramid, nested-C decoder
+
+| area | units | split | L1 | L2 | L3 | L4 | L5 | L6 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| VISp | 60 | time-blocked | 0.36 | 0.42 | 0.45 | 0.43 | 0.39 | 0.33 |
+| VISp | 60 | random 10-fold | 0.41 | 0.49 | 0.51 | 0.49 | 0.46 | 0.41 |
+| VISp | 96 (all) | time-blocked | 0.51 | 0.58 | 0.60 | 0.56 | 0.53 | 0.46 |
+| VISp | 96 (all) | random 10-fold | 0.57 | 0.64 | 0.65 | 0.62 | 0.59 | 0.53 |
+| VISl | 60 | time-blocked | 0.40 | 0.49 | 0.51 | 0.51 | 0.47 | 0.42 |
+| VISl | 60 | random 10-fold | 0.43 | 0.52 | 0.55 | 0.54 | 0.51 | 0.46 |
+| VISl | 78 (all) | time-blocked | 0.46 | 0.53 | 0.56 | 0.55 | 0.51 | 0.47 |
+| VISl | 78 (all) | random 10-fold | 0.48 | 0.57 | 0.60 | 0.59 | 0.56 | 0.50 |
+| VISal | 60 | time-blocked | 0.32 | 0.41 | 0.43 | 0.43 | 0.38 | 0.34 |
+| VISal | 60 | random 10-fold | 0.36 | 0.45 | 0.48 | 0.46 | 0.43 | 0.38 |
+| VISal | 92 (all) | time-blocked | 0.48 | 0.57 | 0.58 | 0.57 | 0.53 | 0.45 |
+| VISal | 92 (all) | random 10-fold | 0.50 | 0.59 | 0.62 | 0.60 | 0.56 | 0.51 |
+| VISam | 60 | time-blocked | 0.14 | 0.19 | 0.19 | 0.18 | 0.16 | 0.13 |
+| VISam | 60 | random 10-fold | 0.16 | 0.22 | 0.23 | 0.21 | 0.20 | 0.16 |
+| VISam | 140 (all) | time-blocked | 0.25 | 0.32 | 0.34 | 0.32 | 0.28 | 0.24 |
+| VISam | 140 (all) | random 10-fold | 0.29 | 0.38 | 0.41 | 0.39 | 0.34 | 0.29 |
+
+Best level L3 in every row (L2 ties it in VISam at 60 units, blocked). Under
+the published protocol (all units, random folds) this animal's VISp reaches
+0.65, again above the 0.31 to 0.55 range of the seven sessions in
+arXiv 2510.09451, and its VISl and VISal reach 0.60 and 0.62.
+
+**The scale replicates in a second animal.** In all four areas the pyramid
+peaks at 50 ms, with 125 ms within 0.01 to 0.03 and 25 ms within 0.02, in
+every unit count and split, as in the four areas of the first animal. The
+50 ms level is above the 125 ms level in every VISl and VISal seed and in
+four VISam seeds of five; in this animal's VISp the two are tied (L3 minus
+L2 of -0.01 to 0.03 across seeds), where the first animal's VISp had L3
+ahead by 0.01 to 0.03. Eight area samples in two mice now put the optimum
+at 50 ms with 125 ms close behind, and none puts it at 25 ms or finer.
+
+**The amount is not consistent across animals; the scale is.** In the first
+mouse VISal carried about half of VISp's information at 60 units. Here VISal
+matches VISp (0.46 against 0.46 at L3) and VISl is above both (0.50). VISam
+is far below (0.20 at 60 units, 0.34 with all 140), with a quarter of its
+units under 1 Hz. Which higher area is rich and which is sparse therefore
+depends on the penetration (depth, receptive-field coverage of the
+monitor, unit yield), and between-area differences in amount within one
+session should not be read as properties of the areas. The temporal
+profile, by contrast, has been the same in all eight samples.
+
+### Discrete readouts, 60 units, nested-C cumulative decoder
+
+| area | readout | L1 | L2 | L3 | L4 | L5 | L6 | codes ahead of quantized pyramid |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| VISp | tokenizer codes | 0.07 | 0.13 | 0.17 | 0.21 | 0.23 | 0.24 | 28 of 30 seed-level pairs |
+| VISp | quantized pyramid | 0.05 | 0.10 | 0.13 | 0.17 | 0.21 | 0.23 | |
+| VISl | tokenizer codes | 0.06 | 0.13 | 0.19 | 0.22 | 0.25 | 0.25 | 24 of 30 |
+| VISl | quantized pyramid | 0.05 | 0.11 | 0.16 | 0.19 | 0.24 | 0.27 | |
+| VISal | tokenizer codes | 0.05 | 0.11 | 0.15 | 0.18 | 0.21 | 0.21 | 13 of 30 |
+| VISal | quantized pyramid | 0.04 | 0.11 | 0.15 | 0.19 | 0.22 | 0.25 | |
+| VISam | tokenizer codes | 0.02 | 0.05 | 0.06 | 0.07 | 0.08 | 0.07 | 8 of 30 |
+| VISam | quantized pyramid | 0.02 | 0.04 | 0.07 | 0.08 | 0.09 | 0.10 | |
+
+The reconstruction readout tracks the codes to within 0.03 everywhere. In
+VISp the codes lead residual k-means by 0.02 to 0.04 at L1 to L5 (every
+seed) and 0.01 at L6, the same edge as the first animal's VISp. In VISl they
+lead by 0.01 to 0.03 at L1 to L5 and trail by 0.02 at L6 in every seed. In
+VISal they lead by 0.01 at L1 and trail by 0.00 to 0.04 from L2 on, and in
+VISam they trail from L3 on, by 0.03 at L6. Both discrete readouts again
+keep under half of what the pyramid decodes (0.24 against 0.46 in VISp).
+
+**Gate 2 across two animals.** The learned codes' edge over k-means at
+matched bits is 0.03 in both VISp samples and 0.01 to 0.02 at the coarse
+levels of VISpm, VISrl and VISl; it is nil in both VISal samples and
+negative at 5 to 10 ms in VISal and VISam, where k-means wins by 0.02 to
+0.04. The pattern is that learned codes help where the population is rich
+and the level coarse, and residual k-means catches up or wins as the bins
+get fine and the counts sparse. Gate 2 remains unmet in all eight samples.
+
+### E3b, continuous pyramid, clean minus perturbed, mean over seeds
+
+| area | test set | L1 | L2 | L3 | L4 | L5 | L6 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| VISp | jitter 25 ms | 0.00 | 0.00 | 0.02 | 0.02 | 0.02 | 0.02 |
+| VISp | PSTH surrogate | 0.03 | 0.00 | -0.01 | -0.01 | -0.03 | -0.02 |
+| VISl | jitter 25 ms | 0.00 | 0.01 | 0.01 | 0.02 | 0.03 | 0.04 |
+| VISl | PSTH surrogate | 0.03 | 0.03 | 0.01 | 0.00 | -0.01 | 0.00 |
+| VISal | jitter 25 ms | 0.00 | 0.01 | 0.02 | 0.03 | 0.04 | 0.04 |
+| VISal | PSTH surrogate | 0.02 | 0.01 | -0.01 | -0.01 | -0.02 | -0.02 |
+| VISam | jitter 25 ms | 0.00 | 0.01 | 0.01 | 0.01 | 0.01 | 0.01 |
+| VISam | PSTH surrogate | 0.02 | 0.02 | 0.03 | 0.01 | 0.00 | 0.01 |
+
+Jitter of 5 ms changes nothing anywhere (per-seed differences of either
+sign within 0.02). Jitter of 10 ms costs 0.01 at L5 to L6 in VISp and VISl
+(every seed at L6) and nothing elsewhere. Jitter of 25 ms costs 0.01 to
+0.02 at L3 and 0.02 to 0.04 at L4 to L6 in VISp, VISl and VISal, every seed
+from L4 on, a little more at the fine levels than the first animal's 0.02 to
+0.03; in VISam it costs 0.01 throughout. So, as before, there is a small
+amount of decodable timing between 10 and 25 ms, and the best level loses
+0.01 to 0.02 of it.
+
+The PSTH-matched surrogate lowers L1 by 0.02 to 0.03 in every area and
+every seed, as in the first animal: noise correlations help whole-window
+counts. Its effect at fine levels differs by area as it did before: it
+raises VISp by 0.02 to 0.03 at L5 to L6 (every seed, as in the first
+animal's VISp), VISal by 0.01 to 0.02 at L4 to L6, leaves VISl unchanged
+from L4 on, and lowers VISam by 0.02 to 0.03 at L1 to L3 with no gain at
+any level. For the codes the surrogate raises accuracy by 0.01 to 0.03 at
+L3 to L6 in VISp, VISl and VISal, as before.
+
+### Detail of level k alone, 60 units, 5 seeds, nested-C logistic
+
+| area | readout | L1 (250) | L2 (125) | L3 (50) | L4 (25) | L5 (10) | L6 (5 ms) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| VISp | detail alone | 0.38 | 0.21 | 0.15 | 0.06 | 0.05 | 0.03 |
+| VISp | population-rate regressed | 0.38 | 0.13 | 0.08 | 0.04 | 0.03 | 0.02 |
+| VISl | detail alone | 0.37 | 0.20 | 0.18 | 0.06 | 0.03 | 0.03 |
+| VISl | population-rate regressed | 0.37 | 0.12 | 0.10 | 0.03 | 0.03 | 0.02 |
+| VISal | detail alone | 0.36 | 0.20 | 0.17 | 0.06 | 0.03 | 0.02 |
+| VISal | population-rate regressed | 0.36 | 0.13 | 0.10 | 0.04 | 0.02 | 0.02 |
+| VISam | detail alone | 0.14 | 0.10 | 0.07 | 0.02 | 0.02 | 0.02 |
+| VISam | population-rate regressed | 0.14 | 0.08 | 0.05 | 0.02 | 0.02 | 0.02 |
+| all four | time-shuffled controls | = L1 | 0.01 to 0.02 | 0.01 to 0.02 | 0.01 to 0.02 | 0.01 to 0.02 | 0.01 to 0.02 |
+| VISp | detail as a share of L1 | 1 | 0.55 | 0.40 | 0.16 | 0.12 | 0.07 |
+| VISl | detail as a share of L1 | 1 | 0.53 | 0.48 | 0.15 | 0.09 | 0.07 |
+| VISal | detail as a share of L1 | 1 | 0.55 | 0.47 | 0.15 | 0.08 | 0.06 |
+| VISam | detail as a share of L1 | 1 | 0.72 | 0.45 | 0.14 | 0.14 | 0.11 |
+
+Seed std is at most 0.03 at L1 and 0.02 elsewhere. All units, detail alone
+(one seed): VISp 96 units 0.49, 0.30, 0.21, 0.08, 0.05, 0.03; VISl 78 units
+0.44, 0.24, 0.21, 0.06, 0.04, 0.02; VISal 92 units 0.48, 0.26, 0.23, 0.06,
+0.03, 0.02; VISam 140 units 0.26, 0.19, 0.09, 0.03, 0.02, 0.02. Detail minus
+control per seed: VISp 0.17 to 0.21 at L2, 0.12 to 0.14 at L3, 0.03 to 0.06
+at L4, 0.02 to 0.03 at L5, 0.00 to 0.02 at L6; VISl 0.17 to 0.19, 0.15 to
+0.17, 0.03 to 0.05, 0.01 to 0.03, 0.00 to 0.01; VISal 0.15 to 0.21, 0.14 to
+0.18, 0.02 to 0.04, 0.01 to 0.02, 0.00 to 0.01; VISam 0.08 to 0.11, 0.04 to
+0.06, 0.01, 0.00 to 0.01, 0.00. Population-rate regressed minus control:
+VISp 0.09 to 0.13 at L2 and 0.05 to 0.07 at L3; VISl 0.10 to 0.12 and 0.08
+to 0.09; VISal 0.10 to 0.13 and 0.07 to 0.09; VISam 0.05 to 0.08 and 0.03
+to 0.04; 0.01 to 0.03 at L4 in VISp, VISl and VISal and 0.00 to 0.01
+elsewhere and at finer levels.
+
+**The three-scale multiplexing replicates, and half of it again survives
+rate regression.** In every area of the second animal the 125 ms and 50 ms
+details each identify the image alone, far above the shuffled control in
+every seed; the 25 ms detail is small but above the control in every seed
+of VISp, VISl and VISal; the 10 ms detail is marginal (above the control in
+every VISp seed, by 0.02 to 0.03); the 5 ms detail is within the control.
+Regressing on the population rate vector leaves the L2 detail at 0.60 to
+0.64 and the L3 detail at 0.53 to 0.56 of its accuracy in VISp, VISl and
+VISal, the same fractions as the first animal (0.51 to 0.75), and 0.75 and
+0.72 in VISam.
+
+**VISam leans on the 125 ms shape.** Its 125 ms detail is 0.72 of its
+rate-only accuracy, against 0.53 to 0.55 in the other three areas of this
+animal and 0.38 to 0.54 in the first animal, and its 50 ms detail is 0.62
+of its 125 ms detail, against 0.73 to 0.91 here and 0.81 to 1.0 in the first
+animal. Its rate-regressed details also keep a larger share (0.72 to 0.75
+against 0.53 to 0.64), so the 125 ms shape in VISam is less a correlate of
+rate than elsewhere. In the pyramid the optimum is still at 50 ms, with
+125 ms tied at 60 units, so the hierarchy effect NeuroPixelHD reports shows
+up here, in the one area two steps above VISp, as a tilt in the balance of
+the details toward the coarser shape, not as a move of the best bin width.
+Together with VISpm's tilt toward rate in the first animal, the higher areas
+sampled lean coarser in what carries the information while the 50 to
+125 ms scale itself stays put.
+
+**What this does not settle.** Two animals and eight area samples, with
+VISam seen once and VISpm and VISrl once each. VISam's low accuracy mixes
+area with a sparse penetration (35 of 140 units under 1 Hz). The
+sensory-to-associative comparison would need VISam in a second animal and
+areas beyond the visual cortex (LP and LGd are available in several
+sessions) to say whether the tilt grows with hierarchical distance.
+
 ## Caveats
 
 - Synthetic codes are easy (the continuous pyramid is at 1.00), so they test
   localization better than retention.
 - 60 epochs on CPU, 2 synthetic seeds and 5 real-data unit subsamples. Not tuned.
-- One Allen session and one animal, four areas. The published comparison is
-  against seven other sessions' distribution, not the same sessions.
+- Two Allen sessions, one per animal, eight area samples. The published
+  comparison is against seven other sessions' distribution, not the same
+  sessions.
 - The primary decoder was chosen on 28 Oct after the first real-data run,
   from a bake-off on the continuous pyramid only (`notes/decoder_bakeoff.md`),
   and then applied to all four readouts. All four decoders are in the JSON
@@ -679,9 +877,11 @@ with a unit's rate in a different window is not controlled.
   single session; the synthetic checks cover planted codes of one kind at a
   time, not mixtures. The rate regression is linear and uses the window
   count only.
-- The comparison across VISp, VISpm, VISal and VISrl is within one session
-  and one hierarchical step; the higher areas have fewer and sparser units,
-  so their lower accuracy mixes area and sampling.
+- The comparison across areas is within two sessions (one per animal);
+  the amount of information per area varies with the penetration (VISal is
+  half of VISp in one animal and equal to it in the other), so between-area
+  differences in amount mix area and sampling. VISam, VISpm and VISrl were
+  each seen in one animal.
 
 ## Suggested next steps
 
@@ -692,13 +892,13 @@ with a unit's rate in a different window is not controlled.
    group) so the bit budget scales with the population, or codebooks in the
    thousands with product quantization. Otherwise reframe around the
    analysis, with the quantized pyramid as a drop-in tokenizer.
-2. In progress on 11 Nov 2026. VISal, VISpm and VISrl showed no shift of the optimum within this
-   session. A second session (798911424 has 94 VISp, 78 VISl, 89 VISal and 135
-   VISam units passing the filters, a second animal; 794812542, named
-   here before, is a Functional Connectivity session without natural scenes) with the same pyramid, jitter and
-   per-scale detail pipeline, to see whether the 50 to 125 ms optimum
-   shifts further up the hierarchy as NeuroPixelHD reports, and whether
-   the rate-to-shape balance seen in VISpm repeats.
+2. Done on 11 Nov 2026 (session 798911424, a second animal): the 50 ms
+   optimum, the three-scale multiplexing and the rate-regression result
+   replicate in VISp, VISl, VISal and VISam. VISam tilts toward the 125 ms
+   shape without moving the optimum. The next step up the hierarchy is
+   VISam in a second animal and the thalamic areas (LP, LGd) that several
+   Brain Observatory 1.1 sessions carry, to see whether the tilt grows with
+   hierarchical distance, and whether LGd, below VISp, tilts the other way.
 3. Done on 11 Nov 2026 (rate-regressed details): about half of the 125 and
    50 ms detail information survives regression on the population rate
    vector. A nonlinear version (regress on rate with a flexible model, or

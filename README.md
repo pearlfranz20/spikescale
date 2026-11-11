@@ -3,10 +3,11 @@
 Where in time does a population's stimulus information sit? This repository
 decodes image identity from Allen Neuropixels responses one temporal scale at
 a time, from whole-window counts down to 5 ms bins, and asks which scales
-carry information that the coarser ones do not. The answer so far, in four
-visual areas of one session: a 50 to 125 ms code, with the 125 ms and 50 ms
-shapes each decodable on their own, a small component at 25 ms and nothing
-below 10 ms (`results/RESULTS.md`).
+carry information that the coarser ones do not. The answer so far, in eight
+area samples from two mice (VISp, VISl, VISal, VISrl, VISpm, VISam): a 50 to
+125 ms code, with the 125 ms and 50 ms shapes each decodable on their own,
+about half of that shape information not a linear function of firing rate,
+a small component at 25 ms and nothing below 10 ms (`results/RESULTS.md`).
 
 The analysis started as a test of a multiscale residual VQ tokenizer for
 spikes, which is kept as one of four readouts. Its gate was a clear win over
@@ -43,7 +44,7 @@ information appears. The idea follows Next-Concept Modeling
 - [x] Unique information per scale: each level's orthogonal detail decoded alone, with a time-shuffled control
 - [x] Same pipeline on VISal, VISpm and VISrl from the same session: four areas, one 50 to 125 ms scale
 - [x] Rate-regressed per-scale details: temporal shape not linearly predictable from firing rate
-- [ ] Second session 798911424 (VISp, VISl, VISal, VISam; a second animal), same pipeline
+- [x] Second session 798911424 (VISp, VISl, VISal, VISam; a second animal): same 50 ms optimum, same three-scale multiplexing; VISam tilts toward 125 ms
 - ~~E4 fixed-resolution ladder comparison~~ dropped on 1 Nov 2026: what the
   ladder should compare was never written down, and the decoder bake-off and
   E3b already answer the per-level question on real data
