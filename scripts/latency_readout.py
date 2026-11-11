@@ -41,6 +41,18 @@ Readouts (one nested-C logistic each, time-blocked split):
   pyr1_timing       pyr1 + timing: does the timing summary recover the L1 to
   pyr3_timing       L3 gain of the pyramid? pyr3 + timing for the ceiling
 
+Population-level timing (--readouts ... --tag pop): per trial, the first
+spike of the population, the centre of mass of the population count over
+time, and the time at which the population's cumulative count reaches half,
+each a fraction of the window.
+
+  poptiming         the three population summaries alone
+  pyr1_timing_pop   pyr1 + unit timing + population timing
+  pyr3_timing_pop   pyr3 + the same
+  detail2_popall    detail regressed on every unit's rate and timing plus
+  detail3_popall    the population timing
+  d23_popall        both details, so regressed, together
+
     PYTHONPATH=. python scripts/latency_readout.py --data data/allen_<id>_VISp.npz --n-units 60 --repeats 5
 """
 from __future__ import annotations
@@ -63,7 +75,8 @@ from spikescale.synth import SynthConfig, generate  # noqa: E402
 READOUTS = ("rate", "latency", "com", "timing", "rate_timing", "rate_timing_d23",
             "detail2", "detail3", "detail2_unitlat", "detail3_unitlat",
             "detail2_poplat", "detail3_poplat", "d23_poplat",
-            "pyr1", "pyr3", "pyr1_timing", "pyr3_timing")
+            "pyr1", "pyr3", "pyr1_timing", "pyr3_timing",
+            "poptiming", "pyr1_timing_pop", "pyr3_timing_pop", "detail2_popall", "detail3_popall", "d23_popall")
 
 
 def timing_summaries(spikes_ms):
@@ -78,10 +91,27 @@ def timing_summaries(spikes_ms):
     return np.stack([first, (~any_spike).astype(float), com], axis=-1)
 
 
+def population_timing(spikes_ms):
+    """(trials, 3): population first spike, centre of mass and half-count time, fractions of the window."""
+    pop = spikes_ms.sum(1)  # (trials, t)
+    n, t = pop.shape
+    any_spike = pop.sum(-1) > 0
+    first = np.argmax(pop > 0, axis=-1) / t
+    first[~any_spike] = 1.0
+    times = np.arange(t) / t
+    com = (pop * times).sum(-1) / np.maximum(pop.sum(-1), 1)
+    com[~any_spike] = 0.5
+    cum = np.cumsum(pop, axis=-1)
+    half = np.argmax(cum >= cum[:, -1:] / 2, axis=-1) / t
+    half[~any_spike] = 0.5
+    return np.stack([first, com, half], axis=-1)
+
+
 def features(readout, counts, spikes_ms, bases, tr):
     n, u, _ = counts.shape
     feats = detail_feats(counts, bases)
     tim = timing_summaries(spikes_ms)
+    ptim = population_timing(spikes_ms)
     rate = feats[0]
     cov = np.concatenate([feats[0][:, :, None], np.sqrt(counts.sum(-1))[:, :, None], tim], axis=-1)
     if readout == "rate":
@@ -96,10 +126,19 @@ def features(readout, counts, spikes_ms, bases, tr):
         return np.concatenate([rate, tim.reshape(n, -1)], axis=1)
     if readout == "rate_timing_d23":
         return np.concatenate([rate, tim.reshape(n, -1), feats[1], feats[2]], axis=1)
+    if readout == "poptiming":
+        return ptim
     if readout.startswith("pyr"):
         k = int(readout[3])
         pyr = np.concatenate([np.log1p(pool_counts(counts, L)).reshape(n, -1) for L in (1, 2, 5)[:k]], axis=1)
+        if readout.endswith("_timing_pop"):
+            return np.concatenate([pyr, tim.reshape(n, -1), ptim], axis=1)
         return np.concatenate([pyr, tim.reshape(n, -1)], axis=1) if readout.endswith("_timing") else pyr
+    if readout.endswith("_popall"):
+        reg = regress_out(feats, cov, tr, "pop", extra=ptim)
+        if readout == "d23_popall":
+            return np.concatenate([reg[1], reg[2]], axis=1)
+        return reg[int(readout[6]) - 1]
     if readout in ("detail2", "detail3"):
         return feats[int(readout[-1]) - 1]
     if readout.endswith("_unitlat"):
@@ -127,7 +166,8 @@ def main():
     ap.add_argument("--repeats", type=int, default=1)
     ap.add_argument("--jobs", type=int, default=8)
     ap.add_argument("--out", default="results")
-    ap.add_argument("--readouts", default=",".join(READOUTS))
+    ap.add_argument("--readouts", default=",".join(READOUTS[:17]))
+    ap.add_argument("--tag", default="", help="suffix for the output file, e.g. pop")
     args = ap.parse_args()
     readouts = tuple(args.readouts.split(","))
     bad = set(readouts) - set(READOUTS)
@@ -145,7 +185,7 @@ def main():
         counts_all, spikes_all, labels = d["counts"], d["spikes_ms"], d["labels"]
         name = Path(args.data).stem
     counts_all = counts_all.astype(np.float64)
-    spikes_all = spikes_all.astype(np.float64)
+    spikes_all = spikes_all.astype(np.int16)  # kept small: each worker receives a copy of its subset
     bases = detail_bases(t=counts_all.shape[2])
     print(f"{name}: {len(labels)} trials, {counts_all.shape[1]} units, "
           f"{(spikes_all.sum(-1) == 0).mean():.2f} of trial-unit pairs silent", flush=True)
@@ -174,7 +214,7 @@ def main():
     result["std"] = {ro: float(np.std([r[ro]["acc"] for r in result["runs"].values()])) for ro in readouts}
     for ro in readouts:
         print(f"{ro:17s} {result['mean'][ro]:.3f} +- {result['std'][ro]:.3f}")
-    out = Path(args.out) / f"latency_{name}.json"
+    out = Path(args.out) / f"latency_{name}{'_' + args.tag if args.tag else ''}.json"
     out.write_text(json.dumps(result, indent=1))
     print(f"wrote {out}")
 

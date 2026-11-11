@@ -1461,10 +1461,25 @@ are noisy, and linear regression on a noisy covariate removes less than
 the covariate's true share, so the "further share" above is a lower
 bound; the pyramid test is less exposed to this, since the decoder can
 weight the summaries however it likes, and it shows the same thing. And
-the summaries are per unit; a population-level latency (the time at which
-the population response rises) is not among them, though the population
-rate regression, which includes every unit's count and timing, covers the
-linear part of that.
+the summaries are per unit; a population-level latency is tested
+separately below.
+
+**Population-level timing adds nothing.** A second run (`--tag pop`,
+`latency_allen_<session>_<area>_pop.json`) adds three per-trial summaries
+of the population response as a whole: the time of its first spike, the
+centre of mass of the summed spike count over the window, and the time
+at which the cumulative population count reaches half. On their own they
+identify the image at 0.011 to 0.019 against chance 0.008: the moment the
+population as a whole responds says almost nothing about which image it
+is. Added to count plus per-unit timing they change accuracy by -0.003 to
+0.006, and the 125 and 50 ms pooled counts gain 0.04 to 0.14 on top of all
+of it, as before. Regressing the details on rate, per-unit timing and
+population timing together leaves them within 0.005 of the per-unit
+timing regression in every sample (ratios 0.94 to 1.04), still above the
+control by 0.01 to 0.06 (125 ms) and 0.02 to 0.07 (50 ms) in every seed.
+Whatever the details carry, it is not when the population responds; it
+is how the response of each unit is distributed within the window,
+relative to the others.
 
 ## Caveats
 
@@ -1532,10 +1547,9 @@ linear part of that.
    flat 50 to 10 ms profile and the 25 ms share, so the thalamus differs
    from cortex in the same direction in all four thalamic samples. The
    explicit latency readout is done (11 Nov): the details are not reducible
-   to first-spike latency or centre of mass. Open: a running or pupil
-   covariate in the rate regression for the drift the third session shows,
-   and a population-level latency (time of the population rise) as one
-   more covariate.
+   to first-spike latency or centre of mass, nor to the timing of the
+   population response as a whole. Open: a running or pupil covariate in
+   the rate regression for the drift the third session shows.
 3. Done on 11 Nov 2026 (rate-regressed details): about half of the 125 and
    50 ms detail information survives regression on the population rate
    vector. A nonlinear version (regress on rate with a flexible model, or

@@ -78,7 +78,7 @@ scripts/
   plot_summary.py      cross-sample figure over all area samples (results/summary.png)
   residual_levels.py   decode from each level's orthogonal detail alone (is the information at a scale unique to it?),
                        with rate-regressed readouts (--readouts detail_unitrate,detail_poprate,shuffled_unitrate --tag rate)
-  latency_readout.py   are the 125 and 50 ms details just first-spike latency and centre of mass? (no)
+  latency_readout.py   are the 125 and 50 ms details just first-spike latency and centre of mass, per unit or for the population? (no)
 notes/
   diagnostics.md how the tokenizer design was debugged, and where it departs from the plan
   decoder_bakeoff.md  twelve decoders on the continuous pyramid; why nested-C cumulative logistic is the E3 decoder
