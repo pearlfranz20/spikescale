@@ -6,3 +6,4 @@ allen_cache/
 *.npz
 .DS_Store
 logs/
+results/e3_*_s[0-9].json

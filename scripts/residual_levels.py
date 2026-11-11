@@ -23,7 +23,27 @@ cumulative logistic on sqrt counts):
                the size of the fluctuations rather than their shape. The
                unique information at scale k is detail minus shuffled.
 
+Rate-regressed readouts (--readouts detail_unitrate,detail_poprate,shuffled_unitrate
+--tag rate) address the caveat that a detail can be decodable because its
+shape covaries with firing rate across images. Before decoding, every detail
+feature is regressed on whole-window rate, with the regression fit on the
+training trials only and applied to both splits:
+
+  detail_unitrate   each unit's level-k detail regressed on that unit's own rate
+                    (its L1 coefficient and the sqrt of its whole-window count)
+  detail_poprate    each detail feature regressed on the rates of all units
+                    (the whole population rate vector), the stronger control:
+                    what remains is temporal shape not linearly predictable from
+                    any unit's rate
+  shuffled_unitrate the shuffled control after the same per-unit regression; the
+                    size of the fluctuations is a function of the count, so this
+                    should fall to chance
+
+At L1 these readouts decode the rate itself (there is nothing to regress out)
+and so repeat the detail row.
+
     PYTHONPATH=. python scripts/residual_levels.py --data data/allen_<id>_VISp.npz --n-units 60 --repeats 5 --all-units
+    PYTHONPATH=. python scripts/residual_levels.py --data data/allen_<id>_VISp.npz --n-units 60 --repeats 5 --all-units         --readouts detail_unitrate,detail_poprate,shuffled_unitrate --tag rate
     PYTHONPATH=. python scripts/residual_levels.py --synthetic timing_p25
 """
 from __future__ import annotations
@@ -41,6 +61,7 @@ from spikescale.jitter import bin_ms
 from spikescale.synth import LEVEL_LENGTHS, SynthConfig, generate
 
 READOUTS = ("detail", "detail_cum", "shuffled")
+ALL_READOUTS = READOUTS + ("detail_unitrate", "detail_poprate", "shuffled_unitrate")
 
 
 def detail_bases(lengths=LEVEL_LENGTHS, t=50):
@@ -69,11 +90,49 @@ def shuffle_time(counts, rng):
     return np.take_along_axis(counts, perm, axis=-1)
 
 
+def rate_covariates(counts, feats):
+    """(trials, units, 2): each unit's L1 coefficient and the sqrt of its whole-window count."""
+    return np.stack([feats[0], np.sqrt(counts.sum(-1))], axis=-1)
+
+
+def regress_out(feats, cov, tr, mode):
+    """Remove from every detail (levels 2 on) the part linearly predictable from rate.
+
+    The regression is fit on the training trials tr and applied to all trials.
+    mode "unit": unit u's detail on unit u's own covariates. mode "pop": every
+    detail feature on the covariates of all units. Level 1 is returned as is.
+    """
+    n, u, _ = cov.shape
+    out = [feats[0]]
+    for f in feats[1:]:
+        if mode == "unit":
+            d = f.shape[1] // u
+            f3 = f.reshape(n, u, d)
+            x = np.concatenate([np.ones((n, u, 1)), cov], axis=-1)  # (n, u, 3)
+            xt = x[tr]
+            gram = np.einsum("nup,nuq->upq", xt, xt) + 1e-8 * np.eye(3)
+            xty = np.einsum("nup,nud->upd", xt, f3[tr])
+            beta = np.linalg.solve(gram, xty)  # (u, 3, d)
+            out.append((f3 - np.einsum("nup,upd->nud", x, beta)).reshape(n, -1))
+        elif mode == "pop":
+            x = np.concatenate([np.ones((n, 1)), cov.reshape(n, -1)], axis=1)
+            beta, *_ = np.linalg.lstsq(x[tr], f[tr], rcond=None)
+            out.append(f - x @ beta)
+        else:
+            raise ValueError(mode)
+    return out
+
+
 def one(counts, labels, readout, level, seed, bases):
     tr, te = blocked_split(len(labels), labels)
-    if readout == "shuffled":
+    clean = counts
+    if readout.startswith("shuffled"):
         counts = shuffle_time(counts, np.random.default_rng(1000 + seed))
     feats = detail_feats(counts, bases)
+    if readout.endswith("_unitrate"):
+        feats = regress_out(feats, rate_covariates(clean, detail_feats(clean, bases)), tr, "unit")
+    elif readout.endswith("_poprate"):
+        feats = regress_out(feats, rate_covariates(clean, detail_feats(clean, bases)), tr, "pop")
     x = np.concatenate(feats[:level + 1], axis=1) if readout == "detail_cum" else feats[level]
     clf, c = fit_clf_nested(x[tr], labels[tr])
     return score(clf, x[te], labels[te]), c
@@ -96,7 +155,14 @@ def main():
     ap.add_argument("--all-units", action="store_true", help="add one run on every unit (seed 0)")
     ap.add_argument("--jobs", type=int, default=8)
     ap.add_argument("--out", default="results")
+    ap.add_argument("--readouts", default=",".join(READOUTS),
+                    help="comma-separated subset of " + ",".join(ALL_READOUTS))
+    ap.add_argument("--tag", default="", help="suffix for the output file, e.g. rate")
     args = ap.parse_args()
+    readouts = tuple(args.readouts.split(","))
+    bad = set(readouts) - set(ALL_READOUTS)
+    if bad:
+        ap.error(f"unknown readouts {sorted(bad)}")
 
     if args.synthetic:
         name = args.synthetic
@@ -116,29 +182,29 @@ def main():
     runs = [(args.n_units, s) for s in range(args.repeats)]
     if args.all_units:
         runs.append((0, 0))
-    jobs = [(nu, seed, ro, k) for nu, seed in runs for ro in READOUTS for k in range(len(LEVEL_LENGTHS))]
+    jobs = [(nu, seed, ro, k) for nu, seed in runs for ro in readouts for k in range(len(LEVEL_LENGTHS))]
     t0 = time.time()
     res = Parallel(n_jobs=args.jobs, verbose=5)(
         delayed(one)(subsample(counts_all, nu, seed), labels, ro, k, seed, bases) for nu, seed, ro, k in jobs)
     print(f"{len(jobs)} fits in {time.time() - t0:.0f}s", flush=True)
 
     result = {"name": name, "chance": 1 / len(np.unique(labels)), "levels": list(LEVEL_LENGTHS),
-              "detail_dims": [int(q.shape[1]) for q in bases], "runs": {}}
+              "detail_dims": [int(q.shape[1]) for q in bases], "readouts": list(readouts), "runs": {}}
     for (nu, seed, ro, k), (acc, c) in zip(jobs, res):
         key = f"n{nu or counts_all.shape[1]}/seed{seed}"
-        r = result["runs"].setdefault(key, {ro: {"acc": [None] * 6, "c": [None] * 6} for ro in READOUTS})
+        r = result["runs"].setdefault(key, {ro: {"acc": [None] * 6, "c": [None] * 6} for ro in readouts})
         r[ro]["acc"][k], r[ro]["c"][k] = acc, c
     by_n = {}
     for key, r in result["runs"].items():
         by_n.setdefault(key.split("/")[0], []).append(r)
-    result["mean"] = {n: {ro: np.mean([r[ro]["acc"] for r in rs], axis=0).tolist() for ro in READOUTS}
+    result["mean"] = {n: {ro: np.mean([r[ro]["acc"] for r in rs], axis=0).tolist() for ro in readouts}
                       for n, rs in by_n.items()}
-    result["std"] = {n: {ro: np.std([r[ro]["acc"] for r in rs], axis=0).tolist() for ro in READOUTS}
+    result["std"] = {n: {ro: np.std([r[ro]["acc"] for r in rs], axis=0).tolist() for ro in readouts}
                      for n, rs in by_n.items()}
     for n, m in result["mean"].items():
-        for ro in READOUTS:
-            print(f"{n:6s} {ro:11s} " + " ".join(f"{a:.3f}" for a in m[ro]) + f"  (seeds {len(by_n[n])})")
-    out = Path(args.out) / f"residual_{name}.json"
+        for ro in readouts:
+            print(f"{n:6s} {ro:17s} " + " ".join(f"{a:.3f}" for a in m[ro]) + f"  (seeds {len(by_n[n])})")
+    out = Path(args.out) / f"residual_{name}{'_' + args.tag if args.tag else ''}.json"
     out.write_text(json.dumps(result, indent=1))
     print(f"wrote {out}")
 

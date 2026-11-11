@@ -1,4 +1,4 @@
-# Results so far, 2 Nov 2026
+# Results so far, 11 Nov 2026
 
 Sections up to the E3b pipeline check are on synthetic data: 60 units, 16 stimuli, 100 trials each, time-blocked
 holdout, 2 seeds. Chance is 0.06. Figure: `e2.png`. Raw numbers: `e2.json`.
@@ -566,13 +566,104 @@ VISp, and the higher areas sampled here are all one step above VISp in the
 anatomical hierarchy. A second session with VISam and VISl (794812542)
 would add two more areas and a second animal.
 
+## Rate-regressed details: temporal shape that is not a linear function of rate (11 Nov 2026)
+
+The first caveat on the detail analysis was that a level's detail can be
+decodable because its shape covaries with firing rate across images, not
+because the shape carries anything of its own. `residual_levels.py` now has
+three readouts that test this (`--readouts detail_unitrate,detail_poprate,shuffled_unitrate --tag rate`).
+Before decoding, every detail feature from level 2 on is regressed on
+whole-window rate, with the regression fit on the training trials only and
+applied to both splits. `detail_unitrate` regresses each unit's detail on
+that unit's own rate (its L1 coefficient and the square root of its
+whole-window count, plus an intercept). `detail_poprate` regresses every
+detail feature on the rates of all units, the population rate vector that
+on its own identifies the image at 0.41: what survives is temporal shape
+that no linear function of any unit's rate predicts, a conservative bound.
+`shuffled_unitrate` is the time-shuffled control after the per-unit
+regression. At L1 the readouts decode the rate itself and repeat the detail
+row. Raw numbers: `residual_allen_732592105_<area>_rate.json`,
+`residual_rate_rate.json` and `residual_timing_p25_rate.json`.
+
+Synthetic checks (60 units, 16 stimuli, chance 0.06): the planted rate code,
+which decoded at 1.00 from the L1 detail and at 0.05 to 0.08 from the finer
+details before regression, stays at 0.04 to 0.08 after it; the planted 25 ms
+timing code decodes at 1.00 from the L4 and L5 details and 0.91 to 0.95 from
+L6 after either regression, the same as before it. So the regression removes
+nothing from a code that is purely temporal and leaves nothing of one that
+is purely rate.
+
+### Allen 732592105, 60 units, 5 seeds, nested-C logistic
+
+| area | readout | L1 (250) | L2 (125) | L3 (50) | L4 (25) | L5 (10) | L6 (5 ms) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| VISp | detail alone | 0.41 | 0.21 | 0.17 | 0.07 | 0.05 | 0.03 |
+| VISp | own-rate regressed | 0.41 | 0.14 | 0.11 | 0.05 | 0.04 | 0.03 |
+| VISp | population-rate regressed | 0.41 | 0.11 | 0.09 | 0.04 | 0.03 | 0.03 |
+| VISp | shuffled, own-rate regressed | 0.41 | 0.02 | 0.02 | 0.02 | 0.02 | 0.02 |
+| VISpm | detail alone | 0.41 | 0.16 | 0.15 | 0.05 | 0.03 | 0.02 |
+| VISpm | own-rate regressed | 0.41 | 0.11 | 0.09 | 0.04 | 0.02 | 0.02 |
+| VISpm | population-rate regressed | 0.41 | 0.09 | 0.07 | 0.03 | 0.02 | 0.02 |
+| VISpm | shuffled, own-rate regressed | 0.41 | 0.02 | 0.02 | 0.01 | 0.01 | 0.02 |
+| VISal | detail alone | 0.22 | 0.12 | 0.11 | 0.04 | 0.02 | 0.02 |
+| VISal | own-rate regressed | 0.22 | 0.10 | 0.09 | 0.03 | 0.02 | 0.02 |
+| VISal | population-rate regressed | 0.22 | 0.08 | 0.07 | 0.03 | 0.02 | 0.02 |
+| VISal | shuffled, own-rate regressed | 0.22 | 0.02 | 0.01 | 0.02 | 0.01 | 0.01 |
+| VISrl | detail alone | 0.18 | 0.08 | 0.08 | 0.03 | 0.02 | 0.02 |
+| VISrl | own-rate regressed | 0.18 | 0.07 | 0.07 | 0.03 | 0.02 | 0.02 |
+| VISrl | population-rate regressed | 0.18 | 0.06 | 0.06 | 0.02 | 0.02 | 0.02 |
+| VISrl | shuffled, own-rate regressed | 0.18 | 0.02 | 0.01 | 0.01 | 0.01 | 0.01 |
+
+Chance is 0.008. Seed std is at most 0.02 at L1 and 0.012 elsewhere. All
+units, population-rate regressed (one seed): VISp 113 units 0.55, 0.14,
+0.11, 0.05, 0.04, 0.03 (detail alone 0.55, 0.30, 0.24, 0.11, 0.06, 0.03);
+VISal 90 units 0.29, 0.10, 0.08, 0.02, 0.02, 0.02; VISpm 69 units 0.42,
+0.09, 0.08, 0.04, 0.02, 0.02; VISrl 66 units 0.20, 0.06, 0.06, 0.02, 0.01,
+0.02.
+
+Population-rate regressed minus the control, per seed: VISp 0.07 to 0.11 at
+L2, 0.06 to 0.08 at L3, 0.02 to 0.03 at L4, 0.01 to 0.02 at L5, -0.01 to
+0.01 at L6; VISpm 0.07 to 0.08, 0.05 to 0.06, 0.01 to 0.02, 0.01 to 0.02,
+within 0.003 of zero; VISal 0.05 to 0.07, 0.05 to 0.06, 0.00 to 0.02, 0.00
+to 0.01, 0.00 to 0.01; VISrl 0.04 to 0.05, 0.04 to 0.06, 0.00 to 0.01, 0.00
+to 0.01, 0.00 to 0.01.
+
+**About half of the 125 and 50 ms detail information is a linear function of
+rate; the other half is not.** Regressing on the population rate vector
+leaves the L2 detail at 0.51 to 0.57 of its unregressed accuracy in VISp and
+VISpm and 0.64 to 0.75 in VISal and VISrl, and the L3 detail at 0.47 to 0.57
+and 0.57 to 0.73. What remains is still 7 to 13 times chance in VISp and
+VISpm (0.07 to 0.11) and 7 to 10 times chance in VISal and VISrl (0.06 to
+0.08), above the shuffled control in every seed of every area. So the
+125 ms and 50 ms shapes carry image information that the whole-window
+counts, of the unit itself or of any unit in the population, do not predict.
+The 25 ms detail survives in VISp (0.02 to 0.03 above the control in every
+seed) and VISpm (0.01 to 0.02), and only marginally in VISal and VISrl. The
+10 ms detail is 0.01 to 0.02 above the control in every VISp seed and is
+marginal elsewhere. The 5 ms detail is within the control everywhere, as
+before.
+
+**Own-rate regression removes less than population-rate regression.** The
+own-rate readout is above the population-rate readout by 0.025 to 0.042 at
+L2 and 0.014 to 0.026 at L3 in every VISp seed, with the same sign in VISpm
+and VISal and a smaller gap (0.003 to 0.013) in VISrl. Part of a unit's
+temporal shape is therefore predictable from other units' rates but not its
+own, which is what image-driven covariation between a unit's shape and the
+population's rate pattern looks like. The population readout is the one to
+quote as unique shape information.
+
+What this does not rule out: the regression is linear, so a shape that
+depends nonlinearly on rate (a threshold, a saturating latency shift) would
+pass through it. The rate here is the window count; a shape that covaries
+with a unit's rate in a different window is not controlled.
+
 ## Caveats
 
 - Synthetic codes are easy (the continuous pyramid is at 1.00), so they test
   localization better than retention.
 - 60 epochs on CPU, 2 synthetic seeds and 5 real-data unit subsamples. Not tuned.
-- One Allen session, one area. The published comparison is against seven
-  other sessions' distribution, not the same sessions.
+- One Allen session and one animal, four areas. The published comparison is
+  against seven other sessions' distribution, not the same sessions.
 - The primary decoder was chosen on 28 Oct after the first real-data run,
   from a bake-off on the continuous pyramid only (`notes/decoder_bakeoff.md`),
   and then applied to all four readouts. All four decoders are in the JSON
@@ -585,7 +676,8 @@ would add two more areas and a second animal.
   it is not tested.
 - The per-scale detail analysis uses a sqrt transform on 5 ms bins and a
   single session; the synthetic checks cover planted codes of one kind at a
-  time, not mixtures.
+  time, not mixtures. The rate regression is linear and uses the window
+  count only.
 - The comparison across VISp, VISpm, VISal and VISrl is within one session
   and one hierarchical step; the higher areas have fewer and sparser units,
   so their lower accuracy mixes area and sampling.
@@ -599,12 +691,14 @@ would add two more areas and a second animal.
    group) so the bit budget scales with the population, or codebooks in the
    thousands with product quantization. Otherwise reframe around the
    analysis, with the quantized pyramid as a drop-in tokenizer.
-2. VISal, VISpm and VISrl showed no shift of the optimum within this
+2. In progress on 11 Nov 2026. VISal, VISpm and VISrl showed no shift of the optimum within this
    session. A second session (794812542 has 131 VISp, 105 VISl and 114
    VISam units, a second animal) with the same pyramid, jitter and
    per-scale detail pipeline, to see whether the 50 to 125 ms optimum
    shifts further up the hierarchy as NeuroPixelHD reports, and whether
    the rate-to-shape balance seen in VISpm repeats.
-3. The detail analysis's first caveat is testable: regress each level's
-   detail on the whole-window count per unit before decoding, to separate
-   temporal shape that covaries with rate from shape that does not.
+3. Done on 11 Nov 2026 (rate-regressed details): about half of the 125 and
+   50 ms detail information survives regression on the population rate
+   vector. A nonlinear version (regress on rate with a flexible model, or
+   decode detail within rate-matched trial strata) would close the
+   remaining gap.

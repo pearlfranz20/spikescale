@@ -1,7 +1,21 @@
 # spikescale
 
-A multiscale residual VQ tokenizer for spike data, and a test of how much
-stimulus information sits at each temporal scale of a population response.
+Where in time does a population's stimulus information sit? This repository
+decodes image identity from Allen Neuropixels responses one temporal scale at
+a time, from whole-window counts down to 5 ms bins, and asks which scales
+carry information that the coarser ones do not. The answer so far, in four
+visual areas of one session: a 50 to 125 ms code, with the 125 ms and 50 ms
+shapes each decodable on their own, a small component at 25 ms and nothing
+below 10 ms (`results/RESULTS.md`).
+
+The analysis started as a test of a multiscale residual VQ tokenizer for
+spikes, which is kept as one of four readouts. Its gate was a clear win over
+residual k-means at matched bits, and it did not pass: learned codes lead
+k-means by about 0.03 in VISp and less elsewhere, and both discrete readouts
+keep under half of what the continuous pyramid decodes, because one code of
+32 to 128 entries per time bin is too narrow a bottleneck for a 60-unit
+population. The pyramid of pooled counts is the primary readout for the
+per-scale question; the tokenizer results are reported in full.
 
 Level k of the tokenizer pools the population response to L_k bins and adds a
 discrete code at that resolution. Levels run from one code for the whole
@@ -28,6 +42,8 @@ information appears. The idea follows Next-Concept Modeling
 - [x] E3 figure; published comparison rerun with the nested-C decoder
 - [x] Unique information per scale: each level's orthogonal detail decoded alone, with a time-shuffled control
 - [x] Same pipeline on VISal, VISpm and VISrl from the same session: four areas, one 50 to 125 ms scale
+- [x] Rate-regressed per-scale details: temporal shape not linearly predictable from firing rate
+- [ ] Second session 794812542 (VISp, VISl, VISam; a second animal), same pipeline
 - ~~E4 fixed-resolution ladder comparison~~ dropped on 1 Nov 2026: what the
   ladder should compare was never written down, and the decoder bake-off and
   E3b already answer the per-level question on real data
@@ -48,7 +64,8 @@ scripts/
   merge_e3.py    merge E3 runs split over seeds
   plot_e3.py     E3 and E3b figure
   compare_external.py  pyramid decoding under random 10-fold CV and all units, to set beside published numbers
-  residual_levels.py   decode from each level's orthogonal detail alone (is the information at a scale unique to it?)
+  residual_levels.py   decode from each level's orthogonal detail alone (is the information at a scale unique to it?),
+                       with rate-regressed readouts (--readouts detail_unitrate,detail_poprate,shuffled_unitrate --tag rate)
 notes/
   diagnostics.md how the tokenizer design was debugged, and where it departs from the plan
   decoder_bakeoff.md  twelve decoders on the continuous pyramid; why nested-C cumulative logistic is the E3 decoder
