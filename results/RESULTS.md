@@ -1,5 +1,10 @@
 # Results so far, 11 Nov 2026
 
+`summary.png` (from `scripts/plot_summary.py`) draws the sixteen area samples
+together: the pyramid relative to its 50 ms level, each level's detail as a
+share of the count, the 125 and 50 ms details before and after rate and
+timing regression, the 10 ms jitter cost, and learned codes against k-means.
+
 Sections up to the E3b pipeline check are on synthetic data: 60 units, 16 stimuli, 100 trials each, time-blocked
 holdout, 2 seeds. Chance is 0.06. Figure: `e2.png`. Raw numbers: `e2.json`.
 

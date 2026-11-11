@@ -12,7 +12,8 @@ component at 25 ms and nothing at 5 ms. The thalamus differs in the same
 direction in all four samples (LGd and LP, two animals each): a flat
 pyramid from 50 down to 10 ms and a larger 25 ms share, and in LGd a 25 ms
 optimum, a decodable 10 ms shape and a cost from 10 ms jitter that no
-cortical sample shows (`results/RESULTS.md`).
+cortical sample shows (`results/RESULTS.md`; one figure over all samples in
+`results/summary.png`).
 
 The analysis started as a test of a multiscale residual VQ tokenizer for
 spikes, which is kept as one of four readouts. Its gate was a clear win over
@@ -74,6 +75,7 @@ scripts/
   merge_e3.py    merge E3 runs split over seeds
   plot_e3.py     E3 and E3b figure
   compare_external.py  pyramid decoding under random 10-fold CV and all units, to set beside published numbers
+  plot_summary.py      cross-sample figure over all area samples (results/summary.png)
   residual_levels.py   decode from each level's orthogonal detail alone (is the information at a scale unique to it?),
                        with rate-regressed readouts (--readouts detail_unitrate,detail_poprate,shuffled_unitrate --tag rate)
   latency_readout.py   are the 125 and 50 ms details just first-spike latency and centre of mass? (no)
