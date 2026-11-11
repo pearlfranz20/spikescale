@@ -1230,12 +1230,154 @@ timescale within cortex, which the timescale-hierarchy literature reports
 for autocorrelation and latency, does not show up as a change in which bin
 widths carry image identity.
 
+## LP in a second animal: session 757216464 (11 Nov 2026)
+
+Brain Observatory 1.1 session 757216464, a fifth mouse, chosen for its LP
+yield: 116 LP and 88 VISp units pass the quality filters (10.7 and 8.1 Hz
+mean in the window; 3 and 11 units below 1 Hz). The first LP sample (170
+units in the third animal) was sparse in information (0.16 at 60 units)
+and its shares were read off small numbers; this one is rich. Same
+pipeline. Figures: `e3_allen_757216464_<area>_n60.png`. Raw numbers: the
+`e3_`, `external_` and `residual_allen_757216464_<area>` files. Chance is
+0.008.
+
+### Continuous pyramid, nested-C cumulative decoder, 60 units, time-blocked
+
+| area | L1 | L2 | L3 | L4 | L5 | L6 | L3 minus L1, per seed | L3 minus L2, per seed | L3 minus L6, per seed |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| LP | 0.18 | 0.27 | 0.32 | 0.32 | 0.31 | 0.28 | 0.13 to 0.16 | 0.03 to 0.07 | 0.02 to 0.05 |
+| VISp | 0.40 | 0.46 | 0.49 | 0.48 | 0.45 | 0.41 | 0.08 to 0.10 | 0.01 to 0.04 | 0.06 to 0.09 |
+
+Seed std is at most 0.02. The best level is L3 or L4 in both areas (LP: L4
+in three seeds; VISp: L4 in two), within 0.02 of each other.
+
+### Random folds and all units, continuous pyramid, nested-C decoder
+
+| area | units | split | L1 | L2 | L3 | L4 | L5 | L6 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| LP | 60 | time-blocked | 0.18 | 0.27 | 0.31 | 0.29 | 0.30 | 0.26 |
+| LP | 60 | random 10-fold | 0.23 | 0.33 | 0.39 | 0.40 | 0.38 | 0.33 |
+| LP | 116 (all) | time-blocked | 0.29 | 0.40 | 0.49 | 0.50 | 0.48 | 0.44 |
+| LP | 116 (all) | random 10-fold | 0.39 | 0.52 | 0.60 | 0.61 | 0.60 | 0.55 |
+| VISp | 60 | time-blocked | 0.40 | 0.45 | 0.49 | 0.48 | 0.44 | 0.40 |
+| VISp | 60 | random 10-fold | 0.49 | 0.56 | 0.59 | 0.57 | 0.54 | 0.48 |
+| VISp | 88 (all) | time-blocked | 0.47 | 0.55 | 0.56 | 0.53 | 0.51 | 0.49 |
+| VISp | 88 (all) | random 10-fold | 0.59 | 0.65 | 0.67 | 0.66 | 0.62 | 0.58 |
+
+Random folds add 0.08 to 0.10 at 60 units here, between the third animal's
+0.16 to 0.25 and the fourth's 0.00. With all 116 units LP decodes 0.50 on
+the blocked split, as much as the first animal's VISp.
+
+**LP's profile replicates, and it is thalamic.** The relative gain from
+whole-window count to 125 ms is the largest in the study (0.07 to 0.11 per
+seed against 0.04 to 0.10 in cortex and the two LGd samples), the pyramid
+is flat from 50 to 10 ms (L3 minus L6 of 0.02 to 0.05, as the first LP's
+0.02 to 0.03 and both LGd samples' 0.01 to 0.05, against 0.06 to 0.13 in
+every cortical sample), and the 25 ms detail is 0.24 of rate-only accuracy
+(first LP 0.27, LGd 0.19 and 0.22, cortex 0.11 to 0.18 until this
+session's VISp, see below). What does not carry over from LGd is the
+balance between the two coarse shapes (the 50 ms detail equals the 125 ms
+detail here, 1.00, against 1.26 to 1.30 in LGd and the first LP) and the
+10 ms jitter cost (0.00 to 0.02 per seed at L5 to L6, at the edge of
+resolution, where LGd gave 0.01 to 0.03 in every seed). So LP sits between
+the relay and the cortex in how fine its shape information is, with the
+thalamic flatness below 50 ms and the cortical balance above it.
+
+**LP leans on shape more than any other area.** Its 125 and 50 ms details
+are each 0.64 of its rate-only accuracy (the first LP gave 0.59 and 0.74;
+cortex 0.37 to 0.55; LGd 0.37 to 0.53), and 0.69 to 0.71 of each survives
+regression on the population rate vector (cortex 0.46 to 0.75). The
+whole-window count is a smaller part of what LP says about the image than
+anywhere else sampled, which fits a nucleus whose visual responses are
+shaped by cortical feedback and collicular input arriving at different
+latencies.
+
+**VISp, fifth animal: the same profile, a little finer.** 50 ms optimum
+(L4 within 0.02 in every seed), the 125 and 50 ms details at 0.48 and 0.49
+of rate-only accuracy, half surviving rate regression. Its 25 ms detail
+is 0.22 of rate-only accuracy, above the 0.11 to 0.18 of the other eight
+cortical samples and level with LGd, and its 10 ms detail is 0.03 to 0.04
+above the control in every seed; the pyramid's fall to 5 ms (0.06 to 0.09)
+and the absent 10 ms jitter cost are still cortical. One VISp of five with
+a slightly larger 25 ms share is within what the penetrations have varied
+by elsewhere.
+
+### Discrete readouts, 60 units, nested-C cumulative decoder
+
+| area | readout | L1 | L2 | L3 | L4 | L5 | L6 | codes ahead of quantized pyramid |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| LP | tokenizer codes | 0.02 | 0.04 | 0.07 | 0.09 | 0.11 | 0.12 | 9 of 30 seed-level pairs |
+| LP | quantized pyramid | 0.03 | 0.04 | 0.07 | 0.09 | 0.11 | 0.14 | |
+| VISp | tokenizer codes | 0.06 | 0.13 | 0.18 | 0.22 | 0.25 | 0.26 | 27 of 30 |
+| VISp | quantized pyramid | 0.05 | 0.09 | 0.13 | 0.17 | 0.21 | 0.24 | |
+
+The reconstruction readout is within 0.05 of the codes. The pattern of the
+previous fourteen samples holds: learned codes lead k-means in cortex (0.02
+to 0.07 at L2 to L5 in every VISp seed) and k-means is level or ahead in
+the thalamus (LP: level at L2 to L5, ahead by 0.01 to 0.04 at L6 in every
+seed). Both discrete readouts keep under half of the pyramid (0.26 against
+0.49 in VISp; 0.14 against 0.32 in LP). Gate 2 is unmet in all sixteen
+samples.
+
+### E3b, continuous pyramid, clean minus perturbed, mean over seeds
+
+| area | test set | L1 | L2 | L3 | L4 | L5 | L6 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| LP | jitter 10 ms | 0.00 | 0.00 | 0.01 | 0.01 | 0.01 | 0.01 |
+| LP | jitter 25 ms | 0.00 | 0.01 | 0.02 | 0.03 | 0.03 | 0.04 |
+| LP | PSTH surrogate | 0.03 | 0.04 | 0.03 | 0.02 | 0.01 | 0.02 |
+| VISp | jitter 10 ms | 0.00 | 0.00 | 0.00 | 0.01 | 0.01 | 0.01 |
+| VISp | jitter 25 ms | 0.00 | 0.00 | 0.02 | 0.02 | 0.03 | 0.04 |
+| VISp | PSTH surrogate | 0.03 | 0.02 | 0.02 | 0.00 | 0.00 | 0.00 |
+
+Jitter of 5 ms changes nothing. Jitter of 10 ms costs 0.00 to 0.02 at L4
+to L6 in both areas. Jitter of 25 ms costs 0.02 to 0.06 from L4 on in
+every seed of both. The PSTH-matched surrogate lowers LP at every level
+(0.01 to 0.06 per seed, every seed at L1 to L3 and L6), the first area
+where noise correlations help the fine readouts as well as the coarse; in
+VISp it lowers L1 to L3 by 0.02 to 0.03 and leaves L4 to L6 unchanged. The
+codes are unaffected by the surrogate in LP and raised by 0.01 to 0.02 in
+VISp as in the other animals.
+
+### Detail of level k alone, 60 units, 5 seeds, nested-C logistic
+
+| area | readout | L1 (250) | L2 (125) | L3 (50) | L4 (25) | L5 (10) | L6 (5 ms) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| LP | detail alone | 0.18 | 0.12 | 0.12 | 0.04 | 0.02 | 0.01 |
+| LP | population-rate regressed | 0.18 | 0.08 | 0.08 | 0.03 | 0.02 | 0.01 |
+| VISp | detail alone | 0.41 | 0.20 | 0.20 | 0.09 | 0.05 | 0.03 |
+| VISp | population-rate regressed | 0.41 | 0.10 | 0.11 | 0.06 | 0.04 | 0.03 |
+| both | time-shuffled controls | = L1 | 0.01 to 0.02 | 0.01 to 0.02 | 0.01 to 0.02 | 0.01 to 0.02 | 0.01 to 0.02 |
+| LP | detail as a share of L1 | 1 | 0.64 | 0.64 | 0.24 | 0.14 | 0.07 |
+| VISp | detail as a share of L1 | 1 | 0.48 | 0.49 | 0.22 | 0.13 | 0.08 |
+
+Seed std is at most 0.01. All units, detail alone (one seed): LP 116 units
+0.30, 0.19, 0.19, 0.04, 0.03, 0.02; VISp 88 units 0.48, 0.25, 0.25, 0.12,
+0.06, 0.03. Detail minus control per seed: LP 0.10 to 0.12 at L2, 0.09 to
+0.13 at L3, 0.02 to 0.04 at L4, 0.01 to 0.03 at L5, 0.00 to 0.01 at L6;
+VISp 0.17 to 0.19, 0.17 to 0.20, 0.06 to 0.08, 0.03 to 0.04, 0.01 to 0.02.
+Population-rate regressed minus control: LP 0.06 to 0.09 at L2 and L3,
+0.01 to 0.03 at L4; VISp 0.08 to 0.09, 0.08 to 0.10, 0.03 to 0.04, 0.02 to
+0.03 at L5. The per-unit regression keeps more, as before (LP 0.10 and
+0.09, VISp 0.14 and 0.14 at L2 and L3).
+
+**Where this leaves the picture, sixteen samples in five animals.** Cortex
+has one profile from VISp to VISam, with nine of ten samples inside the
+same ranges and the sparse first VISam the exception. The thalamus differs
+from the cortex in the same direction in all four samples (two LGd, two
+LP): a flat pyramid from 50 to 10 ms, a 25 ms detail at 0.19 to 0.27 of
+rate-only accuracy, and in LGd a decodable 10 ms detail and a 10 ms jitter
+cost. LP's two samples agree with each other on the flatness, the 25 ms
+share and the large share of shape relative to rate, and disagree with
+LGd on the 50 to 125 ms balance. The division in the data is thalamus
+against cortex, not position in the cortical hierarchy.
+
 ## Caveats
 
 - Synthetic codes are easy (the continuous pyramid is at 1.00), so they test
   localization better than retention.
 - 60 epochs on CPU, 2 synthetic seeds and 5 real-data unit subsamples. Not tuned.
-- Four Allen sessions, one per animal, fourteen area samples. The published
+- Five Allen sessions, one per animal, sixteen area samples. The published
   comparison is against seven other sessions' distribution, not the same
   sessions, and random folds inflate the estimate by an amount that varies
   by session (0.00 to 0.25).
@@ -1267,13 +1409,13 @@ widths carry image identity.
   existence of a latency or transience code. A readout built from an
   explicit per-unit latency estimate would say how much of the level-2 and
   level-3 detail is latency alone; it has not been run.
-- The comparison across areas is within four sessions (one per animal);
+- The comparison across areas is within five sessions (one per animal);
   the amount of information per area varies with the penetration (VISal is
   half of VISp in one animal and equal to it in the other; VISam is 0.20 in
   one and 0.44 in the other), so between-area differences in amount mix
   area and sampling, and so can the shape of a sparse sample (the first
-  VISam's tilt). VISpm, VISrl and LP were each seen in one animal; VISam
-  and LGd in two.
+  VISam's tilt). VISpm and VISrl were each seen in one animal; VISam, LGd
+  and LP in two; VISp in five.
 
 ## Suggested next steps
 
@@ -1290,10 +1432,12 @@ widths carry image identity.
    animals, VISam in two, VISl, VISal, VISrl, VISpm). LGd is one level finer
    in both animals (25 ms optimum, 10 ms jitter cost, a decodable 10 ms
    detail); the first VISam's tilt toward 125 ms did not replicate in the
-   second. Open: LP in a second animal (757216464 has 114 LP units with 85
-   VISp), an explicit latency readout to say how much of the 125 and 50 ms
-   details is onset latency, and a running or pupil covariate in the rate
-   regression for the drift the third session shows.
+   second. LP in a second animal (757216464, 116 units) replicates the
+   flat 50 to 10 ms profile and the 25 ms share, so the thalamus differs
+   from cortex in the same direction in all four thalamic samples. Open: an
+   explicit latency readout to say how much of the 125 and 50 ms details is
+   onset latency, and a running or pupil covariate in the rate regression
+   for the drift the third session shows.
 3. Done on 11 Nov 2026 (rate-regressed details): about half of the 125 and
    50 ms detail information survives regression on the population rate
    vector. A nonlinear version (regress on rate with a flexible model, or
