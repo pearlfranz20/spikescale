@@ -441,7 +441,7 @@ step above VISp and this is one session; a shift the size NeuroPixelHD
 reports (toward 125 ms and beyond in associative areas) would be visible
 as L2 overtaking L3, and it is not seen. VISpm and VISrl from the same
 session (68 and 66 units) and a second session with VISam and VISl
-(794812542) would extend the test further up.
+would extend the test further up.
 
 ## VISpm and VISrl from the same session: four areas, one scale (2 Nov 2026)
 
@@ -563,8 +563,9 @@ balance, not in the scale of the shape.
 **What this does not settle.** All four areas come from one animal and
 one session, VISpm, VISal and VISrl have fewer and sparser units than
 VISp, and the higher areas sampled here are all one step above VISp in the
-anatomical hierarchy. A second session with VISam and VISl (794812542)
-would add two more areas and a second animal.
+anatomical hierarchy. A second session with VISam and VISl (798911424; the
+794812542 named here on 2 Nov is a Functional Connectivity session with no
+natural scenes) would add two more areas and a second animal.
 
 ## Rate-regressed details: temporal shape that is not a linear function of rate (11 Nov 2026)
 
@@ -692,8 +693,9 @@ with a unit's rate in a different window is not controlled.
    thousands with product quantization. Otherwise reframe around the
    analysis, with the quantized pyramid as a drop-in tokenizer.
 2. In progress on 11 Nov 2026. VISal, VISpm and VISrl showed no shift of the optimum within this
-   session. A second session (794812542 has 131 VISp, 105 VISl and 114
-   VISam units, a second animal) with the same pyramid, jitter and
+   session. A second session (798911424 has 94 VISp, 78 VISl, 89 VISal and 135
+   VISam units passing the filters, a second animal; 794812542, named
+   here before, is a Functional Connectivity session without natural scenes) with the same pyramid, jitter and
    per-scale detail pipeline, to see whether the 50 to 125 ms optimum
    shifts further up the hierarchy as NeuroPixelHD reports, and whether
    the rate-to-shape balance seen in VISpm repeats.

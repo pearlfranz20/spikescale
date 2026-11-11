@@ -43,7 +43,7 @@ information appears. The idea follows Next-Concept Modeling
 - [x] Unique information per scale: each level's orthogonal detail decoded alone, with a time-shuffled control
 - [x] Same pipeline on VISal, VISpm and VISrl from the same session: four areas, one 50 to 125 ms scale
 - [x] Rate-regressed per-scale details: temporal shape not linearly predictable from firing rate
-- [ ] Second session 794812542 (VISp, VISl, VISam; a second animal), same pipeline
+- [ ] Second session 798911424 (VISp, VISl, VISal, VISam; a second animal), same pipeline
 - ~~E4 fixed-resolution ladder comparison~~ dropped on 1 Nov 2026: what the
   ladder should compare was never written down, and the decoder bake-off and
   E3b already answer the per-level question on real data
