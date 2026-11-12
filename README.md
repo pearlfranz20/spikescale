@@ -58,6 +58,7 @@ information appears. The idea follows Next-Concept Modeling
 - [x] Behavioural state: running and pupil explain none of the detail information; the pyramid's profile is the same within running and stationary trials, locomotion scales it up
 - [x] Nonlinear rate regression (kernel ridge on random Fourier features of the population rate vector): removes a few hundredths more than the linear fit; the details stay above the control in every seed
 - [x] Drifting gratings (session 750749662, sixth animal): the 50 ms onset optimum is not set by the next image; in 1 to 2 s windows the count catches up in cortex, not in LGd
+- [x] Thalamic state split (same session): within running trials LGd keeps its flat 50 to 10 ms profile while VISp peaks at 50 ms; stationary LGd too weak to resolve
 - ~~E4 fixed-resolution ladder comparison~~ dropped on 1 Nov 2026: what the
   ladder should compare was never written down, and the decoder bake-off and
   E3b already answer the per-level question on real data

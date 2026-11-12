@@ -264,9 +264,18 @@ def features(readout, counts, spikes_ms, bases, tr, state=None, labels=None):
 def state_subset(labels, state, which, seed):
     """Trial indices of one state, the larger state subsampled to the smaller's size; None if too few repeats."""
     running = state["running"] > RUN_CMS
-    sets = {"run": np.nonzero(running)[0], "still": np.nonzero(~running)[0]}
+    keep = np.ones(len(labels), dtype=bool)
+    if state.get("drop_short", 0):
+        # --state-drop-short N: drop from both states the images (at most N) that the
+        # smaller state shows fewer than 8 times, instead of skipping the split
+        small = min(np.nonzero(running)[0], np.nonzero(~running)[0], key=len)
+        short = np.nonzero(np.bincount(labels[small], minlength=labels.max() + 1) < 8)[0]
+        if len(short) <= state["drop_short"]:
+            keep = ~np.isin(labels, short)
+    sets = {"run": np.nonzero(running & keep)[0], "still": np.nonzero(~running & keep)[0]}
     small = min(sets.values(), key=len)
-    if np.bincount(labels[small], minlength=labels.max() + 1).min() < 8:
+    present = np.unique(labels[keep])
+    if np.bincount(labels[small], minlength=labels.max() + 1)[present].min() < 8:
         return None
     idx = sets[which]
     if len(idx) > len(small):
@@ -300,6 +309,8 @@ def main():
     ap.add_argument("--out", default="results")
     ap.add_argument("--readouts", default=",".join(READOUTS[:17]))
     ap.add_argument("--tag", default="", help="suffix for the output file, e.g. pop")
+    ap.add_argument("--state-drop-short", type=int, default=0,
+                    help="run/still split: drop up to this many images the smaller state shows under 8 times")
     args = ap.parse_args()
     readouts = tuple(args.readouts.split(","))
     bad = set(readouts) - set(READOUTS)
@@ -321,7 +332,7 @@ def main():
         if sp.exists():
             st = np.load(sp)
             assert np.allclose(st["start_time"], d["start_time"])
-            state = {"running": st["running"], "pupil": st["pupil"]}
+            state = {"running": st["running"], "pupil": st["pupil"], "drop_short": args.state_drop_short}
             print(f"state: {np.mean(state['running'] > RUN_CMS):.2f} of trials running, pupil on "
                   f"{np.isfinite(state['pupil']).mean():.2f}", flush=True)
     if any(ro == "state" or ro.endswith(("_state", "_popstate")) or ro.startswith(("run_", "still_")) for ro in readouts) and state is None:

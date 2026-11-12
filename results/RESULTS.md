@@ -1720,6 +1720,51 @@ on stimulus-locked timing as much as on intrinsic timescales; the natural
 movies, continuous and without repeats of short presentations, would be
 the next stimulus to try.
 
+## The state split in the thalamus: LGd keeps its profile when the mouse runs (12 Nov 2026)
+
+The behavioural-state section could not split LGd into running and
+stationary trials: in both sessions with LGd the mouse ran on too few
+trials. Session 750749662 (the gratings session above) runs on 0.28 of
+natural-scenes trials, with 4 of the 118 images shown fewer than 8 times
+while running. `scripts/latency_readout.py --state-drop-short 5` drops
+those four images from both states and runs the split on the remaining
+114 (1,632 trials per state, the stationary set subsampled to the running
+set's size), same pyramid, decoder and seeds as before
+(`latency_allen_750749662_<area>_split.json`; the state covariates are in
+the `_state` files, and as in every other sample they decode at chance
+and leave the details unchanged).
+
+| area | running, L1 to L6 (250 to 5 ms) | stationary, L1 to L6 | running / stationary at 50 ms | 5 ms level / 50 ms level, running / stationary |
+| --- | --- | --- | --- | --- |
+| VISp | 0.481 0.540 0.561 0.543 0.490 0.418 | 0.174 0.184 0.188 0.182 0.167 0.134 | 3.0 | 0.74 / 0.71 |
+| LGd | 0.137 0.170 0.193 0.208 0.202 0.175 | 0.053 0.063 0.080 0.066 0.053 0.054 | 2.4 | 0.90 / 0.68 |
+| LP | 0.022 0.022 0.023 0.028 0.023 0.024 | 0.015 0.013 0.015 0.015 0.016 0.016 | 1.5 | 1.03 / 1.04 |
+
+Chance is 0.009 with 114 images; each accuracy rests on about 330
+held-out trials.
+
+**Locomotion scales this animal's responses far more than the others'.**
+At the 50 ms level the running trials decode 3.0 times better in VISp and
+2.4 times better in LGd, against 1.12 to 1.98 in the three earlier
+animals; stationary VISp here decodes the image at only 0.19.
+
+**In running trials LGd shows the thalamic profile and VISp the cortical
+one.** VISp peaks at 50 ms in both states and falls to 0.75 (running) and
+0.71 (stationary) of that by 5 ms. Running LGd peaks at 25 ms and is flat
+from 50 to 10 ms (0.193, 0.208, 0.202), keeping 0.91 of its 50 ms
+accuracy at 5 ms: the flat, finer-reaching profile of the four thalamic
+samples, now in a fifth thalamic sample and within one behavioural state.
+Stationary LGd is too weakly informative here (0.05 to 0.08) to resolve
+its profile: it peaks at 50 ms, but the difference from 25 ms is about
+one standard error. LP in this animal is barely driven by the natural
+scenes (0.02 in both states) and says nothing.
+
+**Reading.** The thalamus-against-cortex difference is not a product of
+the mixture of behavioural states in the trials: within running trials,
+in one animal, LGd reaches finer than VISp. Whether it holds as clearly
+in stationary trials needs a session with a more informative stationary
+LGd; this one cannot say.
+
 ## Caveats
 
 - Synthetic codes are easy (the continuous pyramid is at 1.00), so they test
@@ -1797,8 +1842,10 @@ the next stimulus to try.
    than the linear one. Drifting gratings (12 Nov, session 750749662):
    the 50 ms onset optimum does not depend on the next stimulus, and in
    long windows the count catches up in cortex but not in LGd. Nothing
-   from this list is open. Candidates beyond it: the natural movies as a
-   continuous stimulus, and the state split in the thalamus (below).
+   from this list is open. The state split in the thalamus (12 Nov, same
+   session): running LGd keeps the flat, finer-reaching thalamic profile;
+   stationary LGd is too weak there to resolve. Candidate beyond it: the
+   natural movies as a continuous stimulus.
 3. Done on 11 Nov 2026 (rate-regressed details): about half of the 125 and
    50 ms detail information survives regression on the population rate
    vector. The nonlinear version (11 Nov, kernel ridge on random Fourier
