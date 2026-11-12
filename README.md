@@ -3,13 +3,13 @@
 Where in time does a population's stimulus information sit? This repository
 decodes image identity from Allen Neuropixels responses one temporal scale at
 a time, from whole-window counts down to 5 ms bins, and asks which scales
-carry information that the coarser ones do not. The answer so far, in sixteen
-area samples from five mice (VISp, VISl, VISal, VISrl, VISpm, VISam, LGd,
-LP): one profile across cortex from VISp to VISam, a 50 to 125 ms code
+carry information that the coarser ones do not. The answer so far, in eighteen
+informative area samples from six mice (VISp, VISl, VISal, VISrl, VISpm,
+VISam, LGd, LP): one profile across cortex from VISp to VISam, a 50 to 125 ms code
 with the 125 ms and 50 ms shapes each decodable on their own, about half
 of that shape information not a linear function of firing rate, a small
 component at 25 ms and nothing at 5 ms. The thalamus differs in the same
-direction in all four samples (LGd and LP, two animals each): a flat
+direction in all five samples (LGd in three animals, LP in two): a flat
 pyramid from 50 down to 10 ms and a larger 25 ms share, and in LGd a 25 ms
 optimum, a decodable 10 ms shape and a cost from 10 ms jitter that no
 cortical sample shows (`results/RESULTS.md`; one figure over all samples in
@@ -59,6 +59,7 @@ information appears. The idea follows Next-Concept Modeling
 - [x] Nonlinear rate regression (kernel ridge on random Fourier features of the population rate vector): removes a few hundredths more than the linear fit; the details stay above the control in every seed
 - [x] Drifting gratings (session 750749662, sixth animal): the 50 ms onset optimum is not set by the next image; in 1 to 2 s windows the count catches up in cortex, not in LGd
 - [x] Thalamic state split (same session): within running trials LGd keeps its flat 50 to 10 ms profile while VISp peaks at 50 ms; stationary LGd too weak to resolve
+- [x] Full pipeline on the same session's VISp, LGd and LP: VISp inside every cortical range, a weak LGd still thalamic, LP not driven by the scenes
 - ~~E4 fixed-resolution ladder comparison~~ dropped on 1 Nov 2026: what the
   ladder should compare was never written down, and the decoder bake-off and
   E3b already answer the per-level question on real data

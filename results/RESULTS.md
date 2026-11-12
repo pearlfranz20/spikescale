@@ -1377,6 +1377,96 @@ share and the large share of shape relative to rate, and disagree with
 LGd on the 50 to 125 ms balance. The division in the data is thalamus
 against cortex, not position in the cortical hierarchy.
 
+## VISp, LGd and LP of session 750749662: a sixth animal (12 Nov 2026)
+
+The session downloaded for the gratings and the thalamic state split also
+ran the full natural-scenes pipeline on its three areas: 60 VISp, 83 LGd
+and 145 LP units pass the quality filters (7.7, 8.6 and 9.0 Hz mean in the
+window). VISp has exactly 60 units, so its five seeds use the same units
+and differ only in the tokenizer's initialization; they count as one
+sample. Figures: `e3_allen_750749662_<area>_n60.png`. Raw numbers: the
+`e3_`, `external_`, `residual_` and `latency_allen_750749662_<area>` files.
+Chance is 0.008.
+
+### Continuous pyramid, nested-C cumulative decoder, 60 units, time-blocked
+
+| area | L1 | L2 | L3 | L4 | L5 | L6 | L3 minus L1, per seed | L3 minus L2, per seed | L3 minus L6, per seed |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| VISp | 0.33 | 0.38 | 0.40 | 0.39 | 0.36 | 0.34 | 0.06 | 0.02 | 0.06 |
+| LGd | 0.11 | 0.14 | 0.15 | 0.16 | 0.14 | 0.11 | 0.02 to 0.06 | 0.00 to 0.01 | 0.02 to 0.06 |
+| LP | 0.02 | 0.02 | 0.02 | 0.02 | 0.02 | 0.02 | -0.00 to 0.01 | -0.00 to 0.01 | -0.01 to 0.01 |
+
+All units, time-blocked (random 10-fold): VISp is the 60-unit row (random
+folds 0.31, 0.35, 0.37, 0.36, 0.33, 0.30, the only sample where they fall
+below the blocked split); LGd 83 units 0.13, 0.18, 0.21, 0.21, 0.18, 0.15
+(0.14, 0.19, 0.22, 0.22, 0.20, 0.17); LP 145 units 0.03 at every level
+(0.03 to 0.05).
+
+### Detail of level k alone, 60 units, 5 seeds, nested-C logistic
+
+| area | readout | L1 (250) | L2 (125) | L3 (50) | L4 (25) | L5 (10) | L6 (5 ms) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| VISp | detail alone | 0.35 | 0.19 | 0.16 | 0.06 | 0.03 | 0.02 |
+| VISp | population-rate regressed | 0.35 | 0.08 | 0.10 | 0.04 | 0.02 | 0.02 |
+| LGd | detail alone | 0.12 | 0.05 | 0.06 | 0.02 | 0.01 | 0.01 |
+| LGd | population-rate regressed | 0.12 | 0.03 | 0.03 | 0.02 | 0.01 | 0.01 |
+| LP | detail alone | 0.01 | 0.01 | 0.01 | 0.01 | 0.01 | 0.01 |
+| all | time-shuffled controls | = L1 | 0.01 | 0.01 | 0.01 | 0.01 to 0.02 | 0.01 to 0.02 |
+| VISp | detail as a share of L1 | 1 | 0.54 | 0.46 | 0.17 | 0.09 | 0.06 |
+| LGd | detail as a share of L1 | 1 | 0.39 | 0.50 | 0.21 | 0.11 | 0.08 |
+
+Detail minus control per seed: VISp 0.17 to 0.18 at L2, 0.14 to 0.15 at
+L3, 0.04 to 0.05 at L4, 0.01 to 0.02 at L5; LGd 0.03 to 0.05, 0.04 to
+0.06, 0.01 to 0.02, and nothing resolvable below. Population-rate
+regressed minus control: VISp 0.06 to 0.07 and 0.08 to 0.09 at L2 and L3,
+0.02 to 0.03 at L4; LGd 0.02 to 0.03 and 0.01 to 0.03.
+
+**LP is not driven by the natural scenes in this animal.** At 0.02 with 60
+units and 0.03 with all 145, its pyramid and details sit at two to four
+times chance with no level distinguishable from another, as in the
+gratings and the state split. It has no profile to compare and is left
+out of the counts below; the session is a sixth animal for VISp and LGd
+only.
+
+**VISp is cortical in every respect.** 50 ms optimum, the 25 ms level 0.01
+below it, a fall of 0.06 to 5 ms, 125 and 50 ms details at 0.54 and 0.46
+of rate-only accuracy, 0.42 and 0.60 of them surviving the population-rate
+regression, and a 25 ms share of 0.17 (cortex 0.11 to 0.22). Jitter of
+10 ms costs 0.01 to 0.03 at L6 only; the PSTH-matched surrogate raises L4
+and L5 by 0.02 to 0.05 in every seed, the noise correlations costing the
+fine readouts here where they were neutral in the other VISp samples.
+
+**LGd is weak but thalamic where it can be read.** At 0.15 it decodes
+half as well as the weakest earlier LGd, and its best level moves between
+L3 and L5 across seeds. Within that resolution it keeps the thalamic
+signature: the pyramid within 0.02 from 50 to 10 ms, a 25 ms share of
+0.21 (earlier thalamic samples 0.19 to 0.27), the 50 ms detail larger than
+the 125 ms one (1.29, as 1.26 to 1.30 in the earlier LGd), and learned
+codes no better than k-means (ahead in 11 of 30 seed-level pairs). The
+10 ms jitter cost that both earlier LGd showed (0.01 to 0.03) is not
+resolvable at this accuracy (-0.01 to 0.01).
+
+**The other readouts agree.** Discrete readouts: codes ahead of the
+quantized pyramid in 25 of 30 VISp pairs, both under half the pyramid
+(VISp 0.19 against 0.40), so Gate 2 is unmet in all eighteen informative
+samples. Latency readout: first-spike latency and centre of mass decode
+0.12 and 0.20 in VISp (0.03 and 0.05 in LGd), add nothing to the count,
+and leave the 125 and 50 ms details at 0.24 and 0.40 (VISp) and 0.38 and
+0.45 (LGd) of their accuracy alone, inside the earlier ranges, above the
+control in every seed (VISp 0.03 to 0.04 and 0.05 to 0.06; LGd 0.01 to
+0.02). Nonlinear rate regression: VISp keeps 0.86 and 0.72 of its
+linearly regressed 125 and 50 ms details (the 50 ms figure just below the
+earlier 0.74 to 0.95), 0.05 above the control in every seed; LGd keeps
+all of it, and its nonlinear count decoder gains 0.003, not the 0.02 to
+0.03 of the earlier LGd.
+
+**Reading.** A sixth animal adds a VISp that falls inside every cortical
+range and an LGd that, at a third of the earlier LGd accuracy, still
+shows the flat 50 to 10 ms pyramid, the larger 25 ms share and the 50 over
+125 ms balance. Eighteen informative samples in six animals: one cortical
+profile, and the thalamus different from it in the same direction in all
+five thalamic samples.
+
 ## An explicit latency readout: the details are not first-spike latency (11 Nov 2026)
 
 The caveat below says the 125 ms detail is transience and the 50 ms detail

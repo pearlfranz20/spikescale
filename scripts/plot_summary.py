@@ -1,4 +1,4 @@
-"""Cross-sample summary figure: sixteen area samples, five animals, one temporal profile per tissue.
+"""Cross-sample summary figure: eighteen area samples, six animals, one temporal profile per tissue.
 
 Reads the merged E3 JSONs, the detail analyses (plain and rate-regressed) and
 the latency readouts, and draws six panels: the pyramid relative to its 50 ms
@@ -19,10 +19,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
-SAMPLES = [("732592105", "VISp"), ("798911424", "VISp"), ("754829445", "VISp"), ("763673393", "VISp"), ("757216464", "VISp"),
+SAMPLES = [("732592105", "VISp"), ("798911424", "VISp"), ("754829445", "VISp"), ("763673393", "VISp"), ("757216464", "VISp"), ("750749662", "VISp"),
            ("732592105", "VISal"), ("798911424", "VISal"), ("798911424", "VISl"), ("732592105", "VISrl"), ("732592105", "VISpm"),
            ("798911424", "VISam"), ("763673393", "VISam"),
-           ("754829445", "LGd"), ("763673393", "LGd"), ("754829445", "LP"), ("757216464", "LP")]
+           ("754829445", "LGd"), ("763673393", "LGd"), ("750749662", "LGd"), ("754829445", "LP"), ("757216464", "LP")]
 BLUE, ORANGE, AQUA, GRAY = "#2a78d6", "#eb6834", "#1baf7a", "#6b7280"
 GROUP = {"LGd": ("LGd", ORANGE), "LP": ("LP", AQUA)}
 LEVELS = ["250", "125", "50", "25", "10", "5 ms"]
@@ -140,7 +140,7 @@ def main(out: str, res: str = "results"):
 
     for ax in (a, b, e, f):
         ax.set_xlabel("bin width", fontsize=9)
-    fig.suptitle("Sixteen area samples, five mice, 60 units each, time-blocked holdout: cortex (blue, VISp bold), "
+    fig.suptitle("Eighteen area samples, six mice, 60 units each, time-blocked holdout: cortex (blue, VISp bold), "
                  "LGd (orange), LP (aqua)", fontsize=11, x=0.01, ha="left")
     fig.tight_layout(rect=(0, 0, 1, 0.965))
     fig.savefig(out, dpi=150)
