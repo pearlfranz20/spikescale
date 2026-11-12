@@ -1923,6 +1923,42 @@ trials per seed for the 1000 ms segments, and segments of one clip are not
 independent stimuli (neighbouring segments share content, which the
 time-blocked split does not remove).
 
+### A second animal: the movie in session 763673393 (12 Nov 2026)
+
+The same movie readouts on VISp, VISam and LGd of the fourth animal
+(763673393, the richest session: 74, 77 and 78 units), beside the sixth
+animal's same three areas (`gratings_allen_763673393_<area>_movie.json`).
+
+| sample (units) | 250 ms segments: count / best at bin (ms) | 10 ms level / 5 ms level, as a share of the best | 1000 ms segments: count / best at bin (ms) | 1000 ms segments: 25 ms / 10 ms detail minus control, worst seed |
+| --- | --- | --- | --- | --- |
+| VISp 662 (60) | 0.40 / 0.48 at 50 | 0.90 / 0.78 | 0.88 / 0.94 at 500 | +0.14 / +0.08 |
+| VISp 393 (74) | 0.52 / 0.58 at 50 | 0.90 / 0.80 | 0.85 / 0.92 at 125 | +0.15 / -0.02 |
+| VISam 662 (68) | 0.28 / 0.33 at 50 | 0.89 / 0.77 | 0.67 / 0.74 at 125 | -0.03 / -0.02 |
+| VISam 393 (77) | 0.43 / 0.49 at 50 | 0.85 / 0.75 | 0.89 / 0.94 at 250 | -0.08 / -0.03 |
+| LGd 662 (83) | 0.20 / 0.27 at 25 | 0.93 / 0.80 | 0.49 / 0.73 at 50 | +0.04 / +0.03 |
+| LGd 393 (78) | 0.60 / 0.66 at 50 | 0.95 / 0.92 | 0.88 / 0.93 at 125 | +0.22 / +0.12 |
+
+Sample names end in the last three digits of the session id.
+
+**The 250 ms profile replicates.** In the fourth animal VISp is best at
+50 to 125 ms (0.58 at both; 125 ms in three seeds), VISam at 50 ms in four
+seeds of five, LGd at 50 ms in three, and every area falls from there to
+5 ms. LGd falls least, keeping 0.95 of its best at 10 ms and 0.92 at 5 ms
+against 0.85 to 0.90 and 0.75 to 0.80 in the cortical samples, and its 25
+and 10 ms details are above the control in every seed by at least 0.10 and
+0.04 (VISp 0.03 and 0.01, VISam nothing). The thalamus-against-cortex
+difference of the scenes holds on the movie in both animals.
+
+**The 1 s comparison is at ceiling in this animal.** All three areas
+decode the 30 one-second segments at 0.92 to 0.94 with 120 test trials,
+the count alone already at 0.85 to 0.89, so the best bin width (125 to
+500 ms everywhere) cannot separate the areas; the sixth animal's finer
+LGd optimum is not tested here. The details, decoded alone, are not
+ceiling-bound and keep the division: within 1 s segments LGd's 25 and 10
+ms details are above the control in every seed in both animals (here by
+0.22 and 0.12), VISam's in neither, and VISp's 25 ms detail in both, its
+10 ms detail in one.
+
 ## Caveats
 
 - Synthetic codes are easy (the continuous pyramid is at 1.00), so they test
@@ -2004,8 +2040,10 @@ time-blocked split does not remove).
    session): running LGd keeps the flat, finer-reaching thalamic profile;
    stationary LGd is too weak there to resolve. The natural movie
    (12 Nov, same session): the 50 ms optimum holds without onsets, and in
-   1 s segments LGd and LP read finer than cortex. Candidate beyond it: the
-   movie in the other sessions, which would need their NWBs again.
+   1 s segments LGd and LP read finer than cortex; the 250 ms profile and
+   LGd's finer details replicate in 763673393 (its 1 s readout is at
+   ceiling). Running: the movie and gratings in 757216464 (VISp, LP) and
+   the gratings in 763673393.
 3. Done on 11 Nov 2026 (rate-regressed details): about half of the 125 and
    50 ms detail information survives regression on the population rate
    vector. The nonlinear version (11 Nov, kernel ridge on random Fourier

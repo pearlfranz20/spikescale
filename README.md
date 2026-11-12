@@ -61,6 +61,7 @@ information appears. The idea follows Next-Concept Modeling
 - [x] Thalamic state split (same session): within running trials LGd keeps its flat 50 to 10 ms profile while VISp peaks at 50 ms; stationary LGd too weak to resolve
 - [x] Full pipeline on the same session's VISp, LGd and LP: VISp inside every cortical range, a weak LGd still thalamic, LP not driven by the scenes
 - [x] Natural movie (same session): the 50 ms optimum holds without stimulus onsets; in 1 s segments LGd and LP are best at 50 ms bins, cortex at 125 to 500 ms
+- [x] Natural movie in a second animal (763673393): the 250 ms profile and LGd's finer details replicate; 1 s segments at ceiling
 - ~~E4 fixed-resolution ladder comparison~~ dropped on 1 Nov 2026: what the
   ladder should compare was never written down, and the decoder bake-off and
   E3b already answer the per-level question on real data
