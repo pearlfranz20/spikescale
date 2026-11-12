@@ -57,6 +57,7 @@ information appears. The idea follows Next-Concept Modeling
 - [x] Explicit latency readout on all sixteen samples: first-spike latency and centre of mass do not substitute for the pooled counts and leave the 125 and 50 ms details above the control in every seed
 - [x] Behavioural state: running and pupil explain none of the detail information; the pyramid's profile is the same within running and stationary trials, locomotion scales it up
 - [x] Nonlinear rate regression (kernel ridge on random Fourier features of the population rate vector): removes a few hundredths more than the linear fit; the details stay above the control in every seed
+- [x] Drifting gratings (session 750749662, sixth animal): the 50 ms onset optimum is not set by the next image; in 1 to 2 s windows the count catches up in cortex, not in LGd
 - ~~E4 fixed-resolution ladder comparison~~ dropped on 1 Nov 2026: what the
   ladder should compare was never written down, and the decoder bake-off and
   E3b already answer the per-level question on real data
@@ -74,6 +75,8 @@ scripts/
   plot_e2.py     E2 figure
   load_allen.py  extract natural-scenes trials from one Allen session
   load_allen_state.py  per-trial running speed and pupil area for an extracted session
+  load_allen_gratings.py  drifting-gratings trials (2 s, 40 conditions) for one area
+  gratings_pyramid.py  the pyramid on gratings in 250, 1000 and 2000 ms windows, beside the scenes pyramid of the same units
   run_e3.py      E3 and E3b on an extracted session (codes, recon, both pyramids, four decoders)
   merge_e3.py    merge E3 runs split over seeds
   plot_e3.py     E3 and E3b figure

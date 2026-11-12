@@ -1639,6 +1639,87 @@ bandwidth is a single median heuristic; a different kernel would move the
 numbers by a few thousandths, not reverse them, given how close the
 nonlinear and linear figures already are.
 
+## Drifting gratings: the 50 ms optimum is not set by the next image, and long windows favour the count (12 Nov 2026)
+
+Natural scenes play back to back every 250 ms, so every window above ends
+where the next image begins, and the 50 ms optimum could in principle be a
+property of that boundary rather than of the tissue. The drifting gratings
+of the same sessions are shown for 2 s each after 1 s of gray, 8 directions
+x 5 temporal frequencies (1, 2, 4, 8, 15 Hz), 15 repeats per condition.
+`scripts/load_allen_gratings.py` extracts them (same units as the
+natural-scenes files) and `scripts/gratings_pyramid.py` decodes the pyramid
+in windows of 250, 1000 and 2000 ms from grating onset, with bins from the
+whole window down to 5 ms, for three label sets: the 40 conditions, the
+direction alone (frequencies pooled; a static property, the analogue of
+image identity) and the temporal frequency alone (directions pooled; a
+property that lives in time, the positive control for fine bins). The same
+script runs the 250 ms natural-scenes pyramid on the same unit subsets.
+Session 750749662, a sixth animal, downloaded for this test and the
+thalamic state split below; five areas, 60 units, 5 seeds.
+
+### Whole-window count / best level, accuracy at best bin width (ms)
+
+| area (units) | scenes, 250 ms window | gratings, condition, 250 ms | condition, 1000 ms | condition, 2000 ms | direction, 2000 ms | temporal frequency, 2000 ms | 50 ms detail minus control, condition, 2000 ms |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| VISp (60) | 0.33 / 0.40 at 50 | 0.20 / 0.33 at 50 | 0.44 / 0.53 at 25 | 0.57 / 0.58 at 50 | 0.91 / 0.91 at 2000 | 0.65 / 0.76 at 50 | +0.28 |
+| VISpm (68) | 0.09 / 0.12 at 50 | 0.13 / 0.16 at 25 | 0.25 / 0.28 at 125 | 0.27 / 0.31 at 500 | 0.52 / 0.60 at 50 | 0.54 / 0.55 at 50 | +0.02 |
+| VISam (68) | 0.12 / 0.17 at 50 | 0.12 / 0.17 at 50 | 0.23 / 0.32 at 50 | 0.31 / 0.32 at 125 | 0.78 / 0.79 at 250 | 0.52 / 0.58 at 25 | +0.06 |
+| LGd (83) | 0.11 / 0.16 at 25 | 0.12 / 0.19 at 5 | 0.20 / 0.34 at 25 | 0.24 / 0.36 at 50 | 0.40 / 0.44 at 25 | 0.70 / 0.76 at 50 | +0.23 |
+| LP (145) | 0.02 / 0.02 at 25 | 0.05 / 0.08 at 25 | 0.10 / 0.12 at 125 | 0.13 / 0.13 at 2000 | 0.31 / 0.34 at 1000 | 0.52 / 0.52 at 2000 | +0.02 |
+
+Chance is 0.008 for scenes, 0.025 for condition, 0.125 for direction and
+0.2 for temporal frequency. Each gratings accuracy rests on 120 held-out
+trials (the last 3 repeats of each condition), so differences under about
+0.04 are noise; VISp has exactly 60 units here, so its five seeds use the
+same units and count as one sample.
+
+**The onset profile does not depend on what follows it.** In the first
+250 ms of a grating, which is followed by more of the same grating rather
+than by a new stimulus, VISp and VISam peak at 50 ms and VISpm at 25 ms,
+as their natural-scenes pyramids do on the same units, and LGd keeps
+improving down to 5 to 25 ms, as LGd does on scenes. The 50 ms cortical
+optimum is therefore not created by the next image arriving at 250 ms.
+This animal also reproduces the thalamus-against-cortex division on
+natural scenes: VISp, VISpm and VISam peak at 50 ms, LGd at 25 ms.
+
+**With longer windows the count catches up in cortex, not in LGd.** For
+condition identity in VISp, the gain from the whole-window count to the
+best level is 0.13 in the 250 ms window, 0.09 in 1000 ms and 0.02 in
+2000 ms: the timing information that matters for a static stimulus is
+concentrated at the response onset, and two seconds of sustained count
+recover what the onset dynamics carried. Direction, the static attribute,
+is read entirely from the 2 s count in VISp (0.91, no level beats it) and
+VISam. LGd keeps a gain of 0.13 to 0.14 at 1000 and 2000 ms, with its
+50 ms detail 0.2 above the control: LGd follows the drifting grating cycle
+by cycle (its well-known phase-locked, F1-dominated response), so for a
+moving stimulus the thalamus carries stimulus-locked temporal structure
+throughout, and cortex mostly at onset.
+
+**The best bin width stays near 25 to 125 ms in absolute terms.** In 1000
+and 2000 ms windows the optimum for condition and for temporal frequency
+is 25 to 125 ms wherever it is clear (VISp, VISam, LGd), not a fixed
+fraction of the window (the analogue of the 50 ms level would be 200 and
+400 ms). Temporal frequency, the positive control, gains 0.06 to 0.11 over
+the count in VISp, VISam and LGd at 25 to 50 ms bins, the scale of the
+grating periods (67 to 1000 ms); nothing gains below 25 ms, consistent
+with no stimulus-locked structure faster than the 15 Hz grating. VISpm is
+flat within noise in the long windows, and LP in this animal is barely
+driven by either stimulus (scenes at 0.02, twice chance), so neither says
+much here.
+
+**Reading.** The 50 ms scale of the natural-scenes results is a property
+of the onset response, not of the 250 ms presentation boundary. The
+gratings add one thing the scenes could not show: for a static attribute
+the advantage of temporal structure over the count belongs to the first
+few hundred milliseconds and fades as the count accumulates, while a
+stimulus that moves drives locked temporal structure at its own periods,
+read best at 25 to 50 ms bins and most strongly in LGd. Limits: one
+session, 120 test trials per seed, and gratings are a different stimulus
+class with their own temporal drive, so the long windows test the decoder
+on stimulus-locked timing as much as on intrinsic timescales; the natural
+movies, continuous and without repeats of short presentations, would be
+the next stimulus to try.
+
 ## Caveats
 
 - Synthetic codes are easy (the continuous pyramid is at 1.00), so they test
@@ -1713,11 +1794,11 @@ nonlinear and linear figures already are.
    running and within stationary trials, with locomotion scaling the
    information up. A nonlinear rate regression (11 Nov, random Fourier
    features of the population rate vector) removes a few hundredths more
-   than the linear one. Nothing from this list is open. Candidates beyond
-   it: a longer window on a stimulus with a gray gap (the drifting gratings
-   or the natural movies) to see whether the 50 ms scale is tied to the
-   250 ms presentation, and the state split in the thalamus with a session
-   where the mouse runs more.
+   than the linear one. Drifting gratings (12 Nov, session 750749662):
+   the 50 ms onset optimum does not depend on the next stimulus, and in
+   long windows the count catches up in cortex but not in LGd. Nothing
+   from this list is open. Candidates beyond it: the natural movies as a
+   continuous stimulus, and the state split in the thalamus (below).
 3. Done on 11 Nov 2026 (rate-regressed details): about half of the 125 and
    50 ms detail information survives regression on the population rate
    vector. The nonlinear version (11 Nov, kernel ridge on random Fourier
