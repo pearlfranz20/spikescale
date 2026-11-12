@@ -56,6 +56,7 @@ information appears. The idea follows Next-Concept Modeling
 - [x] Fifth session 757216464 (LP, VISp; a fifth animal): LP's flat 50 to 10 ms profile and 25 ms share replicate with 116 units; thalamus against cortex, not hierarchical rank
 - [x] Explicit latency readout on all sixteen samples: first-spike latency and centre of mass do not substitute for the pooled counts and leave the 125 and 50 ms details above the control in every seed
 - [x] Behavioural state: running and pupil explain none of the detail information; the pyramid's profile is the same within running and stationary trials, locomotion scales it up
+- [x] Nonlinear rate regression (kernel ridge on random Fourier features of the population rate vector): removes a few hundredths more than the linear fit; the details stay above the control in every seed
 - ~~E4 fixed-resolution ladder comparison~~ dropped on 1 Nov 2026: what the
   ladder should compare was never written down, and the decoder bake-off and
   E3b already answer the per-level question on real data
@@ -81,7 +82,8 @@ scripts/
   residual_levels.py   decode from each level's orthogonal detail alone (is the information at a scale unique to it?),
                        with rate-regressed readouts (--readouts detail_unitrate,detail_poprate,shuffled_unitrate --tag rate)
   latency_readout.py   are the 125 and 50 ms details just first-spike latency and centre of mass, per unit or for the population? (no);
-                       also running and pupil as covariates and the pyramid within running or stationary trials (--tag state)
+                       also running and pupil as covariates and the pyramid within running or stationary trials (--tag state),
+                       and the details regressed nonlinearly on the population rate (--tag nonlin)
 notes/
   diagnostics.md how the tokenizer design was debugged, and where it departs from the plan
   decoder_bakeoff.md  twelve decoders on the continuous pyramid; why nested-C cumulative logistic is the E3 decoder

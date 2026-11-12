@@ -63,6 +63,19 @@ z-scored on the training trials, with a missing indicator for pupil.
   detail2_popstate  detail regressed on every unit's rate (L1 coefficient and
   detail3_popstate  sqrt count) plus the state covariates
   d23_popstate      both details, so regressed, together
+Nonlinear rate regression (--readouts ... --tag nonlin): the rate regression
+of residual_levels.py is linear in the population rate vector. Here the
+details are regressed on the vector itself plus 3000 random Fourier
+features of it (a Gaussian-kernel ridge regression with the linear fit
+nested, bandwidth from the median distance, ridge penalty chosen on an
+inner time-blocked split), fit on training trials.
+
+  rate_rff          the image decoded from the rate vector plus its random
+                    features (a nonlinear decoder of the count; should match rate)
+  detail2_rffrate   detail regressed nonlinearly on every unit's rate
+  detail3_rffrate
+  d23_rffrate       both details, so regressed, together
+
   run_pyr<k>        pyramid level k decoded within running trials only
   still_pyr<k>      (speed above 5 cm/s) and within stationary trials only,
                     the larger set subsampled to the smaller's size; NaN when
@@ -93,6 +106,7 @@ READOUTS = ("rate", "latency", "com", "timing", "rate_timing", "rate_timing_d23"
             "pyr1", "pyr3", "pyr1_timing", "pyr3_timing",
             "poptiming", "pyr1_timing_pop", "pyr3_timing_pop", "detail2_popall", "detail3_popall", "d23_popall",
             "state", "rate_state", "pyr3_state", "detail2_popstate", "detail3_popstate", "d23_popstate",
+            "rate_rff", "detail2_rffrate", "detail3_rffrate", "d23_rffrate",
             *[f"{st}_pyr{k}" for st in ("run", "still") for k in range(1, 7)])
 RUN_CMS = 5.0
 
@@ -140,12 +154,49 @@ def state_feats(state, tr):
     return np.stack(cols, axis=1)
 
 
+def rate_rff(counts, feats, tr, n_feat=3000, seed=0):
+    """Random Fourier features of the standardized population rate vector, (trials, n_feat)."""
+    n = len(counts)
+    z = np.concatenate([feats[0], np.sqrt(counts.sum(-1))], axis=1)
+    z = (z - z[tr].mean(0)) / (z[tr].std(0) + 1e-9)
+    rng = np.random.default_rng(seed)
+    sub = z[tr][rng.choice(tr.sum(), min(500, tr.sum()), replace=False)]
+    d2 = ((sub[:, None, :] - sub[None, :, :]) ** 2).sum(-1)
+    sigma = np.sqrt(np.median(d2[d2 > 0]))
+    w = rng.normal(0, 1 / sigma, (z.shape[1], n_feat))
+    b = rng.uniform(0, 2 * np.pi, n_feat)
+    return np.concatenate([z, np.cos(z @ w + b)], axis=1)  # linear terms first, so the linear fit is nested
+
+
+def regress_out_rff(feats, phi, tr, labels, lams=(1e-4, 1e-3, 1e-2, 1e-1, 1.0)):
+    """Ridge regression of every detail (levels 2 on) on phi, lambda chosen on an inner blocked split.
+
+    lambda is relative to the mean eigenvalue of the feature Gram matrix, so the
+    grid means the same thing whatever the feature scale.
+    """
+    itr, ite = blocked_split(int(tr.sum()), labels[tr], test_frac=0.25)
+    tr_idx = np.nonzero(tr)[0]
+    out = [feats[0]]
+    for f in feats[1:]:
+        def fit(idx, lam):
+            x, y = phi[idx], f[idx]
+            mx, my = x.mean(0), y.mean(0)
+            xc = x - mx
+            g = xc.T @ xc
+            beta = np.linalg.solve(g + lam * np.trace(g) / len(g) * np.eye(len(g)), xc.T @ (y - my))
+            return lambda q: my + (q - mx) @ beta
+        scores = [((f[tr_idx[ite]] - fit(tr_idx[itr], lam)(phi[tr_idx[ite]])) ** 2).mean() for lam in lams]
+        pred = fit(tr_idx, lams[int(np.argmin(scores))])
+        out.append(f - pred(phi))
+    return out
+
+
 def pyramid(counts, k):
     n = len(counts)
     return np.concatenate([np.log1p(pool_counts(counts, L)).reshape(n, -1) for L in (1, 2, 5, 10, 25, 50)[:k]], axis=1)
 
 
-def features(readout, counts, spikes_ms, bases, tr, state=None):
+def features(readout, counts, spikes_ms, bases, tr, state=None, labels=None):
     n, u, _ = counts.shape
     if readout == "state":
         return state_feats(state, tr)
@@ -153,6 +204,14 @@ def features(readout, counts, spikes_ms, bases, tr, state=None):
         st = state_feats(state, tr)
         base = detail_feats(counts, bases)[0] if readout == "rate_state" else pyramid(counts, 3)
         return np.concatenate([base, st], axis=1)
+    if readout == "rate_rff":
+        return rate_rff(counts, detail_feats(counts, bases), tr)
+    if readout.endswith("_rffrate"):
+        feats = detail_feats(counts, bases)
+        reg = regress_out_rff(feats, rate_rff(counts, feats, tr), tr, labels)
+        if readout == "d23_rffrate":
+            return np.concatenate([reg[1], reg[2]], axis=1)
+        return reg[int(readout[6]) - 1]
     if readout.endswith("_popstate"):
         feats = detail_feats(counts, bases)
         cov = np.stack([feats[0], np.sqrt(counts.sum(-1))], axis=-1)
@@ -226,7 +285,7 @@ def one(counts, spikes_ms, labels, readout, bases, state=None, seed=0):
         x = pyramid(counts, int(k))
     else:
         tr, te = blocked_split(len(labels), labels)
-        x = features(readout, counts, spikes_ms, bases, tr, state)
+        x = features(readout, counts, spikes_ms, bases, tr, state, labels)
     clf, c = fit_clf_nested(x[tr], labels[tr])
     return score(clf, x[te], labels[te]), c
 

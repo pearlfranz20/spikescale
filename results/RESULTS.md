@@ -1559,6 +1559,86 @@ which are not separated here; each state's decoder trains on 1,800 to
 absolute accuracies in this table are not comparable with the rest of the
 results, only the two states with each other.
 
+## A nonlinear rate regression: the linear fit is not what left the details standing (11 Nov 2026)
+
+The rate regression of the detail section is linear: each detail is
+projected off the population rate vector (every unit's whole-window count,
+as log1p and as sqrt) by least squares on the training trials. A detail
+that depended on rate through a curve rather than a line would survive
+that regression without being rate-independent. This section repeats the
+regression with a flexible model. The rate vector is standardized on the
+training trials and expanded with 3,000 random Fourier features (a
+Gaussian kernel with its bandwidth at the median pairwise distance of the
+training rows), the linear columns kept in front so the linear fit is
+nested, and each detail is regressed on the expansion by ridge with the
+penalty chosen on an inner time-blocked split. The same expansion is also
+fed to the decoder in place of the count alone, as a check that it can
+represent what a nonlinear readout of rate would see. All sixteen samples,
+60 units, 5 seeds, same subsets and split as everywhere
+(`scripts/latency_readout.py --tag nonlin`, raw numbers in
+`latency_allen_<session>_<area>_nonlin.json`).
+
+| sample | count: linear / nonlinear decoder | 125 ms detail: alone / linear rate-regressed / nonlinear rate-regressed / rate-and-timing-regressed | 50 ms detail: same | nonlinear-regressed minus control, worst seed (125, 50 ms) | both details, nonlinear-regressed |
+| --- | --- | --- | --- | --- | --- |
+| VISp 105 | 0.41 / 0.42 | 0.21 / 0.11 / 0.09 / 0.07 | 0.17 / 0.09 / 0.07 / 0.07 | 0.06, 0.05 | 0.11 |
+| VISp 424 | 0.38 / 0.39 | 0.21 / 0.12 / 0.11 / 0.06 | 0.15 / 0.08 / 0.06 / 0.06 | 0.08, 0.04 | 0.11 |
+| VISp 445 | 0.38 / 0.38 | 0.18 / 0.11 / 0.10 / 0.05 | 0.19 / 0.09 / 0.08 / 0.07 | 0.07, 0.05 | 0.13 |
+| VISp 393 | 0.57 / 0.57 | 0.28 / 0.13 / 0.11 / 0.08 | 0.21 / 0.12 / 0.10 / 0.09 | 0.08, 0.07 | 0.14 |
+| VISp 464 | 0.41 / 0.42 | 0.20 / 0.10 / 0.09 / 0.07 | 0.20 / 0.11 / 0.09 / 0.09 | 0.06, 0.06 | 0.13 |
+| VISal 105 | 0.22 / 0.23 | 0.12 / 0.08 / 0.07 / 0.05 | 0.11 / 0.06 / 0.06 / 0.05 | 0.05, 0.04 | 0.10 |
+| VISal 424 | 0.36 / 0.36 | 0.20 / 0.13 / 0.12 / 0.06 | 0.17 / 0.10 / 0.08 / 0.08 | 0.08, 0.05 | 0.13 |
+| VISl 424 | 0.37 / 0.39 | 0.20 / 0.12 / 0.11 / 0.06 | 0.18 / 0.10 / 0.09 / 0.07 | 0.08, 0.06 | 0.13 |
+| VISrl 105 | 0.18 / 0.18 | 0.08 / 0.06 / 0.05 / 0.04 | 0.08 / 0.06 / 0.06 / 0.04 | 0.04, 0.04 | 0.08 |
+| VISpm 105 | 0.41 / 0.41 | 0.16 / 0.09 / 0.08 / 0.06 | 0.15 / 0.07 / 0.06 / 0.05 | 0.06, 0.03 | 0.10 |
+| VISam 424 | 0.14 / 0.14 | 0.10 / 0.08 / 0.07 / 0.03 | 0.06 / 0.05 / 0.04 / 0.04 | 0.06, 0.03 | 0.07 |
+| VISam 393 | 0.34 / 0.35 | 0.18 / 0.11 / 0.10 / 0.06 | 0.16 / 0.09 / 0.08 / 0.07 | 0.09, 0.06 | 0.14 |
+| LGd 445 | 0.34 / 0.36 | 0.12 / 0.06 / 0.06 / 0.04 | 0.16 / 0.07 / 0.06 / 0.07 | 0.04, 0.04 | 0.09 |
+| LGd 393 | 0.58 / 0.60 | 0.23 / 0.10 / 0.09 / 0.05 | 0.30 / 0.12 / 0.09 / 0.09 | 0.07, 0.07 | 0.14 |
+| LP 445 | 0.09 / 0.10 | 0.06 / 0.05 / 0.05 / 0.03 | 0.07 / 0.05 / 0.04 / 0.04 | 0.03, 0.03 | 0.07 |
+| LP 464 | 0.18 / 0.18 | 0.12 / 0.08 / 0.08 / 0.05 | 0.12 / 0.08 / 0.07 / 0.06 | 0.06, 0.05 | 0.12 |
+
+Sample names end in the last three digits of the session id. Chance is
+0.008; the time-shuffled controls are 0.01 to 0.02.
+
+**A nonlinear readout of the count sees little the linear one misses.**
+Decoding the image from the rate vector and its random features changes
+accuracy by -0.002 to 0.020 against the linear count readout in the
+twelve cortical samples and both LP, and gains 0.022 to 0.028 in the
+two LGd samples. The expansion is expressive enough to overfit if there
+were nothing to find, and in cortex it finds nothing, so the count's image
+information there is linear in the log count as far as this decoder is
+concerned; LGd's count carries a small nonlinear part, in keeping with its
+larger and more rate-driven responses.
+
+**The nonlinear regression removes a little more than the linear one and
+leaves the details standing.** After the nonlinear fit the 125 ms detail
+keeps 0.82 to 1.03 of its linearly-regressed accuracy and the 50 ms
+detail 0.74 to 0.95, that is, -0.001 to 0.021 and 0.003 to 0.032
+absolute removed on top of the linear fit (the largest extra removals are
+in the second LGd, the smallest in the first LP, where the nonlinear fit
+takes nothing more from the 125 ms detail). Relative to the detail alone
+that is 0.39 to 0.83 (125 ms) and 0.30 to 0.70 (50 ms) surviving,
+against 0.43 to 0.75 and 0.40 to 0.83 after the linear fit. The
+timing-regressed figures in the same table, which remove a further share
+through covariates the rate expansion does not contain, stay lower in
+every sample. What survives the nonlinear regression is above the shuffled
+control by at least 0.03 (125 ms) and 0.03
+(50 ms) in every seed of every sample, and both details together,
+nonlinearly rate-regressed, decode 0.07 to 0.14.
+
+**Reading.** The caveat that the rate regression is linear is closed in
+the direction the rest of the results need: a flexible function of the
+population rate accounts for only a few hundredths more of the details
+than a line does. The detail information is not a nonlinear echo of the
+count. Rate-matched strata, the other version of this test, would decode
+the details within trials of near-equal population count; with 118 images
+and 60 units the strata would be thin, and the regression with a kernel
+expansion asks the same question with all the trials. One limit: 3,000
+random features approximate the Gaussian kernel, not represent it, and the
+bandwidth is a single median heuristic; a different kernel would move the
+numbers by a few thousandths, not reverse them, given how close the
+nonlinear and linear figures already are.
+
 ## Caveats
 
 - Synthetic codes are easy (the continuous pyramid is at 1.00), so they test
@@ -1580,8 +1660,10 @@ results, only the two states with each other.
   it is not tested.
 - The per-scale detail analysis uses a sqrt transform on 5 ms bins and a
   single session; the synthetic checks cover planted codes of one kind at a
-  time, not mixtures. The rate regression is linear and uses the window
-  count only.
+  time, not mixtures. The rate regression of the detail section is linear
+  and uses the window count only; the nonlinear version (random-feature
+  kernel ridge on the population rate vector, section above) removes a few
+  hundredths more and leaves the details above the control in every seed.
 - The 125 and 50 ms details are, in large part, old quantities in new
   coordinates. The level-2 detail of a unit is its second-half minus
   first-half count, so it measures how transient or sustained the response
@@ -1629,14 +1711,15 @@ results, only the two states with each other.
    population response as a whole. Running and pupil as covariates (11
    Nov) explain none of it, and the pyramid's profile is the same within
    running and within stationary trials, with locomotion scaling the
-   information up. Nothing from this list is open. Candidates beyond it:
-   a nonlinear rate regression (decode the details within rate-matched
-   trial strata), a longer window on a stimulus with a gray gap (the
-   drifting gratings or the natural movies) to see whether the 50 ms
-   scale is tied to the 250 ms presentation, and the state split in the
-   thalamus with a session where the mouse runs more.
+   information up. A nonlinear rate regression (11 Nov, random Fourier
+   features of the population rate vector) removes a few hundredths more
+   than the linear one. Nothing from this list is open. Candidates beyond
+   it: a longer window on a stimulus with a gray gap (the drifting gratings
+   or the natural movies) to see whether the 50 ms scale is tied to the
+   250 ms presentation, and the state split in the thalamus with a session
+   where the mouse runs more.
 3. Done on 11 Nov 2026 (rate-regressed details): about half of the 125 and
    50 ms detail information survives regression on the population rate
-   vector. A nonlinear version (regress on rate with a flexible model, or
-   decode detail within rate-matched trial strata) would close the
-   remaining gap.
+   vector. The nonlinear version (11 Nov, kernel ridge on random Fourier
+   features of the rate vector) removes a few hundredths more; the
+   remainder is not a nonlinear function of the count.
