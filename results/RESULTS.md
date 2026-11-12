@@ -1749,7 +1749,7 @@ At the 50 ms level the running trials decode 3.0 times better in VISp and
 animals; stationary VISp here decodes the image at only 0.19.
 
 **In running trials LGd shows the thalamic profile and VISp the cortical
-one.** VISp peaks at 50 ms in both states and falls to 0.75 (running) and
+one.** VISp peaks at 50 ms in both states and falls to 0.74 (running) and
 0.71 (stationary) of that by 5 ms. Running LGd peaks at 25 ms and is flat
 from 50 to 10 ms (0.193, 0.208, 0.202), keeping 0.90 of its 50 ms
 accuracy at 5 ms: the flat, finer-reaching profile of the four thalamic
