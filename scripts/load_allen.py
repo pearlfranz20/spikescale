@@ -38,7 +38,8 @@ BIN_MS = 5
 def get_cache(manifest_dir: Path):
     from allensdk.brain_observatory.ecephys.ecephys_project_cache import EcephysProjectCache
     manifest_dir.mkdir(parents=True, exist_ok=True)
-    return EcephysProjectCache.from_warehouse(manifest=str(manifest_dir / "manifest.json"))
+    # AllenSDK caps each file download at 1200 s by default; a 2.8 GB NWB on a 1 MB/s connection needs about an hour.
+    return EcephysProjectCache.from_warehouse(manifest=str(manifest_dir / "manifest.json"), timeout=4 * 3600)
 
 
 def list_sessions(cache):
