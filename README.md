@@ -21,7 +21,8 @@ tests).
 
 Two more stimuli in three animals bound the claim. On the natural movie,
 which has no stimulus onsets, cortex is still read best at 50 ms in 250 ms
-segments, and over 1 s segments LGd and LP are read best at 25 to 50 ms
+segments, and over 1 s segments (where not at ceiling) LGd and LP are read
+best at 25 to 50 ms
 against 125 to 500 ms in cortex. On drifting gratings, which carry their own
 fast drive, cortex is read as well at 10 to 25 ms as at 50, so the fall of
 cortical accuracy below 50 ms belongs to natural images; over 2 s of
