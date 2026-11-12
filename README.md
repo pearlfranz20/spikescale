@@ -57,11 +57,12 @@ information appears. The idea follows Next-Concept Modeling
 - [x] Explicit latency readout on all sixteen samples: first-spike latency and centre of mass do not substitute for the pooled counts and leave the 125 and 50 ms details above the control in every seed
 - [x] Behavioural state: running and pupil explain none of the detail information; the pyramid's profile is the same within running and stationary trials, locomotion scales it up
 - [x] Nonlinear rate regression (kernel ridge on random Fourier features of the population rate vector): removes a few hundredths more than the linear fit; the details stay above the control in every seed
-- [x] Drifting gratings (session 750749662, sixth animal): the 50 ms onset optimum is not set by the next image; in 1 to 2 s windows the count catches up in cortex, not in LGd
+- [x] Drifting gratings (750749662, then 763673393 and 757216464): no window is read better coarser, but the cortical 50 ms peak at grating onset is not robust (flat from 50 to 10 ms in two animals); in 2 s windows the thalamus gains 0.12 to 0.25 from timing, cortex mostly little
 - [x] Thalamic state split (same session): within running trials LGd keeps its flat 50 to 10 ms profile while VISp peaks at 50 ms; stationary LGd too weak to resolve
 - [x] Full pipeline on the same session's VISp, LGd and LP: VISp inside every cortical range, a weak LGd still thalamic, LP not driven by the scenes
 - [x] Natural movie (same session): the 50 ms optimum holds without stimulus onsets; in 1 s segments LGd and LP are best at 50 ms bins, cortex at 125 to 500 ms
 - [x] Natural movie in a second animal (763673393): the 250 ms profile and LGd's finer details replicate; 1 s segments at ceiling
+- [x] Natural movie in a third animal (757216464): LP reads the movie finer than VISp (25 ms against 50 ms in 250 ms segments, 25 against 250 ms in 1 s segments)
 - ~~E4 fixed-resolution ladder comparison~~ dropped on 1 Nov 2026: what the
   ladder should compare was never written down, and the decoder bake-off and
   E3b already answer the per-level question on real data

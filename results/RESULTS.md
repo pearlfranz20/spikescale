@@ -1731,6 +1731,10 @@ nonlinear and linear figures already are.
 
 ## Drifting gratings: the 50 ms optimum is not set by the next image, and long windows favour the count (12 Nov 2026)
 
+*Revised with two more animals in "The gratings in two more animals" below: the 50 ms
+cortical peak at grating onset did not replicate, and the count catches up in most but
+not all cortical samples.*
+
 Natural scenes play back to back every 250 ms, so every window above ends
 where the next image begins, and the 50 ms optimum could in principle be a
 property of that boundary rather than of the tissue. The drifting gratings
@@ -1959,6 +1963,76 @@ ms details are above the control in every seed in both animals (here by
 0.22 and 0.12), VISam's in neither, and VISp's 25 ms detail in both, its
 10 ms detail in one.
 
+### LP in a second movie animal: session 757216464 (12 Nov 2026)
+
+The fifth animal's VISp and LP (88 and 116 units), the LP rich on the
+scenes (0.32 at 60 units), with the same movie readouts
+(`gratings_allen_757216464_<area>_movie.json`).
+
+| sample (units) | 250 ms segments: count / best at bin (ms) | 10 ms level / 5 ms level, as a share of the best | 1000 ms segments: count / best at bin (ms) | 1000 ms segments: 25 ms / 10 ms detail minus control, worst seed |
+| --- | --- | --- | --- | --- |
+| VISp 464 (88) | 0.17 / 0.20 at 50 | 0.81 / 0.69 | 0.48 / 0.61 at 250 | +0.01 / +0.01 |
+| LP 464 (116) | 0.21 / 0.30 at 25 | 0.93 / 0.82 | 0.56 / 0.80 at 25 | +0.06 / +0.00 |
+
+**LP reads the movie finer than VISp, in both segment lengths.** In 250 ms
+segments LP is best at 25 ms in every seed and keeps 0.93 of that at
+10 ms; this animal's VISp, weakly driven by the movie (0.20), is best at
+50 ms in three seeds and keeps 0.81. In 1000 ms segments, below ceiling
+here, LP is best at 25 ms in three seeds and gains 0.20 to 0.28 over the
+count; VISp is best at 250 ms in four seeds and gains 0.10 to 0.17. This is
+the sixth animal's 1 s result (LGd and LP at 50 ms, cortex at 125 to
+500 ms) in a second animal and a second thalamic nucleus.
+
+### The gratings in two more animals: a revision (12 Nov 2026)
+
+The gratings readouts on 763673393 (VISp, VISam, LGd) and 757216464 (VISp,
+LP), beside the sixth animal, with the scenes pyramid of the same units
+(`gratings_allen_<session>_<area>.json`).
+
+| sample | scenes, 250 ms | condition, 250 ms: count / best / 5 ms | direction, 250 ms | condition, 2000 ms | direction, 2000 ms | 10 ms jitter cost, condition, 250 ms, 10 ms level |
+| --- | --- | --- | --- | --- | --- | --- |
+| VISp 662 | 0.33 / 0.40 at 50 | 0.20 / 0.33 at 50 / 0.27 | 0.59 / 0.67 at 25 | 0.57 / 0.58 at 50 | 0.91 / 0.91 at 2000 | -0.01 |
+| VISam 662 | 0.12 / 0.17 at 50 | 0.12 / 0.17 at 50 / 0.13 | 0.42 / 0.48 at 25 | 0.31 / 0.32 at 125 | 0.78 / 0.79 at 250 | +0.02 |
+| LGd 662 | 0.11 / 0.16 at 25 | 0.12 / 0.19 at 5 / 0.19 | 0.27 / 0.30 at 10 | 0.24 / 0.36 at 50 | 0.40 / 0.44 at 25 | +0.00 |
+| VISp 393 | 0.54 / 0.62 at 50 | 0.26 / 0.32 at 25 / 0.29 | 0.60 / 0.67 at 25 | 0.49 / 0.71 at 10 | 0.79 / 0.83 at 500 | +0.00 |
+| VISam 393 | 0.33 / 0.44 at 50 | 0.11 / 0.17 at 25 / 0.14 | 0.47 / 0.50 at 25 | 0.40 / 0.47 at 25 | 0.76 / 0.79 at 50 | -0.01 |
+| LGd 393 | 0.57 / 0.70 at 25 | 0.35 / 0.72 at 10 / 0.70 | 0.52 / 0.82 at 10 | 0.70 / 0.87 at 25 | 0.83 / 0.91 at 25 | +0.06 |
+| VISp 464 | 0.40 / 0.49 at 50 | 0.15 / 0.21 at 10 / 0.21 | 0.50 / 0.53 at 50 | 0.49 / 0.54 at 50 | 0.76 / 0.76 at 2000 | +0.03 |
+| LP 464 | 0.18 / 0.32 at 25 | 0.14 / 0.27 at 10 / 0.23 | 0.38 / 0.48 at 25 | 0.32 / 0.57 at 25 | 0.50 / 0.67 at 25 | +0.03 |
+
+Chance: scenes 0.008, condition 0.025, direction 0.125. Each gratings
+figure rests on 120 held-out trials per seed (differences under about
+0.04 are noise).
+
+**The cortical onset profile on gratings does not replicate as a 50 ms
+peak.** In the sixth animal VISp and VISam peaked at 50 ms in the first
+250 ms of a grating. In the two new animals cortex is flat from 50 to
+10 ms on the 40 conditions (VISp 0.32, 0.32, 0.32 and 0.20, 0.20, 0.21;
+VISam 0.15, 0.17, 0.17), while the scenes pyramid of the same units peaks
+at 50 ms and falls below it in all five cortical samples. Gratings drift
+from the first frame, at up to 15 Hz, so their onset response already
+carries temporal-frequency information in 10 to 25 ms bins (temporal
+frequency alone rises to the 5 to 10 ms levels in two of the three VISp).
+For direction, the static attribute, cortex is best at 25 to 50 ms and
+loses 0.02 to 0.10 by 5 ms, nearer the scenes profile. So the earlier
+claim is narrowed: the fall of cortical accuracy below 50 ms belongs to
+natural images (flashed in the scenes, continuous in the movie, where it
+replicated in two animals); a stimulus with its own fast drive is read
+as well at 10 to 25 ms. The original point stands: the 50 ms scenes
+optimum is not created by the next image, since nothing in any of these
+windows is read better coarser.
+
+**In long windows the robust difference is again thalamus against
+cortex.** Over 2 s, direction is read from the count in cortex (VISp at
+the count or within 0.04 of it in all three animals, VISam flat), while
+LGd gains 0.04 and 0.08 and LP 0.17, all at 25 ms bins. On the 40 conditions
+the thalamus gains 0.12 to 0.25 over the count in every sample; cortex
+gains 0.01 to 0.07 in four samples and 0.22 in the fourth animal's VISp,
+so "the count catches up in cortex" holds in most cortical samples but
+not all. LGd in the fourth animal shows the clearest fine timing of any
+sample: the 40 conditions at 0.72 with 10 ms bins in the first 250 ms
+against 0.35 for the count, and a 10 ms jitter cost of 0.06.
+
 ## Caveats
 
 - Synthetic codes are easy (the continuous pyramid is at 1.00), so they test
@@ -2040,10 +2114,11 @@ ms details are above the control in every seed in both animals (here by
    session): running LGd keeps the flat, finer-reaching thalamic profile;
    stationary LGd is too weak there to resolve. The natural movie
    (12 Nov, same session): the 50 ms optimum holds without onsets, and in
-   1 s segments LGd and LP read finer than cortex; the 250 ms profile and
-   LGd's finer details replicate in 763673393 (its 1 s readout is at
-   ceiling). Running: the movie and gratings in 757216464 (VISp, LP) and
-   the gratings in 763673393.
+   1 s segments LGd and LP read finer than cortex; replicated in 763673393
+   (250 ms profile, LGd details) and 757216464 (LP at 25 ms against VISp at
+   250 ms in 1 s segments). Gratings in the same two animals: the cortical
+   50 ms peak at grating onset does not replicate (flat from 50 to 10 ms);
+   the thalamus gains from timing in long windows in every sample.
 3. Done on 11 Nov 2026 (rate-regressed details): about half of the 125 and
    50 ms detail information survives regression on the population rate
    vector. The nonlinear version (11 Nov, kernel ridge on random Fourier
