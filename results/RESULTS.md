@@ -2033,6 +2033,66 @@ not all. LGd in the fourth animal shows the clearest fine timing of any
 sample: the 40 conditions at 0.72 with 10 ms bins in the first 250 ms
 against 0.35 for the count, and a 10 ms jitter cost of 0.06.
 
+## Thalamus against cortex, tested: animals as the unit (12 Nov 2026)
+
+Every thalamus-against-cortex statement above is a range comparison across
+samples. `scripts/stats_tissue.py` tests each claim on the per-sample seed
+means, with three views of the uncertainty: an exact permutation of the
+thalamus/cortex labels within each animal (so a difference between animals
+cannot produce the effect; animals with one tissue only add nothing to the
+null), an exact permutation over all samples ignoring animals, and a 95%
+hierarchical bootstrap of the difference (animals resampled, then samples
+within them). Four primary metrics, one per claim, were fixed before the
+run and Holm-corrected over their within-animal p values; four secondary
+ones are reported uncorrected. A sample enters a stimulus's tests if it
+decodes that stimulus at three times chance or more, which drops LP of
+750749662 from the scenes (raw output: `results/stats_tissue.json`).
+
+| metric | samples, thalamus / cortex (animals) | mean, thalamus / cortex | difference [95% CI] | p, within animals | p, pooled | Holm | thalamic samples inside the cortical range |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| scenes: 10 ms level / 50 ms level | 5 / 13 (6) | 0.974 / 0.894 | +0.080 [+0.050, +0.104] | 0.028 (1/36 floor) | 0.0001 | 0.11 | 0 of 5 |
+| scenes: 25 ms detail / count | 5 / 13 (6) | 0.226 / 0.156 | +0.070 [+0.033, +0.103] | 0.028 (1/36 floor) | 0.0005 | 0.11 | 2 of 5 |
+| movie 250 ms: 10 ms level / best | 4 / 6 (3) | 0.913 / 0.835 | +0.079 [+0.002, +0.168] | 0.250 (1/60 floor) | 0.1667 | 0.47 | 1 of 4 |
+| gratings 2 s: best minus count | 4 / 6 (3) | 0.139 / 0.066 | +0.072 [-0.043, +0.203] | 0.233 (1/60 floor) | 0.2333 | 0.47 | 2 of 4 |
+| scenes: 5 ms level / 50 ms level | 5 / 13 (6) | 0.864 / 0.786 | +0.078 [-0.022, +0.168] | 0.139 (1/36 floor) | 0.0127 | (secondary) | 2 of 5 |
+| scenes: 50 ms / 125 ms detail | 5 / 13 (6) | 1.221 / 0.879 | +0.341 [+0.128, +0.485] | 0.056 (1/36 floor) | 0.0005 | (secondary) | 1 of 5 |
+| scenes: 10 ms jitter cost at 10 ms | 5 / 13 (6) | 0.010 / 0.007 | +0.004 [-0.005, +0.009] | 0.111 (1/36 floor) | 0.1571 | (secondary) | 1 of 5 |
+| movie 1 s: best bin (log2 ms) | 4 / 6 (3) | 5.724 / 7.632 | -1.908 [-3.322, -0.500] | 0.033 (1/60 floor) | 0.0190 | (secondary) | 1 of 4 |
+
+**On the scenes the division is as strong as this design can show.** The
+pyramid's 10 ms level keeps 0.97 of the 50 ms accuracy in the thalamus
+and 0.89 in cortex, with no thalamic sample inside the cortical range
+(pooled p = 0.0001, bootstrap interval +0.05 to +0.10). The 25 ms detail
+is 0.23 of the count in the thalamus against 0.16 (pooled p = 0.0005;
+two thalamic samples sit at the top of the cortical range). Within
+animals both reach p = 0.028, the smallest value the test can give: only
+four animals carry both tissues, so there are 36 relabellings and the
+observed one is the most extreme. That floor is also why neither
+survives the Holm correction over four tests (0.11). The test that
+controls for animals is underpowered here, not contradicted: in every one
+of the four animals with both tissues the thalamus is flatter below
+50 ms than the same animal's cortex.
+
+**On the movie and the gratings the differences go the same way and are
+not significant on their own.** Three animals, ten samples: the movie's
+10 ms level keeps 0.91 of the best in the thalamus against 0.84 in cortex
+(p = 0.25 within animals, interval just above zero), and the thalamus
+gains 0.14 from timing over 2 s of grating against 0.07 in cortex
+(p = 0.23, interval spanning zero: the sixth animal's LP, barely driven
+by the gratings, gains nothing, and the fourth animal's VISp gains 0.22). The secondary 1 s movie bin width is finer in
+the thalamus (2^5.7, about 50 ms, against 2^7.6, about 200 ms; p = 0.033
+within animals, uncorrected).
+
+**Reading.** The central claim, that the thalamus keeps its accuracy into
+finer bins than the cortex on natural scenes, holds with complete
+separation across 18 samples and in each of the four animals that have
+both. The movie and gratings results are consistent with it and add
+direction, not independent significance. A design that could reach
+conventional significance after correction needs more animals with both
+tissues; at 36 within-animal relabellings the smallest p is 0.028, and
+each further animal with one thalamic and two cortical samples multiplies
+the count by three.
+
 ## Caveats
 
 - Synthetic codes are easy (the continuous pyramid is at 1.00), so they test
@@ -2119,6 +2179,11 @@ against 0.35 for the count, and a 10 ms jitter cost of 0.06.
    250 ms in 1 s segments). Gratings in the same two animals: the cortical
    50 ms peak at grating onset does not replicate (flat from 50 to 10 ms);
    the thalamus gains from timing in long windows in every sample.
+   Thalamus against cortex tested per claim with animals as the unit
+   (12 Nov): complete separation on the scenes; the movie and gratings
+   differences point the same way without reaching significance alone.
+   The remaining step is more animals with both tissues (each adds power
+   to the within-animal test), not new analyses.
 3. Done on 11 Nov 2026 (rate-regressed details): about half of the 125 and
    50 ms detail information survives regression on the population rate
    vector. The nonlinear version (11 Nov, kernel ridge on random Fourier

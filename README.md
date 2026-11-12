@@ -10,10 +10,26 @@ with the 125 ms and 50 ms shapes each decodable on their own, about half
 of that shape information not a linear function of firing rate, a small
 component at 25 ms and nothing at 5 ms. The thalamus differs in the same
 direction in all five samples (LGd in three animals, LP in two): a flat
-pyramid from 50 down to 10 ms and a larger 25 ms share, and in LGd a 25 ms
-optimum, a decodable 10 ms shape and a cost from 10 ms jitter that no
-cortical sample shows (`results/RESULTS.md`; one figure over all samples in
-`results/summary.png`).
+pyramid from 50 down to 10 ms and a larger 25 ms share, and in the two
+richer LGd samples a 25 ms optimum, a decodable 10 ms shape and a cost from
+10 ms jitter that no cortical sample shows. Tested with animals as the unit,
+the flatness separates the tissues completely (10 ms over 50 ms accuracy
+0.97 against 0.89, no thalamic sample inside the cortical range, p = 0.0001
+pooled; within the four animals that have both tissues p = 0.028, the
+smallest the design allows, which does not survive correction over four
+tests).
+
+Two more stimuli in three animals bound the claim. On the natural movie,
+which has no stimulus onsets, cortex is still read best at 50 ms in 250 ms
+segments, and over 1 s segments LGd and LP are read best at 25 to 50 ms
+against 125 to 500 ms in cortex. On drifting gratings, which carry their own
+fast drive, cortex is read as well at 10 to 25 ms as at 50, so the fall of
+cortical accuracy below 50 ms belongs to natural images; over 2 s of
+grating the thalamus gains 0.12 to 0.25 from timing over the count, cortex
+mostly less than 0.08. These differences point the same way as the scenes
+but are not significant on their own with three animals
+(`results/RESULTS.md`; figures over all samples in `results/summary.png`
+and `results/summary_stimuli.png`).
 
 The analysis started as a test of a multiscale residual VQ tokenizer for
 spikes, which is kept as one of four readouts. Its gate was a clear win over
@@ -63,6 +79,7 @@ information appears. The idea follows Next-Concept Modeling
 - [x] Natural movie (same session): the 50 ms optimum holds without stimulus onsets; in 1 s segments LGd and LP are best at 50 ms bins, cortex at 125 to 500 ms
 - [x] Natural movie in a second animal (763673393): the 250 ms profile and LGd's finer details replicate; 1 s segments at ceiling
 - [x] Natural movie in a third animal (757216464): LP reads the movie finer than VISp (25 ms against 50 ms in 250 ms segments, 25 against 250 ms in 1 s segments)
+- [x] Thalamus against cortex tested with animals as the unit: complete separation on the scenes (pooled p = 0.0001; 0.028 within animals, the design's floor); movie and gratings same direction, not significant alone
 - ~~E4 fixed-resolution ladder comparison~~ dropped on 1 Nov 2026: what the
   ladder should compare was never written down, and the decoder bake-off and
   E3b already answer the per-level question on real data
@@ -89,6 +106,8 @@ scripts/
   plot_e3.py     E3 and E3b figure
   compare_external.py  pyramid decoding under random 10-fold CV and all units, to set beside published numbers
   plot_summary.py      cross-sample figure over all area samples (results/summary.png)
+  plot_stimuli.py      movie and gratings across animals, and the tissue test (results/summary_stimuli.png)
+  stats_tissue.py      thalamus against cortex per claim: exact permutations within animals and pooled, hierarchical bootstrap
   residual_levels.py   decode from each level's orthogonal detail alone (is the information at a scale unique to it?),
                        with rate-regressed readouts (--readouts detail_unitrate,detail_poprate,shuffled_unitrate --tag rate)
   latency_readout.py   are the 125 and 50 ms details just first-spike latency and centre of mass, per unit or for the population? (no);
