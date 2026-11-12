@@ -1855,6 +1855,74 @@ in one animal, LGd reaches finer than VISp. Whether it holds as clearly
 in stationary trials needs a session with a more informative stationary
 LGd; this one cannot say.
 
+## The natural movie: the 50 ms optimum without onsets, and a finer thalamus in 1 s windows (12 Nov 2026)
+
+The gratings showed that the 50 ms optimum does not depend on the next
+stimulus, but every window there and in the scenes still began at a
+stimulus onset. natural_movie_one, shown 20 times in the same session
+(750749662), is a 30 s clip that changes continuously with no onset after
+its first frame. `scripts/load_allen_movie.py` extracts every repeat at 1 ms
+(same units as the scenes files), and `scripts/gratings_pyramid.py --movie`
+cuts the clip into consecutive segments, 120 of 250 ms and 30 of 1000 ms,
+and decodes which segment a response came from with the same pyramid,
+readouts, decoder, 60-unit subsets and time-blocked split (the last 4 of the
+20 repeats held out). Five areas, 5 seeds
+(`gratings_allen_750749662_<area>_movie.json`).
+
+### Whole-window count / best level at its bin width (ms) / 5 ms level
+
+| area (units) | scenes, 250 ms (count / best) | movie, 250 ms segments | movie, 1000 ms segments |
+| --- | --- | --- | --- |
+| VISp (60) | 0.33 / 0.40 at 50 | 0.40 / 0.48 at 50 / 0.38 | 0.88 / 0.94 at 500 / 0.89 |
+| VISpm (68) | 0.09 / 0.12 at 50 | 0.17 / 0.21 at 125 / 0.10 | 0.53 / 0.63 at 125 / 0.47 |
+| VISam (68) | 0.12 / 0.17 at 50 | 0.28 / 0.33 at 50 / 0.25 | 0.67 / 0.74 at 125 / 0.62 |
+| LGd (83) | 0.11 / 0.16 at 25 | 0.20 / 0.27 at 25 / 0.22 | 0.49 / 0.73 at 50 / 0.66 |
+| LP (145) | 0.02 / 0.02 at 25 | 0.08 / 0.10 at 50 / 0.07 | 0.27 / 0.44 at 50 / 0.33 |
+
+Chance is 0.008 for 250 ms segments and 0.033 for 1000 ms segments. The
+250 ms figures rest on 480 held-out trials per seed and the 1000 ms ones on
+120, so differences under about 0.02 and 0.04 respectively are noise. VISp
+has exactly 60 units here and its five seeds count as one.
+
+**Without onsets, the 250 ms profile is the scenes profile.** VISp peaks at
+50 ms in every seed (0.48 against 0.40 for the count) and VISam at 50 ms
+in four seeds of five, as on the scenes; VISpm peaks at 125 ms. LGd peaks at
+25 to 50 ms and keeps 0.93 of its best accuracy at 10 ms. The details
+decode as on the scenes: the 125 and 50 ms details are above the
+time-shuffled control in every seed of every area except the 50 ms detail
+of VISpm and LP, and VISp's 10 ms detail is 0.03 to 0.05 above the control,
+with a 10 ms jitter cost of 0.01 to 0.06 per seed at that level. So the
+50 ms scale is not a property of the onset transient alone: a continuously
+changing natural input is read best at the same bin width.
+
+**LP is driven by the movie.** At 0.10 with 60 units (0.44 with 1000 ms
+segments), against 0.02 on the scenes, LP in this animal follows the
+movie, as a nucleus with motion-sensitive and collicular input would. Its
+250 ms profile peaks at 50 to 125 ms.
+
+**In 1000 ms segments the thalamus reads finer than the cortex.** Within a
+second of movie the picture changes many times, so unlike the 2 s of a
+static grating the count does not catch up: every area gains from binning.
+Cortex is best at 125 to 500 ms bins (VISp at 500 ms in every seed, though
+near its ceiling of 0.94; VISpm at 125 ms in four seeds; VISam at 50 to
+250 ms) and gains 0.06 to 0.10 over the count. LGd and LP are best at 50 to
+125 ms (50 ms in three seeds of five in each; one LP seed at 250 ms) and
+gain 0.24 and 0.17 over the count, the largest gains over the count in any
+analysis here. LGd's 25 and 10 ms details are
+above the control in every seed (by at least 0.04 and 0.02) and VISp's too;
+VISpm's, VISam's and LP's are not.
+
+**Reading.** The 50 ms optimum of the 250 ms window holds for a stimulus
+with no onsets, so it reflects how these areas encode a changing image,
+not only how they respond to a new one. Over longer stretches of the movie
+the best bin is the timescale at which each area's response follows the
+content, and that is finer in LGd and LP (50 ms) than in cortex (125 to
+500 ms), the thalamus-against-cortex division of the scenes appearing again
+on a different stimulus. Limits: one session, 20 repeats, 120 held-out
+trials per seed for the 1000 ms segments, and segments of one clip are not
+independent stimuli (neighbouring segments share content, which the
+time-blocked split does not remove).
+
 ## Caveats
 
 - Synthetic codes are easy (the continuous pyramid is at 1.00), so they test
@@ -1934,8 +2002,10 @@ LGd; this one cannot say.
    long windows the count catches up in cortex but not in LGd. Nothing
    from this list is open. The state split in the thalamus (12 Nov, same
    session): running LGd keeps the flat, finer-reaching thalamic profile;
-   stationary LGd is too weak there to resolve. Candidate beyond it: the
-   natural movies as a continuous stimulus.
+   stationary LGd is too weak there to resolve. The natural movie
+   (12 Nov, same session): the 50 ms optimum holds without onsets, and in
+   1 s segments LGd and LP read finer than cortex. Candidate beyond it: the
+   movie in the other sessions, which would need their NWBs again.
 3. Done on 11 Nov 2026 (rate-regressed details): about half of the 125 and
    50 ms detail information survives regression on the population rate
    vector. The nonlinear version (11 Nov, kernel ridge on random Fourier

@@ -60,6 +60,7 @@ information appears. The idea follows Next-Concept Modeling
 - [x] Drifting gratings (session 750749662, sixth animal): the 50 ms onset optimum is not set by the next image; in 1 to 2 s windows the count catches up in cortex, not in LGd
 - [x] Thalamic state split (same session): within running trials LGd keeps its flat 50 to 10 ms profile while VISp peaks at 50 ms; stationary LGd too weak to resolve
 - [x] Full pipeline on the same session's VISp, LGd and LP: VISp inside every cortical range, a weak LGd still thalamic, LP not driven by the scenes
+- [x] Natural movie (same session): the 50 ms optimum holds without stimulus onsets; in 1 s segments LGd and LP are best at 50 ms bins, cortex at 125 to 500 ms
 - ~~E4 fixed-resolution ladder comparison~~ dropped on 1 Nov 2026: what the
   ladder should compare was never written down, and the decoder bake-off and
   E3b already answer the per-level question on real data
@@ -78,7 +79,9 @@ scripts/
   load_allen.py  extract natural-scenes trials from one Allen session
   load_allen_state.py  per-trial running speed and pupil area for an extracted session
   load_allen_gratings.py  drifting-gratings trials (2 s, 40 conditions) for one area
-  gratings_pyramid.py  the pyramid on gratings in 250, 1000 and 2000 ms windows, beside the scenes pyramid of the same units
+  load_allen_movie.py  natural_movie_one repeats (30 s at 1 ms) for one or more areas
+  gratings_pyramid.py  the pyramid on gratings in 250, 1000 and 2000 ms windows, beside the scenes pyramid of the same units;
+                       --movie cuts the natural movie into 250 and 1000 ms segments
   run_e3.py      E3 and E3b on an extracted session (codes, recon, both pyramids, four decoders)
   merge_e3.py    merge E3 runs split over seeds
   plot_e3.py     E3 and E3b figure

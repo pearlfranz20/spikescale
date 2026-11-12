@@ -29,6 +29,13 @@ With --scenes, the same readouts run on the area's natural-scenes trials in
 the 250 ms window (label set img, 118 images), on the same unit subsets, so
 the two stimuli are compared within one script and one decoder.
 
+With --movie (data/allen_<id>_<area>_movie.npz from load_allen_movie.py), the
+30 s natural_movie_one is cut into consecutive segments of 250 ms (label set
+seg, 120 segments) and of 1000 ms (30 segments), every segment a trial in each
+of the 20 repeats, and the same readouts run on them. The movie has no onsets
+after its first frame, so it asks whether the 50 ms optimum belongs to the
+onset response or to the tissue.
+
 Output: results/gratings_allen_<id>_<area>.json with
   runs[seed<k>][<dg|scenes>/w<W>/<labels>/<readout>] = list over levels of held-out accuracy
   mean[...] the same, averaged over seeds; levels[w<W>] the bin widths in ms.
@@ -55,6 +62,7 @@ WINDOWS = {250: (1, 2, 5, 10, 25, 50),
            1000: (1, 2, 4, 8, 20, 40, 100, 200),
            2000: (1, 2, 4, 8, 16, 40, 80, 200, 400)}
 LABELS = ("cond", "ori", "tf")
+MOVIE_WINDOWS = (250, 1000)
 READOUTS = ("pyramid", "detail", "shuffled", "jitter10")
 
 
@@ -93,14 +101,16 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", required=True, help="data/allen_<id>_<area>_dg.npz")
     ap.add_argument("--scenes", default="", help="the area's natural-scenes file, for the 250 ms pyramid on the same units")
+    ap.add_argument("--movie", default="", help="the area's natural_movie_one file, cut into 250 and 1000 ms segments")
     ap.add_argument("--n-units", type=int, default=60)
     ap.add_argument("--repeats", type=int, default=5)
     ap.add_argument("--jobs", type=int, default=8)
     ap.add_argument("--windows", default="250,1000,2000")
     ap.add_argument("--readouts", default=",".join(READOUTS))
     ap.add_argument("--out", default="results")
+    ap.add_argument("--tag", default="", help="suffix for the output file, e.g. _movie")
     args = ap.parse_args()
-    windows = [int(w) for w in args.windows.split(",")]
+    windows = [int(w) for w in args.windows.split(",") if w]  # --windows "" skips the gratings
     readouts = args.readouts.split(",")
 
     d = np.load(args.data)
@@ -121,23 +131,42 @@ def main():
         data["scenes"] = (s["spikes_ms"].astype(np.int16), {"img": s["labels"]}, s["labels"], [250], ("img",))
         print(f"scenes: {len(s['labels'])} trials, same {s['spikes_ms'].shape[1]} units", flush=True)
 
+    if args.movie:
+        m = np.load(args.movie)
+        assert np.array_equal(m["unit_ids"], d["unit_ids"]), "movie file has a different unit set"
+        mv = m["spikes_ms"]  # (repeats, units, 30000)
+        per_w = {}
+        for w in MOVIE_WINDOWS:
+            n_seg = mv.shape[2] // w
+            segs = mv[:, :, :n_seg * w].reshape(mv.shape[0], mv.shape[1], n_seg, w)
+            x = segs.transpose(2, 0, 1, 3).reshape(n_seg * mv.shape[0], mv.shape[1], w)  # segment-major, repeats in time order
+            seg = np.repeat(np.arange(n_seg), mv.shape[0])
+            per_w[w] = (x.astype(np.int16), {"seg": seg}, seg)
+        data["movie"] = (per_w, None, None, list(MOVIE_WINDOWS), ("seg",))
+        print(f"movie: {mv.shape[0]} repeats, segments of {list(MOVIE_WINDOWS)} ms", flush=True)
+
+    def get(ds, w):
+        sp, lab, split = data[ds][:3]
+        return sp[w] if isinstance(sp, dict) else (sp, lab, split)
+
     jobs = [(ds, seed, w, ls, ro) for ds, (_, _, _, ws, lss) in data.items() for seed in range(args.repeats)
-            for w in ws for ls in lss for ro in readouts if not (ro == "jitter10" and ls not in ("cond", "img"))]
+            for w in ws for ls in lss for ro in readouts if not (ro == "jitter10" and ls not in ("cond", "img", "seg"))]
     t0 = time.time()
     res = Parallel(n_jobs=args.jobs, verbose=5)(
-        delayed(one)(subsample(data[ds][0], args.n_units, seed), data[ds][1], data[ds][2], w, ls, ro, seed)
+        delayed(one)(subsample(get(ds, w)[0], args.n_units, seed), get(ds, w)[1], get(ds, w)[2], w, ls, ro, seed)
         for ds, seed, w, ls, ro in jobs)
     print(f"{len(jobs)} jobs in {time.time() - t0:.0f}s", flush=True)
 
-    out = {"data": args.data, "scenes": args.scenes, "n_units": args.n_units, "repeats": args.repeats,
+    out = {"data": args.data, "scenes": args.scenes, "movie": args.movie, "n_units": args.n_units, "repeats": args.repeats,
            "n_trials": int(len(cond)), "repeats_per_condition": [int(reps.min()), int(reps.max())],
-           "levels": {f"w{w}": [w // L for L in WINDOWS[w]] for w in set(windows) | {250}},
-           "chance": {ls: 1 / len(np.unique(v)) for ls, v in labels_all.items()}, "runs": {}, "mean": {}}
+           "levels": {f"w{w}": [w // L for L in WINDOWS[w]] for w in set(windows) | {250} | (set(MOVIE_WINDOWS) if args.movie else set())},
+           "chance": {**{ls: 1 / len(np.unique(v)) for ls, v in labels_all.items()},
+                      **({f"seg_w{w}": 1 / (30000 // w) for w in MOVIE_WINDOWS} if args.movie else {})}, "runs": {}, "mean": {}}
     for (ds, seed, w, ls, ro), (accs, cs) in zip(jobs, res):
         out["runs"].setdefault(f"seed{seed}", {})[f"{ds}/w{w}/{ls}/{ro}"] = {"acc": accs, "c": cs}
     for key in {k for r in out["runs"].values() for k in r}:
         out["mean"][key] = np.mean([r[key]["acc"] for r in out["runs"].values() if key in r], axis=0).tolist()
-    path = Path(args.out) / f"gratings_{name}.json"
+    path = Path(args.out) / f"gratings_{name}{args.tag}.json"
     path.write_text(json.dumps(out, indent=1))
     for ds, (_, _, _, ws, lss) in data.items():
         for w in ws:
