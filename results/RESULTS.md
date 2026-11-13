@@ -2098,6 +2098,9 @@ the count by three.
 
 ## Seven more animals with both tissues: the tissue test at twelve animals (12 Nov 2026)
 
+*Rate matching (two sections down) halves the scenes ratio's difference and
+removes its significance; the other three primary claims survive it.*
+
 The test of the previous section was limited by its design, not its data:
 four animals had both tissues, so the within-animal p could not go below
 0.028. Seven more sessions were added for that test alone, each chosen to
@@ -2217,6 +2220,105 @@ on the gratings, where the stimulus's own temporal frequency drives
 cortex finely too. The previous section's table is kept as it ran on
 18 samples.
 
+## Rate-matched thalamus: half of the scenes flatness is firing rate (13 Nov 2026)
+
+The thalamic samples fire faster than the cortical ones (about 10 against
+7 Hz in the decoding windows; `scripts/rates_tissue.py`,
+`results/rates_tissue.json`), and over the 38 scenes samples the 10 ms over
+50 ms ratio tracks the median unit rate (r = 0.73; in a regression on
+log rate and tissue together, the tissue term falls from +0.067 to
++0.009, though the two tissues' rates barely overlap, so the regression
+cannot separate them). More spikes leave fewer empty 10 ms bins, so rate
+alone could flatten the pyramid. The direct test: every thalamic sample is
+thinned to the mean rate of the same animal's cortical samples on the same
+stimulus (`gratings_pyramid.py --thin-to`). Each decoded 60-unit subset
+has its spikes deleted independently at random, with keep probability equal
+to the target over the subset's rate in the window, and spike times are
+untouched. A sample already at or below the target is left as it is: LP of
+743475441 and 797828357, and LP of 751348571 on the gratings. Same
+seeds, units, decoder and split; pyramid and detail readouts only. Then
+`stats_tissue.py --thinned` reruns the test with each thalamic sample's
+rate-matched values and the cortex and sample set unchanged
+(`results/stats_tissue_thinned.json`, raw runs
+`results/gratings_allen_<id>_<area>_thin.json`).
+
+### Per thalamic sample, before / after thinning
+
+Columns: scenes rate / its target (Hz); fraction of spikes kept on the
+scenes, movie and gratings; scenes 10 ms over 50 ms; 25 ms detail share;
+movie 10 ms over best; gratings timing gain over 2 s. LP of 750749662 is
+below the scenes inclusion threshold, so its scenes columns are not in the
+test.
+
+| sample | scenes Hz / target | kept: scenes / movie / gratings | 10/50 | d25 share | movie 10 / best | gratings gain |
+| --- | --- | --- | --- | --- | --- | --- |
+| LGd 715093703 | 11.9 / 7.3 | 0.60 / 0.54 / 0.57 | 0.963 / 0.952 | 0.199 / 0.183 | 0.974 / 0.912 | 0.342 / 0.395 |
+| LP 715093703 | 9.4 / 7.3 | 0.76 / 0.69 / 0.70 | 0.954 / 0.929 | 0.195 / 0.174 | 0.960 / 0.933 | 0.317 / 0.230 |
+| LP 743475441 | 6.4 / 7.0 | 1.00 / 1.00 / 1.00 | 0.944 / 0.944 | 0.315 / 0.315 | 0.954 / 0.951 | 0.112 / 0.112 |
+| LGd 750749662 | 8.6 / 6.9 | 0.82 / 0.70 / 0.71 | 0.944 / 0.917 | 0.208 / 0.216 | 0.935 / 0.882 | 0.127 / 0.133 |
+| LP 750749662 | 9.0 / 6.9 | 0.83 / 0.71 / 0.71 | 0.954 / 0.934 | 0.830 / 0.613 | 0.843 / 0.884 | 0.000 / 0.000 |
+| LP 751348571 | 6.7 / 6.2 | 0.92 / 0.86 / 0.90 | 0.851 / 0.801 | 0.335 / 0.312 | 0.958 / 0.977 | 0.032 / 0.070 |
+| LGd 754829445 | 10.9 / 6.9 | 0.63 / - / - | 0.965 / 0.936 | 0.223 / 0.172 | - | - |
+| LP 754829445 | 7.9 / 6.9 | 0.87 / - / - | 0.982 / 0.937 | 0.270 / 0.276 | - | - |
+| LGd 756029989 | 15.6 / 6.8 | 0.44 / 0.48 / 0.44 | 1.018 / 0.920 | 0.203 / 0.162 | 0.926 / 0.861 | 0.425 / 0.437 |
+| LP 757216464 | 10.7 / 8.1 | 0.76 / 0.77 / 0.64 | 0.985 / 1.004 | 0.242 / 0.218 | 0.926 / 0.893 | 0.252 / 0.205 |
+| LGd 763673393 | 11.1 / 8.0 | 0.75 / 0.68 / 0.60 | 0.995 / 0.970 | 0.189 / 0.164 | 0.949 / 0.937 | 0.177 / 0.228 |
+| LP 797828357 | 5.5 / 7.8 | 1.00 / 1.00 / 1.00 | 0.825 / 0.825 | 0.333 / 0.333 | 0.960 / 0.960 | 0.213 / 0.213 |
+| LP 798911424 | 9.5 / 5.9 | 0.64 / 0.70 / 0.59 | 0.928 / 0.865 | 0.180 / 0.179 | 1.000 / 0.919 | 0.132 / 0.092 |
+| LGd 799864342 | 13.3 / 5.9 | 0.45 / 0.42 / 0.49 | 1.008 / 0.932 | 0.197 / 0.166 | 0.954 / 0.913 | 0.225 / 0.313 |
+
+### The test, original against rate-matched
+
+| metric | original mean, thalamus / cortex | original diff | original Holm | thinned thalamus mean | thinned diff [95% CI] | thinned p, within animals | thinned Holm | animals in the thalamic direction, original | thinned |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| scenes: 10 ms level / 50 ms level | 0.951 / 0.883 | +0.067 | 0.0008 | 0.918 | +0.034 [-0.009, +0.070] | 0.0570 | 0.0570 | 9 of 11 | 8 of 11 |
+| scenes: 25 ms detail / count | 0.238 / 0.157 | +0.081 | < 0.0001 | 0.221 | +0.064 [+0.024, +0.112] | < 0.0001 | 0.0003 | 11 of 11 | 9 of 11 |
+| movie 250 ms: 10 ms level / best | 0.945 / 0.857 | +0.088 | 0.0006 | 0.918 | +0.062 [+0.019, +0.105] | 0.0061 | 0.0133 | 10 of 10 | 9 of 10 |
+| gratings 2 s: best minus count | 0.196 / 0.105 | +0.091 | 0.0091 | 0.202 | +0.097 [+0.007, +0.196] | 0.0044 | 0.0133 | 7 of 10 | 8 of 10 |
+| scenes: 5 ms level / 50 ms level | 0.850 / 0.761 | +0.089 | (secondary) | 0.788 | +0.027 [-0.017, +0.072] | 0.2578 | (secondary) | - | - |
+| scenes: 50 ms / 125 ms detail | 1.229 / 0.903 | +0.325 | (secondary) | 1.153 | +0.250 [+0.108, +0.397] | 0.0003 | (secondary) | - | - |
+| movie 1 s: best bin (log2 ms) | 5.034 / 7.067 | -2.033 | (secondary) | 5.531 | -1.536 [-2.626, -0.568] | 0.0013 | (secondary) | 10 of 10 | 9 of 10 |
+
+(The jitter metric is not in the thinned runs. For the 1 s bin, the
+thalamic direction is finer.)
+
+**The pyramid's flatness on the scenes is about half firing rate.** At
+matched rate the thalamic 10 ms over 50 ms ratio falls from 0.95 to 0.92,
+and the difference from cortex halves, from +0.067 to +0.034. It is no
+longer significant within animals (p = 0.057, interval -0.009 to +0.070),
+and 9 of 13 thalamic samples now lie inside the cortical range, against
+3. LGd no longer separates completely: thinned, it spans 0.917 to 0.970
+against a cortical maximum of 0.938. The secondary 5 ms over 50 ms ratio
+loses its difference entirely (+0.027, p = 0.26). The way the thalamus
+keeps its accuracy into fine bins on the scenes, the measure the earlier
+sections led with, is to a large extent the way any population with more
+spikes would.
+
+**What the thalamus carries in its fine temporal shape is not.** The 25 ms
+detail share, the information in the 25 ms shape orthogonal to every
+coarser scale, falls only from +0.081 to +0.064 over cortex (p < 0.001,
+Holm 0.0003, 9 of 11 animals). The 50 over 125 ms detail ratio keeps
+three quarters of its difference. On the movie, the 10 ms level keeps
+0.92 of the best against 0.86 (Holm 0.013, 9 of 10 animals), and the best
+bin width in 1 s segments stays finer (p = 0.001, 9 of 10). The gratings'
+timing gain does not shrink at all: thinning the thalamus leaves it at
++0.097 over cortex, and its interval now excludes zero (Holm 0.013). Three
+of the four primary claims survive rate matching after correction; the
+one that does not is the ratio of accuracies, not the detail.
+
+**Reading.** Two things were mixed in the thalamic profile. A population
+that fires more keeps more of its accuracy when bins shrink, and the
+thalamus fires more. Separately, at equal rate, the thalamus puts more
+image and movie information into 25 ms structure that no coarser scale
+contains, reads the movie best at finer widths, and gains more from
+timing over a long grating. The second is the tissue difference. The
+first is a rate effect that the earlier sections, and the README
+headline, credited to the tissue. Random deletion is a harsh model of a
+slower population: it adds count noise that a neuron firing naturally at
+the lower rate need not have, so the rate-matched numbers are if anything
+a lower bound on the thalamus. The match is also on the population mean
+rate only, not on how rate is spread across units.
+
 ## Caveats
 
 - Synthetic codes are easy (the continuous pyramid is at 1.00), so they test
@@ -2315,6 +2417,10 @@ cortex finely too. The previous section's table is kept as it ran on
    in all, eleven with both): all four primary claims survive Holm
    correction within animals; LGd separates from cortex in every
    sample, LP on average (two weakly driven LP samples do not).
+   Rate-matched by spike thinning (13 Nov): about half of the scenes
+   flatness (10 ms over 50 ms) is firing rate and is no longer significant;
+   the 25 ms detail share, the movie's finer reading and the gratings'
+   timing gain survive at matched rate.
 3. Done on 11 Nov 2026 (rate-regressed details): about half of the 125 and
    50 ms detail information survives regression on the population rate
    vector. The nonlinear version (11 Nov, kernel ridge on random Fourier

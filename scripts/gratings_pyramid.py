@@ -36,6 +36,14 @@ of the 20 repeats, and the same readouts run on them. The movie has no onsets
 after its first frame, so it asks whether the 50 ms optimum belongs to the
 onset response or to the tissue.
 
+With --thin-to scenes=H,movie=H,dg=H (targets from scripts/rates_tissue.py),
+every decoded 60-unit subset first has its spikes deleted independently at
+random (keep probability = target / the subset's rate in the window, the same
+deletion for every readout of a seed) so that the population fires at H Hz;
+a subset already at or below H is left alone. Spike times are not moved. This
+asks whether a sample's profile across bin widths is set by how many spikes
+it has. Without --data, only --scenes (and --movie) are run.
+
 Output: results/gratings_allen_<id>_<area>.json with
   runs[seed<k>][<dg|scenes>/w<W>/<labels>/<readout>] = list over levels of held-out accuracy
   mean[...] the same, averaged over seeds; levels[w<W>] the bin widths in ms.
@@ -76,11 +84,31 @@ def pyramid(counts, lengths, k):
     return np.concatenate([np.log1p(pool_counts(counts, L)).reshape(n, -1) for L in lengths[:k + 1]], axis=1)
 
 
-def one(spikes_ms, labels_all, split_labels, window, label_set, readout, seed):
+def thin(spikes_ms, window, target_hz, rng):
+    """Delete spikes independently at random until the population fires at target_hz in the window.
+
+    Returns the thinned spikes and the keep probability (1.0 when the rate is
+    already at or below the target: spikes are never added)."""
+    x = spikes_ms[..., :window]
+    hz = x.sum(dtype=np.int64) / x.size * 1000
+    p = min(1.0, target_hz / hz) if hz > 0 else 1.0
+    if p >= 1.0:
+        return spikes_ms, 1.0
+    out = spikes_ms.copy()
+    idx = np.nonzero(out)
+    out[idx] = rng.binomial(out[idx].astype(np.int64), p).astype(out.dtype)
+    return out, float(p)
+
+
+def one(spikes_ms, labels_all, split_labels, window, label_set, readout, seed, thin_hz=None):
     """Accuracy at every level of `window` for one readout, label set and unit subset."""
     lengths = WINDOWS[window]
     y = labels_all[label_set]
     tr, te = blocked_split(len(y), split_labels)
+    keep = 1.0
+    if thin_hz:
+        # same thinning for every readout and label set of a seed, so readouts stay comparable
+        spikes_ms, keep = thin(spikes_ms, window, thin_hz, np.random.default_rng(3000 + seed))
     if readout == "jitter10":
         spikes_ms = jitter_spikes(spikes_ms, 10.0, np.random.default_rng(2000 + seed))
     counts = bin_counts(spikes_ms, window)
@@ -94,12 +122,15 @@ def one(spikes_ms, labels_all, split_labels, window, label_set, readout, seed):
         clf, c = fit_clf_nested(x[tr], y[tr])
         accs.append(score(clf, x[te], y[te]))
         cs.append(c)
-    return accs, cs
+    return accs, cs, keep
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--data", required=True, help="data/allen_<id>_<area>_dg.npz")
+    ap.add_argument("--data", default="", help="data/allen_<id>_<area>_dg.npz (optional with --scenes: scenes only)")
+    ap.add_argument("--dg-labels", default=",".join(LABELS), help="gratings label sets to decode")
+    ap.add_argument("--thin-to", default="",
+                    help="thin spikes to these population rates (Hz) per dataset, e.g. scenes=7.3,movie=7.0,dg=7.0")
     ap.add_argument("--scenes", default="", help="the area's natural-scenes file, for the 250 ms pyramid on the same units")
     ap.add_argument("--movie", default="", help="the area's natural_movie_one file, cut into 250 and 1000 ms segments")
     ap.add_argument("--n-units", type=int, default=60)
@@ -113,27 +144,35 @@ def main():
     windows = [int(w) for w in args.windows.split(",") if w]  # --windows "" skips the gratings
     readouts = args.readouts.split(",")
 
-    d = np.load(args.data)
-    spikes_all = d["spikes_ms"].astype(np.int16)
-    cond = d["labels"]
-    labels_all = {"cond": cond,
-                  "ori": np.searchsorted(np.unique(d["ori"]), d["ori"]),
-                  "tf": np.searchsorted(np.unique(d["tf"]), d["tf"])}
-    name = Path(args.data).stem.replace("_dg", "")
-    reps = np.bincount(cond)
-    print(f"{name}: {len(cond)} trials, {spikes_all.shape[1]} units, {len(reps)} conditions, "
-          f"{reps.min()} to {reps.max()} repeats; mean rate {spikes_all.sum(-1).mean() / spikes_all.shape[2] * 1000:.1f} Hz", flush=True)
-    # dataset -> (spikes, label sets, labels for the split, windows, label-set names)
-    data = {"dg": (spikes_all, labels_all, cond, windows, LABELS)}
+    thin_hz = {k: float(v) for k, v in (kv.split("=") for kv in args.thin_to.split(",") if kv)}
+    dg_labels = tuple(args.dg_labels.split(","))
+    data = {}  # dataset -> (spikes, label sets, labels for the split, windows, label-set names)
+    if args.data:
+        d = np.load(args.data)
+        unit_ids = d["unit_ids"]
+        spikes_all = d["spikes_ms"].astype(np.int16)
+        cond = d["labels"]
+        labels_all = {"cond": cond,
+                      "ori": np.searchsorted(np.unique(d["ori"]), d["ori"]),
+                      "tf": np.searchsorted(np.unique(d["tf"]), d["tf"])}
+        name = Path(args.data).stem.replace("_dg", "")
+        reps = np.bincount(cond)
+        print(f"{name}: {len(cond)} trials, {spikes_all.shape[1]} units, {len(reps)} conditions, "
+              f"{reps.min()} to {reps.max()} repeats; mean rate {spikes_all.sum(-1).mean() / spikes_all.shape[2] * 1000:.1f} Hz", flush=True)
+        data["dg"] = (spikes_all, labels_all, cond, windows, dg_labels)
+    else:
+        assert args.scenes, "--data or --scenes is required"
+        unit_ids, cond, labels_all, reps = None, np.zeros(0, int), {}, np.zeros(1, int)
+        name = Path(args.scenes).stem
     if args.scenes:
         s = np.load(args.scenes)
-        assert np.array_equal(s["unit_ids"], d["unit_ids"]), "scenes file has a different unit set"
+        assert unit_ids is None or np.array_equal(s["unit_ids"], unit_ids), "scenes file has a different unit set"
         data["scenes"] = (s["spikes_ms"].astype(np.int16), {"img": s["labels"]}, s["labels"], [250], ("img",))
         print(f"scenes: {len(s['labels'])} trials, same {s['spikes_ms'].shape[1]} units", flush=True)
 
     if args.movie:
         m = np.load(args.movie)
-        assert np.array_equal(m["unit_ids"], d["unit_ids"]), "movie file has a different unit set"
+        assert unit_ids is None or np.array_equal(m["unit_ids"], unit_ids), "movie file has a different unit set"
         mv = m["spikes_ms"]  # (repeats, units, 30000)
         per_w = {}
         for w in MOVIE_WINDOWS:
@@ -153,17 +192,19 @@ def main():
             for w in ws for ls in lss for ro in readouts if not (ro == "jitter10" and ls not in ("cond", "img", "seg"))]
     t0 = time.time()
     res = Parallel(n_jobs=args.jobs, verbose=5)(
-        delayed(one)(subsample(get(ds, w)[0], args.n_units, seed), get(ds, w)[1], get(ds, w)[2], w, ls, ro, seed)
+        delayed(one)(subsample(get(ds, w)[0], args.n_units, seed), get(ds, w)[1], get(ds, w)[2], w, ls, ro, seed,
+                     thin_hz.get(ds))
         for ds, seed, w, ls, ro in jobs)
     print(f"{len(jobs)} jobs in {time.time() - t0:.0f}s", flush=True)
 
     out = {"data": args.data, "scenes": args.scenes, "movie": args.movie, "n_units": args.n_units, "repeats": args.repeats,
+           "thin_to": thin_hz,
            "n_trials": int(len(cond)), "repeats_per_condition": [int(reps.min()), int(reps.max())],
            "levels": {f"w{w}": [w // L for L in WINDOWS[w]] for w in set(windows) | {250} | (set(MOVIE_WINDOWS) if args.movie else set())},
            "chance": {**{ls: 1 / len(np.unique(v)) for ls, v in labels_all.items()},
                       **({f"seg_w{w}": 1 / (30000 // w) for w in MOVIE_WINDOWS} if args.movie else {})}, "runs": {}, "mean": {}}
-    for (ds, seed, w, ls, ro), (accs, cs) in zip(jobs, res):
-        out["runs"].setdefault(f"seed{seed}", {})[f"{ds}/w{w}/{ls}/{ro}"] = {"acc": accs, "c": cs}
+    for (ds, seed, w, ls, ro), (accs, cs, keep) in zip(jobs, res):
+        out["runs"].setdefault(f"seed{seed}", {})[f"{ds}/w{w}/{ls}/{ro}"] = {"acc": accs, "c": cs, "keep": keep}
     for key in {k for r in out["runs"].values() for k in r}:
         out["mean"][key] = np.mean([r[key]["acc"] for r in out["runs"].values() if key in r], axis=0).tolist()
     path = Path(args.out) / f"gratings_{name}{args.tag}.json"

@@ -29,7 +29,7 @@ A sample enters a stimulus's tests when its best level decodes that stimulus
 at three times chance or more (this drops LP of 750749662 from the scenes).
 
     PYTHONPATH=. python scripts/stats_tissue.py
-Output: results/stats_tissue.json and a table on stdout.
+Output: results/stats_tissue.json (with --thinned: stats_tissue_thinned.json) and a table on stdout.
 """
 from __future__ import annotations
 
@@ -173,17 +173,48 @@ def holm(ps):
     return adj
 
 
+def thinned(sc, st):
+    """Replace every thalamic sample's metrics by those of its rate-matched run (gratings_pyramid.py --thin-to,
+    results/gratings_allen_<id>_<area>_thin.json). The samples, the cortex and the inclusion stay as they are."""
+    for r in sc:
+        if r["area"] not in THAL:
+            continue
+        g = json.load(open(RES / f"gratings_allen_{r['sid']}_{r['area']}_thin.json"))["mean"]
+        pyr, det = np.array(g["scenes/w250/img/pyramid"]), np.array(g["scenes/w250/img/detail"])
+        r.update(scenes_10_50=pyr[4] / pyr[2], scenes_d25=det[3] / det[0], scenes_5_50=pyr[5] / pyr[2],
+                 scenes_d50_d125=det[2] / det[1])
+    for r in st:
+        if r["area"] not in THAL:
+            continue
+        m = json.load(open(RES / f"gratings_allen_{r['sid']}_{r['area']}_thin.json"))
+        p, q = np.array(m["mean"]["movie/w250/seg/pyramid"]), np.array(m["mean"]["movie/w1000/seg/pyramid"])
+        c = np.array(m["mean"]["dg/w2000/cond/pyramid"])
+        if "movie_10_best" in r:
+            r.update(movie_10_best=p[4] / p.max(), movie_1s_bin=np.log2(m["levels"]["w1000"][int(np.argmax(q))]))
+        if "dg_gain2000" in r:
+            r["dg_gain2000"] = c.max() - c[0]
+    return sc, st
+
+
 def main():
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--thinned", action="store_true", help="thalamic samples from their rate-matched runs")
+    args = ap.parse_args()
     sc, st = scenes_metrics(), stim_metrics()
     keys = {"scenes_10_50": sc, "scenes_d25": sc, "movie_10_best": st, "dg_gain2000": st,
             "scenes_5_50": sc, "scenes_d50_d125": sc, "scenes_jit10": sc, "movie_1s_bin": st}
+    if args.thinned:
+        sc, st = thinned(sc, st)
+        del keys["scenes_jit10"]  # the thinned runs have no jitter readout
     res = {k: test(rows, k) for k, rows in keys.items()}
     adj = holm(np.array([res[k]["p_stratified"] for k in PRIMARY]))
     for k, a in zip(PRIMARY, adj):
         res[k]["p_stratified_holm"] = float(a)
     out = {"primary": list(PRIMARY), "results": res,
            "samples": {"scenes": [f"{r['area']} {r['sid']}" for r in sc], "movie_gratings": [f"{r['area']} {r['sid']}" for r in st]}}
-    (RES / "stats_tissue.json").write_text(json.dumps(out, indent=1))
+    name = "stats_tissue_thinned.json" if args.thinned else "stats_tissue.json"
+    (RES / name).write_text(json.dumps(out, indent=1))
     print(f"{'metric':16s} {'thal n':>6s} {'ctx n':>5s} {'anim':>4s} {'thal mean':>9s} {'ctx mean':>8s} {'diff':>7s} "
           f"{'95% CI':>16s} {'p strat':>8s} {'(perms)':>7s} {'p pooled':>8s} {'Holm':>6s} {'thal in ctx range':>17s}")
     for k, r in res.items():
@@ -191,7 +222,7 @@ def main():
         print(f"{k:16s} {r['n_thal']:6d} {r['n_ctx']:5d} {r['n_animals']:4d} {r['thal_mean']:9.3f} {r['ctx_mean']:8.3f} "
               f"{r['diff']:+7.3f} [{r['ci95'][0]:+.3f}, {r['ci95'][1]:+.3f}] {r['p_stratified']:8.3f} {r['n_perm_stratified']:7d} "
               f"{r['p_pooled']:8.4f} {h:>6s} {r['thal_inside_ctx_range']:>8d} of {r['n_thal']}")
-    print("wrote results/stats_tissue.json")
+    print(f"wrote results/{name}")
 
 
 if __name__ == "__main__":

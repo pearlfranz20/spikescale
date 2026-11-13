@@ -11,13 +11,17 @@ of that shape information not a linear function of firing rate, a small
 component at 25 ms and nothing at 5 ms. The thalamus reads finer. Twenty
 more samples from seven mice, added to test this, bring the count to 38
 samples (13 thalamic) in twelve mice, eleven of them with both tissues.
-Within animals, the thalamus keeps more of its 50 ms accuracy at 10 ms
-(0.95 against 0.88), carries a larger 25 ms share (in all eleven mice)
-and reads the natural movie finer (in all ten mice with movie data); each
-holds at p < 0.001 after correction over four tests. LGd separates from
-cortex in every sample (each of the six above every cortical sample). LP
-does on average, but two weakly driven LP samples are as steep below
-50 ms as cortex on the scenes.
+The thalamus also fires faster (about 10 against 7 Hz), and thinning its
+spikes at random to the same animal's cortical rate separates two effects.
+That the thalamus keeps more of its 50 ms accuracy at 10 ms (0.95 against
+0.88) is about half firing rate: at matched rate the difference halves
+and is no longer significant (p = 0.057). What survives rate matching is
+in the fine temporal shape. Within animals and after correction over four
+tests, the thalamus carries a larger share of image information in 25 ms
+structure that no coarser scale contains (p < 0.001, 9 of 11 mice),
+reads the natural movie better at 10 ms relative to its best (9 of 10
+mice) and gains more from timing over 2 s of grating (Holm 0.013 for
+both).
 
 Two more stimuli bound the claim. On the natural movie, which has no
 stimulus onsets, cortex is still read best at 50 ms in 250 ms segments
@@ -26,8 +30,7 @@ about 30 ms against about 130 ms in cortex. On drifting gratings, which
 carry their own fast drive, cortex is read as well at 10 to 25 ms as at
 50, so the fall of cortical accuracy below 50 ms belongs to natural
 images; over 2 s of grating the thalamus gains more from timing over the
-count (0.20 against 0.11, p = 0.009 within animals), the weakest of the
-four claims, with three of ten mice going the other way or tied
+count (0.20 against 0.11; unchanged at matched rate)
 (`results/RESULTS.md`; figures in `results/summary.png` for the six mice
 analysed in full and `results/summary_stimuli.png` for all).
 
@@ -81,6 +84,7 @@ information appears. The idea follows Next-Concept Modeling
 - [x] Natural movie in a third animal (757216464): LP reads the movie finer than VISp (25 ms against 50 ms in 250 ms segments, 25 against 250 ms in 1 s segments)
 - [x] Thalamus against cortex tested with animals as the unit: complete separation on the scenes (pooled p = 0.0001; 0.028 within animals, the design's floor); movie and gratings same direction, not significant alone
 - [x] Seven more sessions with both tissues (scenes, movie and gratings on the same units; twelve mice, eleven with both): all four primary claims survive Holm correction within animals; LGd separates from cortex in every sample, LP on average
+- [x] Rate-matched control (thalamic spikes thinned to the same animal's cortical rate): half of the scenes 10/50 flatness is rate and loses significance; the 25 ms detail share, the movie's finer reading and the gratings timing gain survive
 - ~~E4 fixed-resolution ladder comparison~~ dropped on 1 Nov 2026: what the
   ladder should compare was never written down, and the decoder bake-off and
   E3b already answer the per-level question on real data
@@ -108,7 +112,8 @@ scripts/
   compare_external.py  pyramid decoding under random 10-fold CV and all units, to set beside published numbers
   plot_summary.py      cross-sample figure over all area samples (results/summary.png)
   plot_stimuli.py      movie and gratings across animals, and the tissue test (results/summary_stimuli.png)
-  stats_tissue.py      thalamus against cortex per claim: exact permutations within animals and pooled, hierarchical bootstrap
+  stats_tissue.py      thalamus against cortex per claim: exact permutations within animals and pooled, hierarchical bootstrap (--thinned: rate-matched thalamus)
+  rates_tissue.py      firing rate per sample and stimulus, and the thalamic thinning targets
   residual_levels.py   decode from each level's orthogonal detail alone (is the information at a scale unique to it?),
                        with rate-regressed readouts (--readouts detail_unitrate,detail_poprate,shuffled_unitrate --tag rate)
   latency_readout.py   are the 125 and 50 ms details just first-spike latency and centre of mass, per unit or for the population? (no);
