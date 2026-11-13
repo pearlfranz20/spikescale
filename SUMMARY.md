@@ -36,8 +36,11 @@ p = 0.013) and gains more from timing over 2 s of drifting grating (Holm
 p = 0.013).
 
 A kernel SVM and convolutional networks read less than the linear decoder
-at every bin width, so on this data no better decoder finds information
-below 25 ms. A learned multiscale spike tokenizer, the project's starting
+at every bin width. A spike-level transformer trained across all 39
+populations at once (184,000 trials) reads no more from spike times at
+1 ms than from the same spikes rounded to 25 ms (-0.004, 13 of 39
+recordings higher), although 25 to 250 ms timing is worth 0.08 to it. On
+this data, no decoder tried finds image information below 25 ms. A learned multiscale spike tokenizer, the project's starting
 point, kept under half of the decodable information and beat plain
 k-means quantization by only about 0.03.
 
@@ -233,6 +236,29 @@ convolutional networks, with and without a linear path, did worse
 (0.37 to 0.40 at 50 ms in VISp): with about 32 training trials per image
 they overfit within a few epochs.
 
+**More training data.** All 39 populations (25 cortical, 14 thalamic,
+3504 units) saw the same 118 images, so one decoder can be trained on all
+of them: 184,080 training trials instead of about 4,700. A Perceiver over
+individual spikes (after POYO, Azabou et al. 2023; a learned embedding per
+unit, a time encoding per spike, one shared classifier, 1.5 M parameters)
+was trained with every spike time rounded to the centre of a W ms bin, so
+that it could use timing down to W ms and no finer. Same test trials as
+everywhere, mean over the 39 recordings:
+
+| spike times given at | 1 ms | 10 ms | 25 ms | 50 ms | 250 ms |
+| --- | --- | --- | --- | --- | --- |
+| transformer (seeds 0, 1) | 0.381, 0.379 | 0.381 | 0.386, 0.382 | 0.380 | 0.302 |
+
+Paired across recordings, 1 ms is no better than 25 ms (-0.004, 13 of 39
+higher, p = 0.03 in the wrong direction), 25 ms is slightly better than
+50 ms (+0.006, 27 of 39, p = 0.006, carried by cortex: the small 25 ms
+component of Section 3.2), and timing above 25 ms is worth +0.08 in every
+recording. The transformer is 0.035 below a linear decoder on all units of
+each recording (0.419 at its best level), and by about as much on
+whole-window counts alone (0.302 against 0.335). Its deficit is in reading
+which units fire, not in timing, and its comparison across resolutions is
+internal: the same model and training at every W.
+
 ## 4. Figures
 
 - Figure 1, `results/summary.png`: the 18 fully analysed samples. It shows the
@@ -277,10 +303,14 @@ what a capacity-matched linear readout of 60 units can recover with about
 40 training trials per image. Within that, every decoder tried agrees:
 little below 25 ms in cortex, a real but small 25 ms component, and a
 thalamus whose extra 25 ms structure survives rate matching. Whether
-spikes carry more below 25 ms than such decoders can reach is open.
-Neural population decoders that pretrain across many sessions and
-animals, such as the POYO and NDT families, are the tool for that
-question and were not tried here.
+spikes carry more below 25 ms than such decoders can reach was then put to
+a decoder trained across all 39 populations at once, on individual spike
+times, after the POYO family. With forty times the training data it also
+finds nothing below 25 ms. That decoder is below the linear one in
+absolute accuracy, so it is not the strongest possible test; a model
+pretrained on far more sessions, or on other stimuli and spontaneous
+activity, could still differ. But every readout tried, linear, kernel,
+convolutional and transformer, now agrees.
 
 ## 6. Limitations
 
@@ -296,6 +326,11 @@ question and were not tried here.
   rate is spread across units. Random deletion adds count noise that a
   naturally slower population need not have, so the rate-matched
   thalamic numbers are, if anything, a lower bound.
+- **Cross-session transformer.** One architecture and one setting of its
+  training, chosen on validation accuracy at 25 ms and kept for all
+  resolutions; two seeds at 1 and 25 ms, one at 10, 50 and 250 ms. It
+  stays 0.035 below the linear decoder, so its null below 25 ms is weaker
+  evidence than a null from a decoder at least as strong as the linear one.
 - **Tissue test.** The scenes within-animal p values are estimated from
   200,000 random relabellings. The movie and gratings ones are exact.
 
@@ -331,6 +366,8 @@ The main scripts:
 | `rates_tissue.py` | per-sample rates and thinning targets |
 | `stats_tissue.py` | the tissue test (`--thinned` for rate-matched) |
 | `nonlinear_svm.py`, `nonlinear_timing.py` | the nonlinear decoders |
+| `pack_spikes.py`, `spike_transformer.py` | the cross-session spike transformer (GPU), `--res` for the time resolution |
+| `linear_allunits.py` | its linear baseline on all units |
 | `plot_summary.py`, `plot_stimuli.py` | figures |
 
 Every number above is in a JSON under `results/`, named for its session

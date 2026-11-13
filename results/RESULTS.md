@@ -2374,6 +2374,113 @@ they are written: statements about what a capacity-matched linear readout
 can recover at each scale, and within this data set, about what any of the
 decoders tried can recover.
 
+## A cross-session spike transformer: more training data finds nothing below 25 ms either (13 Nov 2026)
+
+The nonlinear decoders above had about 32 training trials per image and
+overfit. The open question they left was whether a decoder with far more
+training data finds image information below 25 ms that the linear one
+misses. All 39 extracted populations (25 cortical, 14 thalamic, including
+the weakly driven LP of 750749662; 3504 units) saw the same 118 images, so
+one decoder trained on all of them at once has 138,060 training trials
+(184,080 with validation) instead of about 4,700.
+
+**Data** (`scripts/pack_spikes.py`): every spike of every trial, 0 to
+250 ms, as a token (global unit index, time in ms); 40.7 million spikes.
+The split is the same time-blocked one as everywhere: the last 20% of each
+image's repeats are test (46,020 trials), and the last 25% of the rest are
+validation (46,020).
+
+**Model** (`scripts/spike_transformer.py`, after POYO, Azabou et al.
+2023): each spike is a learned unit embedding plus a sinusoidal encoding of
+its time (periods 2 to 1024 ms), with one extra token for the recording.
+32 latents cross-attend to the spikes, then 4 self-attention blocks (width
+128, 4 heads), mean over latents, one 118-way head shared by every
+recording; 1.47 M parameters. AdamW (lr 1e-3, weight decay 0.05), 80
+epochs with a 1-epoch warmup and cosine decay, label smoothing 0.1, bf16,
+random unit dropout 0.1. Phase 1 picks the epoch with the best validation
+accuracy; phase 2 retrains on training and validation trials for that many
+epochs and scores the test trials once. The settings were chosen on
+validation accuracy at 25 ms (40 epochs at lr 5e-4: 0.346; 80 at 1e-3:
+0.361; `results/spiketf_res25_seed0_tune{A,B}.json`, and the 1 ms pilot
+`results/spiketf_res1_seed0_pilot.json`) and then fixed for all
+resolutions. RTX 4070 Ti, about 15 s per epoch, 40 to 45 min per run.
+
+**Time resolution as the only variable.** `--res W` moves every spike time
+to the centre of its W ms bin before the model sees it. The model can then
+use timing down to W ms and no finer; W = 250 leaves only which units fired
+how often. Everything else is identical between runs.
+
+**Baseline** (`scripts/linear_allunits.py`, `results/linear_allunits.json`):
+the usual cumulative pyramid and nested-C logistic, one decoder per
+recording, but on all units instead of 60-unit subsets, because the
+transformer reads all units. It is trained on the same 40 training repeats
+per image (the inner split only chooses C) and scored on the same test
+trials.
+
+### Test accuracy, mean over 39 recordings (118 images, chance 0.008)
+
+| decoder | input | all | cortex (25) | thalamus (14) |
+| --- | --- | --- | --- | --- |
+| transformer, seed 0 | spike times at 1 ms | 0.381 | 0.391 | 0.363 |
+| transformer, seed 1 | spike times at 1 ms | 0.379 | 0.392 | 0.358 |
+| transformer, seed 0 | at 10 ms | 0.381 | 0.393 | 0.360 |
+| transformer, seed 0 | at 25 ms | 0.386 | 0.399 | 0.363 |
+| transformer, seed 1 | at 25 ms | 0.382 | 0.393 | 0.361 |
+| transformer, seed 0 | at 50 ms | 0.380 | 0.390 | 0.363 |
+| transformer, seed 0 | at 250 ms (counts only) | 0.302 | 0.308 | 0.291 |
+| linear, per recording | pyramid to 250 ms | 0.335 | 0.349 | 0.309 |
+| linear, per recording | to 50 ms | 0.418 | 0.423 | 0.410 |
+| linear, per recording | to 25 ms | 0.410 | 0.410 | 0.409 |
+| linear, per recording | to 5 ms | 0.348 | 0.338 | 0.365 |
+
+### Paired across the 39 recordings (Wilcoxon signed-rank)
+
+| comparison | mean difference | recordings higher | p |
+| --- | --- | --- | --- |
+| 1 ms against 25 ms (mean of 2 seeds each) | -0.004 | 13 | 0.033 |
+| 1 ms against 25 ms, seed 1 alone | -0.002 | 16 | 0.21 |
+| 10 ms against 25 ms | -0.005 | 14 | 0.051 |
+| 25 ms against 50 ms | +0.006 (cortex +0.009, thalamus +0.001) | 27 | 0.006 |
+| 50 ms against 250 ms | +0.078 | 39 | < 0.001 |
+| transformer at 25 ms (2 seeds) against linear, best level | -0.035 (cortex -0.027, thalamus -0.050) | 4 | < 0.001 |
+| transformer at 250 ms against linear at 250 ms | -0.033 | 4 | < 0.001 |
+
+Seed to seed, a recording's accuracy moves by 0.011 to 0.013 on average,
+so single-recording differences under about 0.02 are noise.
+
+**No information below 25 ms, even with 40 times the training data.** Given
+spike times at 1 ms, the transformer reads slightly less than when the
+same spikes are rounded to 25 ms bins (-0.004, 13 of 39 recordings higher),
+in cortex and in thalamus. 10 ms is no better than 25 ms either. Between
+25 and 50 ms there is a small gain (+0.006, 27 of 39), carried by cortex.
+That matches the small 25 ms component the per-scale analysis found
+(`SUMMARY.md` section 3.2). Timing above 25 ms is worth a
+great deal: rounding to 250 ms costs 0.08 in every recording, about the
+same as the linear decoder's gain from the 250 ms count to its best level
+(0.083).
+
+**The transformer is still below the linear decoder,** by 0.035 at its
+best resolution (4 of 39 recordings higher), more in thalamus than in
+cortex. The deficit is the same with timing removed: on whole-window counts
+alone the transformer is 0.033 below the linear count decoder. So the gap
+is in the readout of which units fire and how often, not in timing.
+Sharing one model across 39 recordings does not make up for about 40
+trials per image per recording. Validation accuracy had flattened by the
+end of the cosine schedule (25 ms seed 0: 0.356 at epoch 50, 0.361 to
+0.362 from epoch 65 on), so the deficit is not a matter of stopping
+early. A larger model or longer schedule might still close it; that was
+not tried.
+
+**Reading.** Below 25 ms, this decoder agrees with every other one tried:
+it finds nothing, now with 184,000 training trials and a model that reads
+spike times at 1 ms directly. That a decoder below the linear one finds
+nothing is weaker evidence than if it had matched it. But the comparison
+here is internal, the same model and training at every resolution, and
+what fine timing would add should show there whatever the absolute level.
+The answer to the question left open in the previous section is the
+same: for natural-image identity in this data, the information is at 25 ms
+and coarser.
+
 ## Caveats
 
 - Synthetic codes are easy (the continuous pyramid is at 1.00), so they test
@@ -2478,8 +2585,9 @@ decoders tried can recover.
    the 25 ms detail share, the movie's finer reading and the gratings'
    timing gain survive at matched rate.
    Nonlinear decoders (13 Nov: kernel SVM, convolutional networks) read
-   less than the linear one at every bin width, in VISp and LGd; testing
-   the fine scales further needs a decoder pretrained across sessions.
+   less than the linear one at every bin width, in VISp and LGd. A
+   cross-session spike transformer (13 Nov, all 39 populations, 184,000
+   training trials) reads no more from spike times at 1 ms than at 25 ms.
 3. Done on 11 Nov 2026 (rate-regressed details): about half of the 125 and
    50 ms detail information survives regression on the population rate
    vector. The nonlinear version (11 Nov, kernel ridge on random Fourier

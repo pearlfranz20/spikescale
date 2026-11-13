@@ -23,7 +23,9 @@ In short, across 38 area samples in twelve mice:
   better at fine bins and gains more from timing over a long grating
   (within animals, Holm-corrected).
 - **Decoders.** Nonlinear decoders (a kernel SVM and convolutional networks)
-  read less than the linear one on this data at every bin width.
+  read less than the linear one on this data at every bin width. A spike
+  transformer trained across all 39 populations at once reads nothing more
+  from spike times at 1 ms than at 25 ms.
 
 The analysis started as a test of a multiscale residual VQ tokenizer for
 spikes, which is kept as one of four readouts. Its gate was a clear win over
@@ -78,6 +80,7 @@ information appears. The idea follows Next-Concept Modeling
 - [x] Rate-matched control (thalamic spikes thinned to the same animal's cortical rate): half of the scenes 10/50 flatness is rate and loses significance; the 25 ms detail share, the movie's finer reading and the gratings timing gain survive
 - [x] Nonlinear decoders (kernel SVM, convolutional networks) against the linear one: none reads more at any bin width in VISp or LGd; with ~32 training trials per image the linear decoder is the best tested
 - [x] Paper-style summary of the whole analysis (`SUMMARY.md`)
+- [x] Cross-session spike transformer (all 39 populations, 184,000 trials, GPU): spike times at 1 ms read no better than at 25 ms; 25 to 250 ms timing worth 0.08; still 0.035 below the per-recording linear decoder
 - ~~E4 fixed-resolution ladder comparison~~ dropped on 1 Nov 2026: what the
   ladder should compare was never written down, and the decoder bake-off and
   E3b already answer the per-level question on real data
@@ -109,6 +112,9 @@ scripts/
   rates_tissue.py      firing rate per sample and stimulus, and the thalamic thinning targets
   nonlinear_svm.py     Gaussian-kernel SVM on the pyramid features, against the linear decoder
   nonlinear_timing.py  temporal convolutional network on 5 ms bins (overfits at this trial count)
+  pack_spikes.py       all scenes populations as one spike-token dataset (data/packed_scenes.npz)
+  spike_transformer.py cross-session Perceiver over spike tokens, --res W rounds spike times to W ms (needs CUDA torch)
+  linear_allunits.py   its baseline: the linear pyramid decoder on all units of each recording
   residual_levels.py   decode from each level's orthogonal detail alone (is the information at a scale unique to it?),
                        with rate-regressed readouts (--readouts detail_unitrate,detail_poprate,shuffled_unitrate --tag rate)
   latency_readout.py   are the 125 and 50 ms details just first-spike latency and centre of mass, per unit or for the population? (no);
