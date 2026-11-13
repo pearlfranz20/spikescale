@@ -1,4 +1,9 @@
-# Results so far, 11 Nov 2026
+# Lab notebook, 27 Oct to 13 Nov 2026
+
+*Every analysis in the order it was run, with later revisions marked where they
+apply. For the current account of the results read `../SUMMARY.md`; in particular,
+the thalamic flatness below 50 ms reported in the earlier sections is about half
+firing rate (section "Rate-matched thalamus").*
 
 `summary.png` (from `scripts/plot_summary.py`) draws the sixteen area samples
 together: the pyramid relative to its 50 ms level, each level's detail as a

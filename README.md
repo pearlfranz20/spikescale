@@ -3,36 +3,27 @@
 Where in time does a population's stimulus information sit? This repository
 decodes image identity from Allen Neuropixels responses one temporal scale at
 a time, from whole-window counts down to 5 ms bins, and asks which scales
-carry information that the coarser ones do not. The answer so far, in eighteen
-area samples from six mice analysed in full (VISp, VISl, VISal, VISrl, VISpm,
-VISam, LGd, LP): one profile across cortex from VISp to VISam, a 50 to 125 ms code
-with the 125 ms and 50 ms shapes each decodable on their own, about half
-of that shape information not a linear function of firing rate, a small
-component at 25 ms and nothing at 5 ms. The thalamus reads finer. Twenty
-more samples from seven mice, added to test this, bring the count to 38
-samples (13 thalamic) in twelve mice, eleven of them with both tissues.
-The thalamus also fires faster (about 10 against 7 Hz), and thinning its
-spikes at random to the same animal's cortical rate separates two effects.
-That the thalamus keeps more of its 50 ms accuracy at 10 ms (0.95 against
-0.88) is about half firing rate: at matched rate the difference halves
-and is no longer significant (p = 0.057). What survives rate matching is
-in the fine temporal shape. Within animals and after correction over four
-tests, the thalamus carries a larger share of image information in 25 ms
-structure that no coarser scale contains (p < 0.001, 9 of 11 mice),
-reads the natural movie better at 10 ms relative to its best (9 of 10
-mice) and gains more from timing over 2 s of grating (Holm 0.013 for
-both).
+carry information that the coarser ones do not.
 
-Two more stimuli bound the claim. On the natural movie, which has no
-stimulus onsets, cortex is still read best at 50 ms in 250 ms segments
-(15 of 17 samples), and over 1 s segments the thalamus is read best at
-about 30 ms against about 130 ms in cortex. On drifting gratings, which
-carry their own fast drive, cortex is read as well at 10 to 25 ms as at
-50, so the fall of cortical accuracy below 50 ms belongs to natural
-images; over 2 s of grating the thalamus gains more from timing over the
-count (0.20 against 0.11; unchanged at matched rate)
-(`results/RESULTS.md`; figures in `results/summary.png` for the six mice
-analysed in full and `results/summary_stimuli.png` for all).
+**Read [`SUMMARY.md`](SUMMARY.md) first**: a paper-style account of the
+results, methods and limitations. `results/RESULTS.md` is the full lab
+notebook, in the order things were run, including results later revised.
+
+In short, across 38 area samples in twelve mice:
+
+- **Cortex.** Six visual areas read natural images best at 50 ms bins (24 of
+  25 samples). The 125 and 50 ms response shapes each carry unique
+  information, about half of it independent of firing rate and only partly
+  explained by response latency. There is a small component at 25 ms and
+  nothing at 5 ms. The profile is the same in running and stationary
+  trials and on a natural movie without stimulus onsets.
+- **Thalamus.** LGd and LP keep more accuracy in fine bins, but half of that
+  is their higher firing rate. At the cortical firing rate the thalamus
+  still carries more information in 25 ms structure, reads a natural movie
+  better at fine bins and gains more from timing over a long grating
+  (within animals, Holm-corrected).
+- **Decoders.** Nonlinear decoders (a kernel SVM and convolutional networks)
+  read less than the linear one on this data at every bin width.
 
 The analysis started as a test of a multiscale residual VQ tokenizer for
 spikes, which is kept as one of four readouts. Its gate was a clear win over
@@ -86,6 +77,7 @@ information appears. The idea follows Next-Concept Modeling
 - [x] Seven more sessions with both tissues (scenes, movie and gratings on the same units; twelve mice, eleven with both): all four primary claims survive Holm correction within animals; LGd separates from cortex in every sample, LP on average
 - [x] Rate-matched control (thalamic spikes thinned to the same animal's cortical rate): half of the scenes 10/50 flatness is rate and loses significance; the 25 ms detail share, the movie's finer reading and the gratings timing gain survive
 - [x] Nonlinear decoders (kernel SVM, convolutional networks) against the linear one: none reads more at any bin width in VISp or LGd; with ~32 training trials per image the linear decoder is the best tested
+- [x] Paper-style summary of the whole analysis (`SUMMARY.md`)
 - ~~E4 fixed-resolution ladder comparison~~ dropped on 1 Nov 2026: what the
   ladder should compare was never written down, and the decoder bake-off and
   E3b already answer the per-level question on real data

@@ -3,8 +3,8 @@
   A  the natural movie in 250 ms segments: accuracy relative to the 50 ms level
   B  the natural movie in 1000 ms segments: accuracy relative to the best level
   C  drifting gratings, 40 conditions, 2 s window: accuracy relative to the count
-  D  the scenes test metric (10 ms level / 50 ms level) per sample, by animal,
-     with the stratified and pooled p values of scripts/stats_tissue.py
+  D  the 25 ms detail share on the scenes per sample, by animal, with the thalamus
+     thinned to its animal's cortical rate (stats_tissue.py --thinned)
 
     PYTHONPATH=. python scripts/plot_stimuli.py
 Output: results/summary_stimuli.png
@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 import numpy as np  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from stats_tissue import MOVIE, THAL, scenes_metrics  # noqa: E402
+from stats_tissue import MOVIE, THAL, scenes_metrics, stim_metrics, thinned  # noqa: E402
 
 BLUE, ORANGE, AQUA, GRAY = "#2a78d6", "#eb6834", "#1baf7a", "#6b7280"
 RES = Path("results")
@@ -63,12 +63,15 @@ def curves(ax, key, rel, title, ylabel, tag, labels=True):
 
 
 def tissue_panel(ax):
-    rows = scenes_metrics()
-    st = json.load(open(RES / "stats_tissue.json"))["results"]["scenes_10_50"]
-    # animals ordered by the thalamus-minus-cortex difference, cortex-only animals first
+    """The 25 ms detail share per sample, thalamus at the same animal's cortical firing rate (hollow: before thinning)."""
+    key = "scenes_d25"
+    raw = {(r["sid"], r["area"]): r[key] for r in scenes_metrics()}
+    rows = thinned(scenes_metrics(), stim_metrics())[0]
+    st = json.load(open(RES / "stats_tissue_thinned.json"))["results"][key]
+
     def gap(a):
-        th = [r["scenes_10_50"] for r in rows if r["sid"] == a and r["area"] in THAL]
-        cx = [r["scenes_10_50"] for r in rows if r["sid"] == a and r["area"] not in THAL]
+        th = [r[key] for r in rows if r["sid"] == a and r["area"] in THAL]
+        cx = [r[key] for r in rows if r["sid"] == a and r["area"] not in THAL]
         return np.mean(th) - np.mean(cx) if th and cx else -1
     animals = sorted({r["sid"] for r in rows}, key=gap)
     for i, a in enumerate(animals):
@@ -77,22 +80,25 @@ def tissue_panel(ax):
                 continue
             th = r["area"] in THAL
             x = i + (0.12 if th else -0.12)
-            ax.scatter(x, r["scenes_10_50"], s=36, color=color(r["area"]), edgecolor="white", lw=1.5, zorder=3)
+            if th:
+                before = raw[(r["sid"], r["area"])]
+                ax.plot([x, x], [before, r[key]], color="#9ca3af", lw=0.8, zorder=2)
+                ax.scatter(x, before, s=26, facecolor="white", edgecolor=color(r["area"]), lw=1.2, zorder=3)
+            ax.scatter(x, r[key], s=36, color=color(r["area"]), edgecolor="white", lw=1.5, zorder=4)
     ax.set_xticks(range(len(animals)))
     ax.set_xticklabels([a[-3:] for a in animals], fontsize=8)
     ax.set_xlabel("animal (session id, last three digits), ordered by thalamus minus cortex")
-    ax.set_ylabel("scenes: accuracy at 10 ms / at 50 ms")
-    ax.set_ylim(0.72, 1.03)
-    ax.text(0.98, 0.04, f"thalamus {st['thal_mean']:.2f}, cortex {st['ctx_mean']:.2f}; thalamus higher in "
+    ax.set_ylabel("scenes: 25 ms detail alone / whole-window count")
+    ax.set_ylim(0.0, 0.40)
+    ax.text(0.98, 0.04, f"at matched rate: thalamus {st['thal_mean']:.2f}, cortex {st['ctx_mean']:.2f}; thalamus higher in "
                         f"{sum(gap(a) > 0 for a in animals)} of {st['n_animals_both']} animals with both\n"
-                        f"p = {st['p_stratified']:.4f} within animals (Holm {st['p_stratified_holm']:.4f}); "
-                        f"{st['thal_inside_ctx_range']} of {st['n_thal']} thalamic samples (all LP) in the cortical range",
+                        f"p < 0.001 within animals (Holm {st['p_stratified_holm']:.4f}); hollow: thalamus before thinning",
             transform=ax.transAxes, fontsize=7.5, color="#374151", ha="right")
     ax.scatter([], [], color=BLUE, s=30, label="cortex")
-    ax.scatter([], [], color=ORANGE, s=30, label="LGd")
-    ax.scatter([], [], color=AQUA, s=30, label="LP")
+    ax.scatter([], [], color=ORANGE, s=30, label="LGd, rate-matched")
+    ax.scatter([], [], color=AQUA, s=30, label="LP, rate-matched")
     ax.legend(frameon=False, fontsize=8, loc="upper left")
-    axes_common(ax, "D  Thalamus against cortex on the scenes, per animal")
+    axes_common(ax, "D  Scenes: 25 ms structure, thalamus at cortical firing rate")
 
 
 def main():
