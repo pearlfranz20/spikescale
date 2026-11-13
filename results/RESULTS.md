@@ -2319,6 +2319,56 @@ the lower rate need not have, so the rate-matched numbers are if anything
 a lower bound on the thalamus. The match is also on the population mean
 rate only, not on how rate is spread across units.
 
+## Nonlinear decoders: none reads more than the linear one at any bin width (13 Nov 2026)
+
+Every per-scale result above uses one linear decoder, so "little below
+25 ms" could be a limit of the readout rather than of the spikes. Three
+nonlinear decoders were tried on the same trials, 60-unit subsets and
+time-blocked held-out set, each with its regularization chosen on the same
+inner time-blocked split as the logistic's C:
+
+- a temporal convolutional network on 5 ms bins (units as channels, two
+  25 ms convolutions, weight decay and early stopping chosen on the inner
+  split; `scripts/nonlinear_timing.py`),
+- the same network with a linear path added to its output, so that it
+  contains the logistic model,
+- a Gaussian-kernel SVM on the cumulative pyramid features (C and kernel
+  width chosen from 15 settings; `scripts/nonlinear_svm.py`, raw numbers
+  `results/nonlinear_svm_allen_<id>_<area>.json`).
+
+### Accuracy, cumulative input down to the given bin width (118 images, chance 0.008)
+
+| sample | decoder | seeds | 50 ms | 5 ms | 5 ms / 50 ms |
+| --- | --- | --- | --- | --- | --- |
+| VISp 732592105 | linear (nested-C logistic) | 0 to 2 | 0.460 | 0.357 | 0.78 |
+| VISp 732592105 | Gaussian-kernel SVM | 0 to 2 | 0.432 | 0.328 | 0.76 |
+| VISp 732592105 | convolutional network | 0 | 0.366 | 0.310 | 0.85 |
+| VISp 732592105 | network + linear path | 0 | 0.401 to 0.404 | 0.197 to 0.242 | - |
+| LGd 763673393 | linear (nested-C logistic) | 0 to 2 | 0.687 | 0.646 | 0.94 |
+| LGd 763673393 | Gaussian-kernel SVM | 0 to 2 | 0.680 | 0.617 | 0.91 |
+
+**No nonlinear decoder beats the linear one.** The SVM is below it in 11
+of 12 seed and width pairs (the exception, LGd seed 1 at 50 ms, by
+0.004), and its profile across bin widths is the same as the linear
+decoder's, slightly steeper: it loses as much or more going from 50 to
+5 ms, in cortex and in LGd. The networks are worse still. They reach
+their best held-out accuracy on the inner split within 2 to 30 epochs and
+then overfit: with about 32 training trials per image, the flexibility a
+nonlinear decoder adds costs more than any structure it can find. The
+kernel search settles on its widest kernels at 5 ms, which is the
+direction in which a Gaussian kernel approaches a linear one.
+
+**Reading.** On this data a better decoder does not find the information
+below 25 ms that the linear one misses, and among the decoders tried, the
+linear one is the best. That does not show the information is absent: a
+decoder with far more training data could still find it. Current neural
+population decoders get that data by pretraining across many sessions and
+animals (per-spike or per-unit tokens, e.g. the POYO and NDT families),
+which is a different project from this one. The per-scale results stay as
+they are written: statements about what a capacity-matched linear readout
+can recover at each scale, and within this data set, about what any of the
+decoders tried can recover.
+
 ## Caveats
 
 - Synthetic codes are easy (the continuous pyramid is at 1.00), so they test
@@ -2336,8 +2386,9 @@ rate only, not on how rate is spread across units.
 - Per-level C is chosen inside the training set, so the per-level curve is
   capacity-matched within the L2 logistic family. The remaining L3 to L6
   decline is the best any linear decoder tested can do with 40 training
-  trials per image; whether a nonlinear or trial-pooled decoder would recover
-  it is not tested.
+  trials per image. A kernel SVM and two convolutional networks (13 Nov,
+  section above) recover less, not more, at every bin width tested; a
+  decoder pretrained across sessions is not tested.
 - The per-scale detail analysis uses a sqrt transform on 5 ms bins and a
   single session; the synthetic checks cover planted codes of one kind at a
   time, not mixtures. The rate regression of the detail section is linear
@@ -2421,6 +2472,9 @@ rate only, not on how rate is spread across units.
    flatness (10 ms over 50 ms) is firing rate and is no longer significant;
    the 25 ms detail share, the movie's finer reading and the gratings'
    timing gain survive at matched rate.
+   Nonlinear decoders (13 Nov: kernel SVM, convolutional networks) read
+   less than the linear one at every bin width, in VISp and LGd; testing
+   the fine scales further needs a decoder pretrained across sessions.
 3. Done on 11 Nov 2026 (rate-regressed details): about half of the 125 and
    50 ms detail information survives regression on the population rate
    vector. The nonlinear version (11 Nov, kernel ridge on random Fourier

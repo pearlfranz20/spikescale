@@ -85,6 +85,7 @@ information appears. The idea follows Next-Concept Modeling
 - [x] Thalamus against cortex tested with animals as the unit: complete separation on the scenes (pooled p = 0.0001; 0.028 within animals, the design's floor); movie and gratings same direction, not significant alone
 - [x] Seven more sessions with both tissues (scenes, movie and gratings on the same units; twelve mice, eleven with both): all four primary claims survive Holm correction within animals; LGd separates from cortex in every sample, LP on average
 - [x] Rate-matched control (thalamic spikes thinned to the same animal's cortical rate): half of the scenes 10/50 flatness is rate and loses significance; the 25 ms detail share, the movie's finer reading and the gratings timing gain survive
+- [x] Nonlinear decoders (kernel SVM, convolutional networks) against the linear one: none reads more at any bin width in VISp or LGd; with ~32 training trials per image the linear decoder is the best tested
 - ~~E4 fixed-resolution ladder comparison~~ dropped on 1 Nov 2026: what the
   ladder should compare was never written down, and the decoder bake-off and
   E3b already answer the per-level question on real data
@@ -114,6 +115,8 @@ scripts/
   plot_stimuli.py      movie and gratings across animals, and the tissue test (results/summary_stimuli.png)
   stats_tissue.py      thalamus against cortex per claim: exact permutations within animals and pooled, hierarchical bootstrap (--thinned: rate-matched thalamus)
   rates_tissue.py      firing rate per sample and stimulus, and the thalamic thinning targets
+  nonlinear_svm.py     Gaussian-kernel SVM on the pyramid features, against the linear decoder
+  nonlinear_timing.py  temporal convolutional network on 5 ms bins (overfits at this trial count)
   residual_levels.py   decode from each level's orthogonal detail alone (is the information at a scale unique to it?),
                        with rate-regressed readouts (--readouts detail_unitrate,detail_poprate,shuffled_unitrate --tag rate)
   latency_readout.py   are the 125 and 50 ms details just first-spike latency and centre of mass, per unit or for the population? (no);
