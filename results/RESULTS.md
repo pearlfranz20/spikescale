@@ -2101,9 +2101,9 @@ the count by three.
 The test of the previous section was limited by its design, not its data:
 four animals had both tissues, so the within-animal p could not go below
 0.028. Seven more sessions were added for that test alone, each chosen to
-have LGd or LP and at least one visual cortical area with 60 or more units
-(sessions): 715093703, 751348571, 797828357, 799864342,
-756029989 and 743475441 are new animals, and LP of 798911424 turns an
+have LGd or LP and at least one visual cortical area with 60 or more units.
+Sessions 715093703, 751348571, 797828357, 799864342, 756029989 and
+743475441 are new animals, and LP of 798911424 turns an
 animal that had cortex only into one with both. Every new sample runs the
 natural scenes, the natural movie and the drifting gratings on the same
 units, with the same pyramid, decoder, time-blocked split, 60-unit subsets
