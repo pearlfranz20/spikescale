@@ -4,33 +4,32 @@ Where in time does a population's stimulus information sit? This repository
 decodes image identity from Allen Neuropixels responses one temporal scale at
 a time, from whole-window counts down to 5 ms bins, and asks which scales
 carry information that the coarser ones do not. The answer so far, in eighteen
-informative area samples from six mice (VISp, VISl, VISal, VISrl, VISpm,
+area samples from six mice analysed in full (VISp, VISl, VISal, VISrl, VISpm,
 VISam, LGd, LP): one profile across cortex from VISp to VISam, a 50 to 125 ms code
 with the 125 ms and 50 ms shapes each decodable on their own, about half
 of that shape information not a linear function of firing rate, a small
-component at 25 ms and nothing at 5 ms. The thalamus differs in the same
-direction in all five samples (LGd in three animals, LP in two): a flat
-pyramid from 50 down to 10 ms and a larger 25 ms share, and in the two
-richer LGd samples a 25 ms optimum, a decodable 10 ms shape and a cost from
-10 ms jitter that no cortical sample shows. Tested with animals as the unit,
-the flatness separates the tissues completely (10 ms over 50 ms accuracy
-0.97 against 0.89, no thalamic sample inside the cortical range, p = 0.0001
-pooled; within the four animals that have both tissues p = 0.028, the
-smallest the design allows, which does not survive correction over four
-tests).
+component at 25 ms and nothing at 5 ms. The thalamus reads finer. Twenty
+more samples from seven mice, added to test this, bring the count to 38
+samples (13 thalamic) in twelve mice, eleven of them with both tissues.
+Within animals, the thalamus keeps more of its 50 ms accuracy at 10 ms
+(0.95 against 0.88), carries a larger 25 ms share (in all eleven mice)
+and reads the natural movie finer (in all ten mice with movie data); each
+holds at p < 0.001 after correction over four tests. LGd separates from
+cortex in every sample (each of the six above every cortical sample). LP
+does on average, but two weakly driven LP samples are as steep below
+50 ms as cortex on the scenes.
 
-Two more stimuli in three animals bound the claim. On the natural movie,
-which has no stimulus onsets, cortex is still read best at 50 ms in 250 ms
-segments, and over 1 s segments (where not at ceiling) LGd and LP are read
-best at 25 to 50 ms
-against 125 to 500 ms in cortex. On drifting gratings, which carry their own
-fast drive, cortex is read as well at 10 to 25 ms as at 50, so the fall of
-cortical accuracy below 50 ms belongs to natural images; over 2 s of
-grating the thalamus gains 0.12 to 0.25 from timing over the count, cortex
-mostly less than 0.08. These differences point the same way as the scenes
-but are not significant on their own with three animals
-(`results/RESULTS.md`; figures over all samples in `results/summary.png`
-and `results/summary_stimuli.png`).
+Two more stimuli bound the claim. On the natural movie, which has no
+stimulus onsets, cortex is still read best at 50 ms in 250 ms segments
+(15 of 17 samples), and over 1 s segments the thalamus is read best at
+about 30 ms against about 130 ms in cortex. On drifting gratings, which
+carry their own fast drive, cortex is read as well at 10 to 25 ms as at
+50, so the fall of cortical accuracy below 50 ms belongs to natural
+images; over 2 s of grating the thalamus gains more from timing over the
+count (0.20 against 0.11, p = 0.009 within animals), the weakest of the
+four claims, with three of ten mice going the other way or tied
+(`results/RESULTS.md`; figures in `results/summary.png` for the six mice
+analysed in full and `results/summary_stimuli.png` for all).
 
 The analysis started as a test of a multiscale residual VQ tokenizer for
 spikes, which is kept as one of four readouts. Its gate was a clear win over
@@ -81,6 +80,7 @@ information appears. The idea follows Next-Concept Modeling
 - [x] Natural movie in a second animal (763673393): the 250 ms profile and LGd's finer details replicate; 1 s segments at ceiling
 - [x] Natural movie in a third animal (757216464): LP reads the movie finer than VISp (25 ms against 50 ms in 250 ms segments, 25 against 250 ms in 1 s segments)
 - [x] Thalamus against cortex tested with animals as the unit: complete separation on the scenes (pooled p = 0.0001; 0.028 within animals, the design's floor); movie and gratings same direction, not significant alone
+- [x] Seven more sessions with both tissues (scenes, movie and gratings on the same units; twelve mice, eleven with both): all four primary claims survive Holm correction within animals; LGd separates from cortex in every sample, LP on average
 - ~~E4 fixed-resolution ladder comparison~~ dropped on 1 Nov 2026: what the
   ladder should compare was never written down, and the decoder bake-off and
   E3b already answer the per-level question on real data

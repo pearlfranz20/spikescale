@@ -7,208 +7,232 @@
  ],
  "results": {
   "scenes_10_50": {
-   "n_thal": 5,
-   "n_ctx": 13,
-   "n_animals": 6,
-   "thal_mean": 0.9741662774145075,
-   "ctx_mean": 0.8943347926583921,
+   "n_thal": 13,
+   "n_ctx": 25,
+   "n_animals": 12,
+   "thal_mean": 0.9508780156460463,
+   "ctx_mean": 0.8834856010038328,
    "thal_range": [
-    0.9440089585666293,
-    0.9948529411764706
+    0.824966078697422,
+    1.0180505415162455
    ],
    "ctx_range": [
-    0.8354537743850721,
-    0.9252433936022255
+    0.7894736842105265,
+    0.9379605419538863
    ],
-   "diff": 0.07983148475611535,
+   "diff": 0.06739241464221357,
    "ci95": [
-    0.049854449231410976,
-    0.10430777305362934
+    0.023951915325872226,
+    0.10281655943010413
    ],
-   "p_stratified": 0.027777777777777776,
-   "p_pooled": 0.00011671335200746966,
-   "n_perm_stratified": 36,
-   "n_perm_pooled": 8568,
-   "thal_inside_ctx_range": 0,
-   "p_stratified_holm": 0.1111111111111111
+   "p_stratified": 0.00038,
+   "p_pooled": 9.5e-05,
+   "exact_stratified": false,
+   "exact_pooled": false,
+   "n_animals_both": 11,
+   "n_perm_stratified": 200000,
+   "n_perm_pooled": 200000,
+   "thal_inside_ctx_range": 3,
+   "p_stratified_holm": 0.00076
   },
   "scenes_d25": {
-   "n_thal": 5,
-   "n_ctx": 13,
-   "n_animals": 6,
-   "thal_mean": 0.2262864854469878,
-   "ctx_mean": 0.15614171734252055,
+   "n_thal": 13,
+   "n_ctx": 25,
+   "n_animals": 12,
+   "thal_mean": 0.23757456807436592,
+   "ctx_mean": 0.1569249778803629,
    "thal_range": [
-    0.18881733021077285,
-    0.26978417266187044
+    0.18041237113402062,
+    0.33453237410071945
    ],
    "ctx_range": [
-    0.10667996011964107,
-    0.21995841995842
+    0.1037037037037037,
+    0.23173803526448364
    ],
-   "diff": 0.07014476810446724,
+   "diff": 0.08064959019400303,
    "ci95": [
-    0.03280825624334573,
-    0.1029188457507065
+    0.04468308991344964,
+    0.12398635665017915
    ],
-   "p_stratified": 0.027777777777777776,
-   "p_pooled": 0.00046685340802987864,
-   "n_perm_stratified": 36,
-   "n_perm_pooled": 8568,
-   "thal_inside_ctx_range": 2,
-   "p_stratified_holm": 0.1111111111111111
+   "p_stratified": 1e-05,
+   "p_pooled": 1e-05,
+   "exact_stratified": false,
+   "exact_pooled": false,
+   "n_animals_both": 11,
+   "n_perm_stratified": 200000,
+   "n_perm_pooled": 200000,
+   "thal_inside_ctx_range": 8,
+   "p_stratified_holm": 4e-05
   },
   "movie_10_best": {
-   "n_thal": 4,
-   "n_ctx": 6,
-   "n_animals": 3,
-   "thal_mean": 0.9134751855056075,
-   "ctx_mean": 0.8346269457662961,
+   "n_thal": 12,
+   "n_ctx": 17,
+   "n_animals": 10,
+   "thal_mean": 0.9450247253122837,
+   "ctx_mean": 0.856864862185783,
    "thal_range": [
     0.8433734939759034,
-    0.9491525423728816
+    1.0
    ],
    "ctx_range": [
     0.6447105788423154,
-    0.9047619047619048
+    0.9448010269576381
    ],
-   "diff": 0.07884823973931132,
+   "diff": 0.0881598631265007,
    "ci95": [
-    0.002044703867548646,
-    0.1683776552567422
+    0.04940393006979414,
+    0.12762031836186782
    ],
-   "p_stratified": 0.25,
-   "p_pooled": 0.16666666666666666,
-   "n_perm_stratified": 60,
-   "n_perm_pooled": 210,
-   "thal_inside_ctx_range": 1,
-   "p_stratified_holm": 0.4666666666666667
+   "p_stratified": 0.00020576131687242798,
+   "p_pooled": 0.000135,
+   "exact_stratified": true,
+   "exact_pooled": false,
+   "n_animals_both": 10,
+   "n_perm_stratified": 77760,
+   "n_perm_pooled": 200000,
+   "thal_inside_ctx_range": 4,
+   "p_stratified_holm": 0.0006172839506172839
   },
   "dg_gain2000": {
-   "n_thal": 4,
-   "n_ctx": 6,
-   "n_animals": 3,
-   "thal_mean": 0.13874999999999998,
-   "ctx_mean": 0.06638888888888891,
+   "n_thal": 12,
+   "n_ctx": 17,
+   "n_animals": 10,
+   "thal_mean": 0.19597222222222224,
+   "ctx_mean": 0.10509803921568628,
    "thal_range": [
     0.0,
-    0.2516666666666666
+    0.42500000000000016
    ],
    "ctx_range": [
     0.013333333333333308,
-    0.21833333333333338
+    0.22499999999999998
    ],
-   "diff": 0.07236111111111107,
+   "diff": 0.09087418300653596,
    "ci95": [
-    -0.04345238095238098,
-    0.2033333333333332
+    -0.0005261904761904782,
+    0.18835550444925447
    ],
-   "p_stratified": 0.23333333333333334,
-   "p_pooled": 0.23333333333333334,
-   "n_perm_stratified": 60,
-   "n_perm_pooled": 210,
-   "thal_inside_ctx_range": 2,
-   "p_stratified_holm": 0.4666666666666667
+   "p_stratified": 0.009104938271604938,
+   "p_pooled": 0.018145,
+   "exact_stratified": true,
+   "exact_pooled": false,
+   "n_animals_both": 10,
+   "n_perm_stratified": 77760,
+   "n_perm_pooled": 200000,
+   "thal_inside_ctx_range": 7,
+   "p_stratified_holm": 0.009104938271604938
   },
   "scenes_5_50": {
-   "n_thal": 5,
-   "n_ctx": 13,
-   "n_animals": 6,
-   "thal_mean": 0.8637707299997006,
-   "ctx_mean": 0.785816967254595,
+   "n_thal": 13,
+   "n_ctx": 25,
+   "n_animals": 12,
+   "thal_mean": 0.8496540912297676,
+   "ctx_mean": 0.7610231657466165,
    "thal_range": [
-    0.7581187010078387,
-    0.954656862745098
+    0.7313432835820896,
+    0.9579967689822292
    ],
    "ctx_range": [
-    0.6726039016115352,
+    0.599624060150376,
     0.8471337579617835
    ],
-   "diff": 0.07795376274510557,
+   "diff": 0.0886309254831511,
    "ci95": [
-    -0.022387965346916543,
-    0.16803613335069706
+    0.03444048162527115,
+    0.14072085033901788
    ],
-   "p_stratified": 0.1388888888888889,
-   "p_pooled": 0.012721755368814192,
-   "n_perm_stratified": 36,
-   "n_perm_pooled": 8568,
-   "thal_inside_ctx_range": 2
+   "p_stratified": 0.001935,
+   "p_pooled": 0.000625,
+   "exact_stratified": false,
+   "exact_pooled": false,
+   "n_animals_both": 11,
+   "n_perm_stratified": 200000,
+   "n_perm_pooled": 200000,
+   "thal_inside_ctx_range": 7
   },
   "scenes_d50_d125": {
-   "n_thal": 5,
-   "n_ctx": 13,
-   "n_animals": 6,
-   "thal_mean": 1.220804698418172,
-   "ctx_mean": 0.8793342955534946,
+   "n_thal": 13,
+   "n_ctx": 25,
+   "n_animals": 12,
+   "thal_mean": 1.228540865314784,
+   "ctx_mean": 0.9032479115567327,
    "thal_range": [
-    0.9971181556195966,
-    1.3
+    0.9662162162162162,
+    1.5483870967741937
    ],
    "ctx_range": [
-    0.6205211726384365,
-    1.0538793103448276
+    0.5431472081218274,
+    1.2803030303030303
    ],
-   "diff": 0.34147040286467734,
+   "diff": 0.32529295375805134,
    "ci95": [
-    0.12823036325602574,
-    0.48529099357985844
+    0.17873447687039123,
+    0.4711447266537829
    ],
-   "p_stratified": 0.05555555555555555,
-   "p_pooled": 0.00046685340802987864,
-   "n_perm_stratified": 36,
-   "n_perm_pooled": 8568,
-   "thal_inside_ctx_range": 1
+   "p_stratified": 5.5e-05,
+   "p_pooled": 5e-06,
+   "exact_stratified": false,
+   "exact_pooled": false,
+   "n_animals_both": 11,
+   "n_perm_stratified": 200000,
+   "n_perm_pooled": 200000,
+   "thal_inside_ctx_range": 8
   },
   "scenes_jit10": {
-   "n_thal": 5,
-   "n_ctx": 13,
-   "n_animals": 6,
-   "thal_mean": 0.010237288135593218,
-   "ctx_mean": 0.006531942633637548,
+   "n_thal": 13,
+   "n_ctx": 25,
+   "n_animals": 12,
+   "thal_mean": 0.008930899608865695,
+   "ctx_mean": 0.006847457627118641,
    "thal_range": [
-    -0.00033898305084746063,
-    0.015254237288135585
+    -0.006610169491525417,
+    0.022033898305084676
    ],
    "ctx_range": [
-    -2.2204460492503132e-17,
-    0.011525423728813555
+    -0.0018644067796610153,
+    0.02491525423728813
    ],
-   "diff": 0.0037053455019556703,
+   "diff": 0.0020834419817470536,
    "ci95": [
-    -0.005296874999999994,
-    0.009086740819209033
+    -0.004693826506591341,
+    0.008634506685145043
    ],
-   "p_stratified": 0.1111111111111111,
-   "p_pooled": 0.15709617180205415,
-   "n_perm_stratified": 36,
-   "n_perm_pooled": 8568,
-   "thal_inside_ctx_range": 1
+   "p_stratified": 0.50011,
+   "p_pooled": 0.407635,
+   "exact_stratified": false,
+   "exact_pooled": false,
+   "n_animals_both": 11,
+   "n_perm_stratified": 200000,
+   "n_perm_pooled": 200000,
+   "thal_inside_ctx_range": 11
   },
   "movie_1s_bin": {
-   "n_thal": 4,
-   "n_ctx": 6,
-   "n_animals": 3,
-   "thal_mean": 5.724338213496565,
-   "ctx_mean": 7.632450951328753,
+   "n_thal": 12,
+   "n_ctx": 17,
+   "n_animals": 10,
+   "thal_mean": 5.033695515200777,
+   "ctx_mean": 7.066507085865061,
    "thal_range": [
-    4.643856189774724,
+    3.321928094887362,
     6.965784284662087
    ],
    "ctx_range": [
-    6.965784284662087,
+    5.643856189774724,
     8.965784284662087
    ],
-   "diff": -1.9081127378321883,
+   "diff": -2.0328115706642844,
    "ci95": [
-    -3.3219280948873626,
-    -0.4999999999999991
+    -2.8399208110202463,
+    -1.2496270054491851
    ],
-   "p_stratified": 0.03333333333333333,
-   "p_pooled": 0.01904761904761905,
-   "n_perm_stratified": 60,
-   "n_perm_pooled": 210,
-   "thal_inside_ctx_range": 1
+   "p_stratified": 5.1440329218106995e-05,
+   "p_pooled": 5e-05,
+   "exact_stratified": true,
+   "exact_pooled": false,
+   "n_animals_both": 10,
+   "n_perm_stratified": 77760,
+   "n_perm_pooled": 200000,
+   "thal_inside_ctx_range": 6
   }
  },
  "samples": {
@@ -230,19 +254,58 @@
    "LGd 763673393",
    "LGd 750749662",
    "LP 754829445",
-   "LP 757216464"
+   "LP 757216464",
+   "LGd 715093703",
+   "LP 715093703",
+   "VISp 715093703",
+   "VISrl 715093703",
+   "LP 743475441",
+   "VISrl 743475441",
+   "VISam 750749662",
+   "VISpm 750749662",
+   "LP 751348571",
+   "VISam 751348571",
+   "VISrl 751348571",
+   "LGd 756029989",
+   "VISam 756029989",
+   "VISpm 756029989",
+   "LP 797828357",
+   "VISam 797828357",
+   "VISp 797828357",
+   "LP 798911424",
+   "LGd 799864342",
+   "VISp 799864342"
   ],
   "movie_gratings": [
-   "VISp 750749662",
-   "VISpm 750749662",
-   "VISam 750749662",
+   "LGd 715093703",
+   "LP 715093703",
+   "VISp 715093703",
+   "VISrl 715093703",
+   "LP 743475441",
+   "VISrl 743475441",
    "LGd 750749662",
    "LP 750749662",
-   "VISp 763673393",
-   "VISam 763673393",
-   "LGd 763673393",
+   "VISam 750749662",
+   "VISp 750749662",
+   "VISpm 750749662",
+   "LP 751348571",
+   "VISam 751348571",
+   "VISrl 751348571",
+   "LGd 756029989",
+   "VISam 756029989",
+   "VISpm 756029989",
+   "LP 757216464",
    "VISp 757216464",
-   "LP 757216464"
+   "LGd 763673393",
+   "VISam 763673393",
+   "VISp 763673393",
+   "LP 797828357",
+   "VISam 797828357",
+   "VISp 797828357",
+   "LP 798911424",
+   "VISp 798911424",
+   "LGd 799864342",
+   "VISp 799864342"
   ]
  }
 }

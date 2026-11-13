@@ -65,7 +65,12 @@ def curves(ax, key, rel, title, ylabel, tag, labels=True):
 def tissue_panel(ax):
     rows = scenes_metrics()
     st = json.load(open(RES / "stats_tissue.json"))["results"]["scenes_10_50"]
-    animals = ["732592105", "798911424", "754829445", "763673393", "757216464", "750749662"]
+    # animals ordered by the thalamus-minus-cortex difference, cortex-only animals first
+    def gap(a):
+        th = [r["scenes_10_50"] for r in rows if r["sid"] == a and r["area"] in THAL]
+        cx = [r["scenes_10_50"] for r in rows if r["sid"] == a and r["area"] not in THAL]
+        return np.mean(th) - np.mean(cx) if th and cx else -1
+    animals = sorted({r["sid"] for r in rows}, key=gap)
     for i, a in enumerate(animals):
         for r in rows:
             if r["sid"] != a:
@@ -73,16 +78,15 @@ def tissue_panel(ax):
             th = r["area"] in THAL
             x = i + (0.12 if th else -0.12)
             ax.scatter(x, r["scenes_10_50"], s=36, color=color(r["area"]), edgecolor="white", lw=1.5, zorder=3)
-            if th:
-                ax.annotate(r["area"], (x, r["scenes_10_50"]), xytext=(6, 0), textcoords="offset points", fontsize=7,
-                            color="#4b5563", va="center")
     ax.set_xticks(range(len(animals)))
-    ax.set_xticklabels([a[-3:] for a in animals])
-    ax.set_xlabel("animal (session id, last three digits)")
+    ax.set_xticklabels([a[-3:] for a in animals], fontsize=8)
+    ax.set_xlabel("animal (session id, last three digits), ordered by thalamus minus cortex")
     ax.set_ylabel("scenes: accuracy at 10 ms / at 50 ms")
-    ax.set_ylim(0.80, 1.005)
-    ax.text(0.98, 0.04, f"thalamus {st['thal_mean']:.2f}, cortex {st['ctx_mean']:.2f}; no thalamic sample in the cortical range\n"
-                        f"p = {st['p_pooled']:.4f} pooled; {st['p_stratified']:.3f} within animals, the smallest possible (1/{st['n_perm_stratified']})",
+    ax.set_ylim(0.72, 1.03)
+    ax.text(0.98, 0.04, f"thalamus {st['thal_mean']:.2f}, cortex {st['ctx_mean']:.2f}; thalamus higher in "
+                        f"{sum(gap(a) > 0 for a in animals)} of {st['n_animals_both']} animals with both\n"
+                        f"p = {st['p_stratified']:.4f} within animals (Holm {st['p_stratified_holm']:.4f}); "
+                        f"{st['thal_inside_ctx_range']} of {st['n_thal']} thalamic samples (all LP) in the cortical range",
             transform=ax.transAxes, fontsize=7.5, color="#374151", ha="right")
     ax.scatter([], [], color=BLUE, s=30, label="cortex")
     ax.scatter([], [], color=ORANGE, s=30, label="LGd")
@@ -94,7 +98,7 @@ def tissue_panel(ax):
 def main():
     fig, axs = plt.subplots(2, 2, figsize=(13, 9))
     curves(axs[0, 0], "movie/w250/seg/pyramid", "l50", "A  Natural movie, 250 ms segments (120 labels): no onsets",
-           "accuracy minus accuracy at 50 ms", "_movie")
+           "accuracy minus accuracy at 50 ms", "_movie", labels=False)
     curves(axs[0, 1], "movie/w1000/seg/pyramid", "best", "B  Natural movie, 1000 ms segments (30 labels)",
            "accuracy minus best level", "_movie", labels=False)
     curves(axs[1, 0], "dg/w2000/cond/pyramid", "count", "C  Drifting gratings, 40 conditions, 2 s window",
@@ -104,8 +108,9 @@ def main():
         ax.plot([], [], color=BLUE, label="cortex")
         ax.plot([], [], color=ORANGE, label="LGd")
         ax.plot([], [], color=AQUA, label="LP")
-        ax.legend(frameon=False, fontsize=8, loc="lower left")
-    fig.suptitle("Beyond the scenes: natural movie and drifting gratings in three animals (60 units, 5 seeds, time-blocked); "
+        ax.legend(frameon=False, fontsize=8, loc="upper left" if ax is axs[1, 0] else "lower left")
+    fig.suptitle(f"Beyond the scenes: natural movie and drifting gratings in {len({s for s, _ in MOVIE})} animals "
+                 "(60 units, 5 seeds, time-blocked); "
                  "cortex blue, LGd orange, LP aqua", fontsize=11, x=0.01, ha="left")
     fig.tight_layout(rect=(0, 0, 1, 0.96))
     fig.savefig(RES / "summary_stimuli.png", dpi=130)

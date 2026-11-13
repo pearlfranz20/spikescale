@@ -35,6 +35,7 @@ from __future__ import annotations
 
 import itertools
 import json
+import math
 from pathlib import Path
 
 import numpy as np
@@ -47,8 +48,23 @@ SCENES = [("732592105", "VISp"), ("798911424", "VISp"), ("754829445", "VISp"), (
           ("798911424", "VISl"), ("732592105", "VISrl"), ("732592105", "VISpm"), ("798911424", "VISam"),
           ("763673393", "VISam"), ("754829445", "LGd"), ("763673393", "LGd"), ("750749662", "LGd"),
           ("754829445", "LP"), ("757216464", "LP"), ("750749662", "LP")]
-MOVIE = [("750749662", a) for a in ("VISp", "VISpm", "VISam", "LGd", "LP")] + \
-        [("763673393", a) for a in ("VISp", "VISam", "LGd")] + [("757216464", a) for a in ("VISp", "LP")]
+MAX_EXACT = 200_000  # beyond this many relabellings, draw MAX_EXACT at random instead
+
+
+def _found(pattern, cut):
+    out = []
+    for f in sorted(RES.glob(pattern)):
+        sid, area = f.stem[len("gratings_allen_"):].replace(cut, "").split("_")[:2]
+        out.append((sid, area))
+    return out
+
+
+# samples with gratings and movie runs; scenes samples without the full E3 pipeline are read
+# from the gratings run's scenes readouts (same pyramid, decoder, split and units; equal to three
+# decimals on the seven samples that have both)
+MOVIE = _found("gratings_allen_*_movie.json", "_movie")
+SCENES = list(dict.fromkeys(SCENES + [x for x in _found("gratings_allen_*.json", "_movie")
+                                       if (RES / f"gratings_allen_{x[0]}_{x[1]}.json").exists()]))
 PRIMARY = ("scenes_10_50", "scenes_d25", "movie_10_best", "dg_gain2000")
 
 
@@ -56,10 +72,16 @@ def scenes_metrics():
     out = []
     for sid, area in SCENES:
         k = f"allen_{sid}_{area}"
-        runs = json.load(open(RES / f"e3_{k}_n60.json"))["runs"]
-        pyr = np.array([r["pyramid"][D]["clean"] for r in runs]).mean(0)
-        j10 = (np.array([r["pyramid"][D]["clean"] for r in runs]) - np.array([r["pyramid"][D]["jitter_10ms"] for r in runs])).mean(0)
-        det = np.array(json.load(open(RES / f"residual_{k}.json"))["mean"]["n60"]["detail"])
+        if (RES / f"e3_{k}_n60.json").exists():
+            runs = json.load(open(RES / f"e3_{k}_n60.json"))["runs"]
+            pyr = np.array([r["pyramid"][D]["clean"] for r in runs]).mean(0)
+            j10 = (np.array([r["pyramid"][D]["clean"] for r in runs]) - np.array([r["pyramid"][D]["jitter_10ms"] for r in runs])).mean(0)
+            det = np.array(json.load(open(RES / f"residual_{k}.json"))["mean"]["n60"]["detail"])
+        else:
+            g = json.load(open(RES / f"gratings_{k}.json"))["mean"]
+            pyr = np.array(g["scenes/w250/img/pyramid"])
+            j10 = pyr - np.array(g["scenes/w250/img/jitter10"])
+            det = np.array(g["scenes/w250/img/detail"])
         if pyr.max() < 3 / 118:
             continue
         out.append(dict(sid=sid, area=area, scenes_10_50=pyr[4] / pyr[2], scenes_d25=det[3] / det[0],
@@ -91,8 +113,19 @@ def test(rows, key, n_boot=10000, seed=0):
     animal = np.array([r["sid"] for r in rows])
     obs = x[t].mean() - x[~t].mean()
 
-    def null(groups):
-        # every assignment of the thalamic labels that keeps the count per group
+    def null(groups, seed=1):
+        # every assignment of the thalamic labels that keeps the count per group,
+        # or MAX_EXACT random ones (the observed one included) when there are more
+        sizes = [float(math.comb(len(g), int(t[g].sum()))) for g in groups]
+        if np.prod(sizes) > MAX_EXACT:
+            rg = np.random.default_rng(seed)
+            stats = [obs]
+            for _ in range(MAX_EXACT - 1):
+                tt = np.zeros(len(x), dtype=bool)
+                for gidx in groups:
+                    tt[rg.choice(gidx, int(t[gidx].sum()), replace=False)] = True
+                stats.append(x[tt].mean() - x[~tt].mean())
+            return np.array(stats), False
         per = []
         for gidx in groups:
             k = t[gidx].sum()
@@ -103,10 +136,10 @@ def test(rows, key, n_boot=10000, seed=0):
             for c in combo:
                 tt[c] = True
             stats.append(x[tt].mean() - x[~tt].mean())
-        return np.array(stats)
+        return np.array(stats), True
 
-    strat = null([np.nonzero(animal == a)[0] for a in np.unique(animal)])
-    pooled = null([np.arange(len(x))])
+    strat, exact_s = null([np.nonzero(animal == a)[0] for a in np.unique(animal)])
+    pooled, exact_p = null([np.arange(len(x))])
     p_s = float(np.mean(np.abs(strat) >= abs(obs) - 1e-12))
     p_p = float(np.mean(np.abs(pooled) >= abs(obs) - 1e-12))
 
@@ -125,6 +158,8 @@ def test(rows, key, n_boot=10000, seed=0):
                 thal_mean=float(x[t].mean()), ctx_mean=float(ctx.mean()),
                 thal_range=[float(x[t].min()), float(x[t].max())], ctx_range=[float(ctx.min()), float(ctx.max())],
                 diff=float(obs), ci95=[float(lo), float(hi)], p_stratified=p_s, p_pooled=p_p,
+                exact_stratified=exact_s, exact_pooled=exact_p,
+                n_animals_both=int(sum(t[animal == a].any() and (~t[animal == a]).any() for a in animals)),
                 n_perm_stratified=len(strat), n_perm_pooled=len(pooled), thal_inside_ctx_range=inside)
 
 

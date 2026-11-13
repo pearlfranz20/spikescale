@@ -2035,6 +2035,9 @@ against 0.35 for the count, and a 10 ms jitter cost of 0.06.
 
 ## Thalamus against cortex, tested: animals as the unit (12 Nov 2026)
 
+*Superseded by the next section, which reruns this test with seven more
+sessions; the table here is the 18-sample run.*
+
 Every thalamus-against-cortex statement above is a range comparison across
 samples. `scripts/stats_tissue.py` tests each claim on the per-sample seed
 means, with three views of the uncertainty: an exact permutation of the
@@ -2093,6 +2096,127 @@ tissues; at 36 within-animal relabellings the smallest p is 0.028, and
 each further animal with one thalamic and two cortical samples multiplies
 the count by three.
 
+## Seven more animals with both tissues: the tissue test at twelve animals (12 Nov 2026)
+
+The test of the previous section was limited by its design, not its data:
+four animals had both tissues, so the within-animal p could not go below
+0.028. Seven more sessions were added for that test alone, each chosen to
+have LGd or LP and at least one visual cortical area with 60 or more units
+(sessions): 715093703, 751348571, 797828357, 799864342,
+756029989 and 743475441 are new animals, and LP of 798911424 turns an
+animal that had cortex only into one with both. Every new sample runs the
+natural scenes, the natural movie and the drifting gratings on the same
+units, with the same pyramid, decoder, time-blocked split, 60-unit subsets
+and 5 seeds. The scenes numbers come from the gratings script's scenes
+readout rather than the full E3 pipeline; the two agree to three decimals
+on the seven samples that have both. 756029989 LGd has exactly 60 units,
+so its five seeds share the same units and differ only in the split's
+regularization search; every other new area has 62 to 141.
+
+### The new samples, 60 units, 5 seeds, nested-C logistic
+
+Columns: units recorded; scenes best accuracy at its bin width (ms);
+scenes 10 ms over 50 ms level; 25 ms detail over count; movie in 250 ms
+segments, best accuracy at its bin width and the 10 ms level over the
+best; movie in 1 s segments, best at its bin width; gratings in 2 s, count
+and best level (gain). Chance: scenes 1/118, movie 1/120 and 1/30,
+gratings 1/40.
+
+| sample | units | scenes best | 10/50 | d25 share | movie 250 ms best | 10 / best | movie 1 s best | gratings count / best (gain) |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| VISrl 715093703 | 78 | 0.37 at 50 | 0.913 | 0.165 | 0.38 at 50 | 0.904 | 0.82 at 250 | 0.53 / 0.64 (+0.12) |
+| VISp 715093703 | 62 | 0.71 at 50 | 0.938 | 0.153 | 0.38 at 50 | 0.899 | 0.73 at 125 | 0.48 / 0.67 (+0.19) |
+| LGd 715093703 | 82 | 0.67 at 25 | 0.963 | 0.199 | 0.60 at 50 | 0.974 | 0.95 at 50 | 0.64 / 0.98 (+0.34) |
+| LP 715093703 | 141 | 0.42 at 25 | 0.954 | 0.195 | 0.39 at 50 | 0.960 | 0.81 at 50 | 0.38 / 0.70 (+0.32) |
+| VISrl 751348571 | 98 | 0.22 at 50 | 0.894 | 0.156 | 0.29 at 50 | 0.820 | 0.68 at 125 | 0.61 / 0.80 (+0.18) |
+| VISam 751348571 | 73 | 0.19 at 50 | 0.878 | 0.178 | 0.27 at 50 | 0.869 | 0.64 at 125 | 0.57 / 0.67 (+0.10) |
+| LP 751348571 | 138 | 0.07 at 50 | 0.851 | 0.335 | 0.29 at 25 | 0.958 | 0.84 at 25 | 0.37 / 0.40 (+0.03) |
+| VISp 797828357 | 87 | 0.26 at 50 | 0.871 | 0.204 | 0.31 at 50 | 0.836 | 0.75 at 250 | 0.46 / 0.61 (+0.15) |
+| VISam 797828357 | 71 | 0.09 at 50 | 0.789 | 0.232 | 0.15 at 50 | 0.832 | 0.54 at 50 | 0.30 / 0.38 (+0.08) |
+| LP 797828357 | 70 | 0.13 at 25 | 0.825 | 0.333 | 0.21 at 25 | 0.960 | 0.66 at 25 | 0.19 / 0.40 (+0.21) |
+| VISp 799864342 | 76 | 0.59 at 50 | 0.922 | 0.186 | 0.57 at 50 | 0.907 | 0.98 at 50 | 0.58 / 0.80 (+0.22) |
+| LGd 799864342 | 71 | 0.53 at 25 | 1.008 | 0.197 | 0.61 at 50 | 0.954 | 0.97 at 10 | 0.62 / 0.84 (+0.22) |
+| VISpm 756029989 | 94 | 0.39 at 50 | 0.882 | 0.119 | 0.31 at 50 | 0.791 | 0.81 at 50 | 0.33 / 0.46 (+0.12) |
+| VISam 756029989 | 77 | 0.30 at 25 | 0.882 | 0.149 | 0.33 at 50 | 0.908 | 0.77 at 250 | 0.33 / 0.38 (+0.05) |
+| LGd 756029989 | 60 | 0.48 at 10 | 1.018 | 0.203 | 0.42 at 25 | 0.926 | 0.87 at 50 | 0.47 / 0.89 (+0.43) |
+| VISrl 743475441 | 73 | 0.20 at 50 | 0.814 | 0.111 | 0.17 at 50 | 0.848 | 0.48 at 125 | 0.30 / 0.34 (+0.04) |
+| LP 743475441 | 131 | 0.15 at 25 | 0.944 | 0.315 | 0.28 at 25 | 0.954 | 0.72 at 25 | 0.16 / 0.27 (+0.11) |
+| VISp 798911424 | 96 | 0.46 at 50 | 0.897 | 0.159 | 0.32 at 25 | 0.945 | 0.81 at 50 | 0.54 / 0.68 (+0.15) |
+| LP 798911424 | 66 | 0.30 at 50 | 0.928 | 0.180 | 0.19 at 10 | 1.000 | 0.65 at 10 | 0.33 / 0.46 (+0.13) |
+
+(798911424 VISp was already analysed on the scenes; it is listed because
+its movie and gratings runs are new.) The cortical pattern replicates in
+the new animals: on the scenes, ten of the eleven cortical samples above
+are read best at 50 ms (756029989 VISam at 25 ms), and on the movie in
+250 ms segments, ten of eleven are too (798911424 VISp at 25 ms). Each
+new LGd is read best on the scenes at 25 ms or finer (10 ms in
+756029989), as in the earlier three. LP is the mixed tissue: in
+715093703, 797828357 and 743475441 it is read best at 25 ms on the
+scenes, in 751348571 and 798911424 at 50 ms. In 751348571 and 797828357
+the scenes drive it weakly (0.07 and 0.13, the two weakest thalamic
+samples except LP of 750749662, which is excluded). On the movie, four
+of the five new LP samples are read best at 25 ms or finer in both
+segment lengths (715093703 LP at 50 ms in both).
+
+### The test, all samples
+
+The same script and rules as the previous section, over 38 scenes samples
+(13 thalamic, 25 cortical, 12 animals, 11 with both) and 29 movie and
+gratings samples (12 / 17, 10 animals, all with both). With this many
+animals the within-animal relabellings of the scenes exceed 200,000, so
+that p (and every pooled p) is estimated from 200,000 random relabellings (the
+observed one included) instead of enumerated; the movie and gratings,
+with 77,760, are still exact. The last column counts the animals with
+both tissues in which the thalamic mean is on the thalamic side of the
+same animal's cortical mean.
+
+| metric | samples, thalamus / cortex (animals) | mean, thalamus / cortex | difference [95% CI] | p, within animals (relabellings) | p, pooled | Holm | thalamic samples inside the cortical range | animals in the thalamic direction |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| scenes: 10 ms level / 50 ms level | 13 / 25 (12, 11 with both) | 0.951 / 0.883 | +0.067 [+0.024, +0.103] | 0.0004 (200000 random) | < 0.0001 | 0.0008 | 3 of 13 | 9 of 11 |
+| scenes: 25 ms detail / count | 13 / 25 (12, 11 with both) | 0.238 / 0.157 | +0.081 [+0.045, +0.124] | < 0.0001 (200000 random) | < 0.0001 | < 0.0001 | 8 of 13 | 11 of 11 |
+| movie 250 ms: 10 ms level / best | 12 / 17 (10, 10 with both) | 0.945 / 0.857 | +0.088 [+0.049, +0.128] | 0.0002 (77760 exact) | 0.0001 | 0.0006 | 4 of 12 | 10 of 10 |
+| gratings 2 s: best minus count | 12 / 17 (10, 10 with both) | 0.196 / 0.105 | +0.091 [-0.001, +0.188] | 0.0091 (77760 exact) | 0.0181 | 0.0091 | 7 of 12 | 7 of 10 |
+| scenes: 5 ms level / 50 ms level | 13 / 25 (12, 11 with both) | 0.850 / 0.761 | +0.089 [+0.034, +0.141] | 0.0019 (200000 random) | 0.0006 | (secondary) | 7 of 13 | - |
+| scenes: 50 ms / 125 ms detail | 13 / 25 (12, 11 with both) | 1.229 / 0.903 | +0.325 [+0.179, +0.471] | < 0.0001 (200000 random) | < 0.0001 | (secondary) | 8 of 13 | - |
+| scenes: 10 ms jitter cost at 10 ms | 13 / 25 (12, 11 with both) | 0.009 / 0.007 | +0.002 [-0.005, +0.009] | 0.5001 (200000 random) | 0.4076 | (secondary) | 11 of 13 | - |
+| movie 1 s: best bin (log2 ms) | 12 / 17 (10, 10 with both) | 5.034 / 7.067 | -2.033 [-2.840, -1.250] | < 0.0001 (77760 exact) | < 0.0001 | (secondary) | 6 of 12 | 10 of 10 (finer) |
+
+**All four primary claims survive the correction.** Within animals, the
+scenes' 10 ms over 50 ms ratio (0.95 against 0.88), the 25 ms detail
+share (0.24 against 0.16) and the movie's 10 ms level over the best
+(0.95 against 0.86) are each at p < 0.001 after Holm. The gratings'
+timing gain over 2 s (0.20 against 0.11) is at p = 0.009 (Holm 0.009),
+but its bootstrap interval reaches zero (-0.001): three of ten animals go
+the other way or tie, and the gain spans 0.00 to 0.43 in the thalamus
+against 0.01 to 0.22 in cortex. It is the weakest of the four claims and
+should be stated as a tendency. Among the secondary metrics, the movie's
+best bin width in 1 s segments is finer in the thalamus in every one of
+the ten animals (about 30 ms against about 130 ms, geometric means).
+
+**The complete separation on the scenes does not hold up; LGd's does.**
+With 18 samples no thalamic sample lay inside the cortical range of the
+10 ms over 50 ms ratio. With 38, three do, all LP: 797828357 (0.825),
+751348571 (0.851) and 798911424 (0.928). In 751348571 and 797828357 the
+LP sample is not flatter than the same animal's cortex (-0.035 and
+-0.005); these are the two animals of eleven that go the other way. Each
+of the six LGd samples is above every cortical sample (0.944 to 1.018
+against at most 0.938). The two exceptional LP samples still differ from
+cortex on the other metrics. Their 25 ms detail share is the largest of
+all 38 samples (0.33 and 0.34), and their movie 10 ms over best (0.958
+and 0.960) is above every cortical sample. So the claim that holds in
+every sample is not that the thalamus is flat below 50 ms on the scenes,
+but that it carries more at 25 ms and reads the movie finer. The scenes
+flatness holds without exception in LGd and on average in LP.
+
+**Reading.** The earlier test could only say that the direction was
+consistent. With eleven animals carrying both tissues, the difference
+between thalamus and cortex is significant within animals on every
+primary metric, so it is not a difference between animals or recordings.
+The difference is clean in LGd, present but noisier in LP, and weakest
+on the gratings, where the stimulus's own temporal frequency drives
+cortex finely too. The previous section's table is kept as it ran on
+18 samples.
+
 ## Caveats
 
 - Synthetic codes are easy (the continuous pyramid is at 1.00), so they test
@@ -2141,6 +2265,11 @@ the count by three.
   area and sampling, and so can the shape of a sparse sample (the first
   VISam's tilt). VISpm and VISrl were each seen in one animal; VISam, LGd
   and LP in two; VISp in five.
+- The seven sessions added for the tissue test (12 Nov) were run with the
+  gratings script's scenes readout, movie and gratings only: no E3
+  perturbations, rate regression, latency or state analyses. Their
+  samples enter the tissue test and the stimulus figure, not the earlier
+  per-area sections or `results/summary.png`.
 
 ## Suggested next steps
 
@@ -2182,8 +2311,10 @@ the count by three.
    Thalamus against cortex tested per claim with animals as the unit
    (12 Nov): complete separation on the scenes; the movie and gratings
    differences point the same way without reaching significance alone.
-   The remaining step is more animals with both tissues (each adds power
-   to the within-animal test), not new analyses.
+   More animals with both tissues (12 Nov, seven sessions, twelve animals
+   in all, eleven with both): all four primary claims survive Holm
+   correction within animals; LGd separates from cortex in every
+   sample, LP on average (two weakly driven LP samples do not).
 3. Done on 11 Nov 2026 (rate-regressed details): about half of the 125 and
    50 ms detail information survives regression on the population rate
    vector. The nonlinear version (11 Nov, kernel ridge on random Fourier
