@@ -2485,6 +2485,181 @@ The answer to the question left open in the previous section is the
 same: for natural-image identity in this data, the information is at 25 ms
 and coarser.
 
+## Statistical decoders: shared trial-to-trial variability is what fine bins were missing (15 Nov 2026)
+
+Every decoder so far (logistic, kernel SVM, convolutional networks, the
+cross-session transformer) loses accuracy below 25 ms. That could mean
+there is no image information there, or that these decoders cannot
+estimate it from about 40 trials per image. This section tries
+statistical models built for the second case, one at a time, on all
+units of all 39 recordings, with the same time-blocked split and inner
+validation set as everywhere else (all hyperparameters chosen on the
+inner split, the chosen model refitted on the training trials and
+scored once on the test trials).
+
+**1. Shrinkage LDA** (`scripts/lda_allunits.py`,
+`results/lda_allunits.json`): the logistic decoder's cumulative pyramid,
+read by linear discriminant analysis with the pooled covariance shrunk
+toward its diagonal (shrinkage chosen from 0.05 to 1 on the inner split).
+
+| level (cumulative to) | 250 | 125 | 50 | 25 | 10 | 5 ms |
+| --- | --- | --- | --- | --- | --- | --- |
+| LDA | 0.350 | 0.411 | 0.433 | 0.415 | 0.386 | 0.338 |
+| logistic | 0.335 | 0.392 | 0.418 | 0.410 | 0.386 | 0.348 |
+
+LDA's best level is 0.434 against 0.419 for the logistic (higher in 33
+of 39), at 50 ms in 35 of 39 recordings. It reads more at coarse levels
+and loses more at fine ones: the chosen shrinkage rises toward 1 (a
+diagonal covariance) at 10 and 5 ms, where the covariance cannot be
+estimated. A block-diagonal target (covariance within each time bin
+only) was much worse in a pilot (LGd 715093703 at 10 ms: 0.485 against
+0.791) and was not pursued.
+
+**2. Shift-invariant templates** (`scripts/shift_decoder.py`, pilot on
+three recordings, no JSON). If the whole population responds a few ms
+earlier on some trials, a fixed-bin decoder smears fine structure. This
+decoder searches one common shift per trial and image (within +-20 ms,
+Gaussian prior with the training trials' shift SD) under a
+diagonal-Gaussian template model, against the same model without shifts
+(no shift -> shift search):
+
+| recording | 50 ms | 25 ms | 10 ms | 5 ms |
+| --- | --- | --- | --- | --- |
+| 715093703 LGd | 0.677 -> 0.655 | 0.658 -> 0.650 | 0.605 -> 0.581 | 0.541 -> 0.530 |
+| 732592105 VISp | 0.438 -> 0.436 | 0.425 -> 0.401 | 0.364 -> 0.364 | 0.307 -> 0.319 |
+| 732592105 VISpm | 0.387 -> 0.370 | 0.367 -> 0.354 | 0.289 -> 0.285 | 0.227 -> 0.219 |
+
+Shift search helps only VISp at 5 ms (+0.012) and costs up to 0.024
+elsewhere. The fitted shift SD (7 to 13 ms) is an upper bound on real
+latency jitter, since templates and shifts are fitted together and fit
+noise. Common latency jitter is not what hides fine timing.
+
+**3. Low-rank Poisson templates** (`scripts/tensor_decoder.py`, pilot on
+the same three, `results/tensor_pilot.json`). A Bayes decoder needs each
+image's rate per unit and bin: at 5 ms, 118 x units x 50 numbers from 40
+trials each. Here each unit's log rate is its image-independent time
+course plus R = 1 to 8 temporal shapes, with images differing only in how
+strongly they drive each shape (Poisson maximum likelihood), against
+full-rank rates shrunk toward the unit mean (a Poisson naive Bayes).
+Low-rank / full-rank test accuracy:
+
+| recording | 250 | 125 | 50 | 25 | 10 | 5 ms |
+| --- | --- | --- | --- | --- | --- | --- |
+| 715093703 LGd | 0.560 / 0.562 | 0.653 / 0.648 | 0.706 / 0.689 | 0.718 / 0.672 | 0.723 / 0.605 | 0.724 / 0.501 |
+| 732592105 VISp | 0.447 / 0.448 | 0.497 / 0.497 | 0.504 / 0.466 | 0.500 / 0.447 | 0.499 / 0.401 | 0.503 / 0.357 |
+| 732592105 VISpm | 0.355 / 0.351 | 0.429 / 0.408 | 0.466 / 0.422 | 0.474 / 0.386 | 0.466 / 0.311 | 0.447 / 0.249 |
+
+The full-rank decoder collapses at fine bins as the logistic and LDA do;
+the low-rank one stays flat to 5 ms. So most of the fine-bin decline is
+estimation noise, not a lack of signal. But the low-rank decoder is still
+below LDA and the logistic (VISp 0.504 against 0.590): the templates are
+good, the noise model (independent Poisson) is not.
+
+**4. The Poisson factor decoder** (`scripts/poisson_factor.py`,
+`results/poisson_factor.json`, all 39 recordings, GPU, about 4 h).
+
+    log rate[n, u, t] = b[u, t] + sum_r a[image_n, u, r] phi[u, r, t] + sum_j z[n, j] L[u, t, j],   z_n ~ N(0, I)
+
+The first two terms are the low-rank templates above (R = 2 or 3). The
+last term is J latent factors per trial that move all units and bins
+together: gain, state, correlated noise. Everything, including the
+training trials' z, is fitted by MAP on the Poisson likelihood (Adam,
+1500 steps, L2 1e-2 on a, phi and L). A test trial is decoded by finding
+z for each image by Newton's method and scoring the image by the Laplace
+approximation to the marginal likelihood, log p(x | z*, k) + log p(z*) -
+0.5 log det H. R in {2, 3} and J in {4, 8, 16, 32} are chosen on the
+inner split per recording and bin width. The input is the counts in
+non-overlapping bins of one width, not the cumulative pyramid.
+
+What the factors are worth (pilot, test, R = 2, 50 ms): J = 0 gives LGd
+0.642, VISp 0.458, VISpm 0.420; J = 8 gives 0.768, 0.605, 0.514.
+Modelling the shared variability adds 0.10 to 0.15, more than any other
+change tried in this project. Validation chose more factors at fine bins
+(J = 16 or 32 in 18 of 39 recordings at 5 ms, 2 of 39 at 250 ms).
+
+### Test accuracy, mean over recordings (118 images, chance 0.008)
+
+| decoder | 250 | 125 | 50 | 25 | 10 | 5 ms | best level |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Poisson factor, all 39 | 0.320 | 0.388 | 0.432 | **0.436** | 0.432 | 0.410 | **0.443** |
+| LDA, all 39 | 0.350 | 0.411 | 0.433 | 0.415 | 0.386 | 0.338 | 0.434 |
+| logistic, all 39 | 0.335 | 0.392 | 0.418 | 0.410 | 0.386 | 0.348 | 0.419 |
+| Poisson factor, cortex (25) | 0.325 | 0.398 | 0.442 | 0.442 | 0.435 | 0.409 | 0.449 |
+| LDA, cortex | 0.359 | 0.417 | 0.433 | 0.411 | 0.377 | 0.327 | 0.433 |
+| logistic, cortex | 0.349 | 0.405 | 0.423 | 0.410 | 0.381 | 0.338 | 0.423 |
+| Poisson factor, thalamus (14) | 0.311 | 0.371 | 0.413 | 0.424 | **0.427** | 0.413 | 0.432 |
+| LDA, thalamus | 0.333 | 0.400 | 0.434 | 0.424 | 0.401 | 0.358 | 0.435 |
+| logistic, thalamus | 0.309 | 0.370 | 0.410 | 0.409 | 0.393 | 0.365 | 0.412 |
+
+Best bin width per recording (250 / 125 / 50 / 25 / 10 / 5 ms): Poisson
+factor 0 / 1 / 11 / 15 / 10 / 2; logistic 0 / 2 / 29 / 7 / 1 / 0; LDA
+0 / 2 / 35 / 2 / 0 / 0.
+
+### Paired across recordings (Wilcoxon signed-rank)
+
+| comparison | group | mean difference | recordings higher | p |
+| --- | --- | --- | --- | --- |
+| factor best against logistic best | all 39 | +0.023 | 35 | < 0.001 |
+| | cortex | +0.025 | 23 / 25 | < 0.001 |
+| | thalamus | +0.019 | 12 / 14 | 0.004 |
+| factor best against LDA best | all 39 | +0.009 | 26 | 0.022 |
+| | cortex | +0.015 | 19 / 25 | 0.001 |
+| | thalamus | -0.003 | 7 / 14 | 0.46 |
+| factor 25 against 50 ms | cortex | +0.000 | 15 / 25 | 0.56 |
+| | thalamus | +0.012 | 10 / 14 | 0.025 |
+| factor 10 against 50 ms | cortex | -0.007 | 9 / 25 | 0.095 |
+| | thalamus | +0.014 | 11 / 14 | 0.009 |
+| factor 10 against 25 ms | cortex | -0.007 | 8 / 25 | 0.015 |
+| | thalamus | +0.003 | 9 / 14 | 0.63 |
+| factor 5 against 50 ms | cortex | -0.033 | 0 / 25 | < 0.001 |
+| | thalamus | -0.000 | 5 / 14 | 0.43 |
+| thalamus minus cortex, (10 - 50 ms) | Mann-Whitney | +0.021 | | 0.002 |
+| thalamus minus cortex, (5 - 50 ms) | Mann-Whitney | +0.033 | | < 0.001 |
+
+**The best decoder in the project, and the first to beat the logistic in
+cortex.** The factor decoder's best level is 0.443 against 0.419 for the
+logistic (35 of 39 recordings) and 0.434 for LDA (26 of 39). In cortex it
+beats both clearly; in thalamus it ties LDA. It is per recording,
+interpretable (every parameter is a rate, a temporal shape or a loading)
+and 0.06 above the cross-session transformer.
+
+**Fine bins stop costing accuracy.** From 50 to 5 ms the logistic loses
+0.070 and LDA 0.095; the factor decoder loses 0.021, and nothing from 50
+to 10 ms. At 10 ms it is 0.047 above the logistic, at 5 ms 0.062. The
+fine-bin decline every earlier decoder showed was mostly the cost of
+estimating 118 x units x bins numbers from 40 trials with the wrong
+noise model, not an absence of signal.
+
+**But fine bins still add nothing in cortex.** With the decline removed,
+cortex is flat from 50 to 25 ms (+0.000), slightly lower at 10 ms (-0.007)
+and lower at 5 ms (-0.033, every recording). The optimum spreads over
+50 / 25 / 10 ms (8 / 11 / 5 of 25 recordings) instead of sitting at 50 ms,
+but no finer bin reads more than 50 ms on average. The cortical answer of
+the whole notebook (image information at 25 ms and coarser) holds for a
+decoder that no longer penalises fine bins.
+
+**Thalamus reads more at 10 to 25 ms than at 50 ms.** For the first time
+on the scenes, a decoder reads more from thalamus at 25 ms (+0.012, 10 of
+14) and 10 ms (+0.014, 11 of 14, p = 0.009) than at 50 ms, and 5 ms costs
+nothing. The thalamus-cortex difference in the fine-bin profile is
+significant across recordings (10 - 50 ms: thalamus +0.014 against cortex
+-0.007, p = 0.002; with the logistic it was -0.016 against -0.042).
+Recordings, not animals, are the unit here, so this is not the
+animal-level tissue test. It agrees with the finer thalamic scale
+everywhere else in this notebook, now as a gain rather than a smaller
+loss. Some of it may be firing rate: the rate-matched control was not
+run with this decoder.
+
+**Caveats.** At 250 ms the factor decoder is below LDA and the logistic
+(0.320 against 0.350 and 0.335): with one bin the template has rank 1 and
+the factors cannot separate gain from image, so it is not the right model
+for whole-window counts. Seeds were not repeated (the MAP fit starts from
+a seeded random draw; in the pilot, the choice of J moved test accuracy
+by 0.01 to 0.03 per recording). R was limited to 2 and 3 and J to 32; the
+latent prior is a unit Gaussian, independent across trials. The model is
+fitted per recording; a cross-session version (shared temporal shapes,
+recording-specific loadings) is the obvious next step.
+
 ## Code review: two bugs, no leakage (14 Nov 2026)
 
 Two independent reviews of the analysis code (decoding, statistics,

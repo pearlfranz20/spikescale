@@ -25,7 +25,11 @@ In short, across 38 area samples in twelve mice:
 - **Decoders.** Nonlinear decoders (a kernel SVM and convolutional networks)
   read less than the linear one on this data at every bin width. A spike
   transformer trained across all 39 populations at once reads nothing more
-  from spike times at 1 ms than at 25 ms.
+  from spike times at 1 ms than at 25 ms. The best decoder is a small
+  Poisson model with low-rank templates and latent factors for shared
+  trial-to-trial variability: above the linear one in 35 of 39 recordings,
+  nearly flat down to 5 ms, still no gain below 50 ms in cortex, a small
+  gain at 10 to 25 ms in thalamus.
 
 The analysis started as a test of a multiscale residual VQ tokenizer for
 spikes, which is kept as one of four readouts. Its gate was a clear win over
@@ -81,6 +85,7 @@ information appears. The idea follows Next-Concept Modeling
 - [x] Nonlinear decoders (kernel SVM, convolutional networks) against the linear one: none reads more at any bin width in VISp or LGd; with ~32 training trials per image the linear decoder is the best tested
 - [x] Paper-style summary of the whole analysis (`SUMMARY.md`)
 - [x] Cross-session spike transformer (all 39 populations, 184,000 trials, GPU): spike times at 1 ms read no better than at 25 ms; 25 to 250 ms timing worth 0.08; still 0.035 below the per-recording linear decoder
+- [x] Statistical decoders (shrinkage LDA, shift-invariant and low-rank Poisson templates, Poisson factor model): the factor model beats the linear decoder in 35/39 recordings (0.443 against 0.419) and is nearly flat to 5 ms; cortex still gains nothing below 50 ms, thalamus gains 0.014 at 10 ms
 - ~~E4 fixed-resolution ladder comparison~~ dropped on 1 Nov 2026: what the
   ladder should compare was never written down, and the decoder bake-off and
   E3b already answer the per-level question on real data
@@ -115,6 +120,10 @@ scripts/
   pack_spikes.py       all scenes populations as one spike-token dataset (data/packed_scenes.npz)
   spike_transformer.py cross-session Perceiver over spike tokens, --res W rounds spike times to W ms (needs CUDA torch)
   linear_allunits.py   its baseline: the linear pyramid decoder on all units of each recording
+  lda_allunits.py      shrinkage LDA on the same pyramid
+  poisson_factor.py    Poisson factor decoder: low-rank templates + per-trial latent factors, Laplace marginal (needs CUDA torch)
+  tensor_decoder.py    low-rank Poisson templates against a full-rank Poisson naive Bayes (pilot)
+  shift_decoder.py     shift-invariant template decoder, one latency shift per trial (pilot)
   residual_levels.py   decode from each level's orthogonal detail alone (is the information at a scale unique to it?),
                        with rate-regressed readouts (--readouts detail_unitrate,detail_poprate,shuffled_unitrate --tag rate)
   latency_readout.py   are the 125 and 50 ms details just first-spike latency and centre of mass, per unit or for the population? (no);

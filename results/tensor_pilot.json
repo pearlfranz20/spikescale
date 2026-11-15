@@ -1,0 +1,206 @@
+{
+ "715093703_LGd": {
+  "250": {
+   "lowrank": 0.5601694583892822,
+   "fullrank": 0.5618643760681152,
+   "rank": 1,
+   "l2": 0.01,
+   "gain": true,
+   "alpha": 5,
+   "gain_full": true,
+   "val_lowrank": 0.45084744691848755,
+   "val_fullrank": 0.4559321999549866
+  },
+  "125": {
+   "lowrank": 0.6533898115158081,
+   "fullrank": 0.6483050584793091,
+   "rank": 2,
+   "l2": 0.01,
+   "gain": true,
+   "alpha": 5,
+   "gain_full": true,
+   "val_lowrank": 0.5008474588394165,
+   "val_fullrank": 0.4974576234817505
+  },
+  "50": {
+   "lowrank": 0.7059321999549866,
+   "fullrank": 0.6889830231666565,
+   "rank": 2,
+   "l2": 0.01,
+   "gain": true,
+   "alpha": 5,
+   "gain_full": true,
+   "val_lowrank": 0.5737287998199463,
+   "val_fullrank": 0.553389847278595
+  },
+  "25": {
+   "lowrank": 0.7177966237068176,
+   "fullrank": 0.6720339059829712,
+   "rank": 2,
+   "l2": 0.01,
+   "gain": true,
+   "alpha": 10,
+   "gain_full": true,
+   "val_lowrank": 0.5813559293746948,
+   "val_fullrank": 0.5330508351325989
+  },
+  "10": {
+   "lowrank": 0.7228813767433167,
+   "fullrank": 0.6050847172737122,
+   "rank": 3,
+   "l2": 0.01,
+   "gain": true,
+   "alpha": 20,
+   "gain_full": true,
+   "val_lowrank": 0.5889830589294434,
+   "val_fullrank": 0.4618644118309021
+  },
+  "5": {
+   "lowrank": 0.7237287759780884,
+   "fullrank": 0.5008474588394165,
+   "rank": 2,
+   "l2": 0.01,
+   "gain": true,
+   "alpha": 10,
+   "gain_full": true,
+   "val_lowrank": 0.5661016702651978,
+   "val_fullrank": 0.3813559412956238
+  }
+ },
+ "732592105_VISp": {
+  "250": {
+   "lowrank": 0.44661015272140503,
+   "fullrank": 0.44830507040023804,
+   "rank": 1,
+   "l2": 0.001,
+   "gain": true,
+   "alpha": 1,
+   "gain_full": true,
+   "val_lowrank": 0.48559319972991943,
+   "val_fullrank": 0.48559319972991943
+  },
+  "125": {
+   "lowrank": 0.496610164642334,
+   "fullrank": 0.4974576234817505,
+   "rank": 1,
+   "l2": 0.001,
+   "gain": true,
+   "alpha": 1,
+   "gain_full": true,
+   "val_lowrank": 0.5161017179489136,
+   "val_fullrank": 0.5144068002700806
+  },
+  "50": {
+   "lowrank": 0.5042372941970825,
+   "fullrank": 0.46610167622566223,
+   "rank": 2,
+   "l2": 0.01,
+   "gain": true,
+   "alpha": 2,
+   "gain_full": true,
+   "val_lowrank": 0.5186440348625183,
+   "val_fullrank": 0.47372880578041077
+  },
+  "25": {
+   "lowrank": 0.5,
+   "fullrank": 0.44745761156082153,
+   "rank": 2,
+   "l2": 0.01,
+   "gain": true,
+   "alpha": 10,
+   "gain_full": true,
+   "val_lowrank": 0.505084753036499,
+   "val_fullrank": 0.4406779706478119
+  },
+  "10": {
+   "lowrank": 0.4991525411605835,
+   "fullrank": 0.400847464799881,
+   "rank": 1,
+   "l2": 0.001,
+   "gain": true,
+   "alpha": 20,
+   "gain_full": true,
+   "val_lowrank": 0.4957627058029175,
+   "val_fullrank": 0.41355931758880615
+  },
+  "5": {
+   "lowrank": 0.503389835357666,
+   "fullrank": 0.35677966475486755,
+   "rank": 1,
+   "l2": 0.01,
+   "gain": true,
+   "alpha": 20,
+   "gain_full": true,
+   "val_lowrank": 0.5,
+   "val_fullrank": 0.342372864484787
+  }
+ },
+ "732592105_VISpm": {
+  "250": {
+   "lowrank": 0.35508474707603455,
+   "fullrank": 0.350847452878952,
+   "rank": 1,
+   "l2": 0.01,
+   "gain": true,
+   "alpha": 10,
+   "gain_full": true,
+   "val_lowrank": 0.3483050763607025,
+   "val_fullrank": 0.33728814125061035
+  },
+  "125": {
+   "lowrank": 0.42881354689598083,
+   "fullrank": 0.40847456455230713,
+   "rank": 2,
+   "l2": 0.01,
+   "gain": true,
+   "alpha": 10,
+   "gain_full": true,
+   "val_lowrank": 0.39830508828163147,
+   "val_fullrank": 0.3847457468509674
+  },
+  "50": {
+   "lowrank": 0.46610167622566223,
+   "fullrank": 0.4220339059829712,
+   "rank": 2,
+   "l2": 0.01,
+   "gain": true,
+   "alpha": 10,
+   "gain_full": true,
+   "val_lowrank": 0.4389830529689789,
+   "val_fullrank": 0.41525423526763916
+  },
+  "25": {
+   "lowrank": 0.47372880578041077,
+   "fullrank": 0.3855932056903839,
+   "rank": 2,
+   "l2": 0.01,
+   "gain": true,
+   "alpha": 10,
+   "gain_full": true,
+   "val_lowrank": 0.4457626938819885,
+   "val_fullrank": 0.37542372941970825
+  },
+  "10": {
+   "lowrank": 0.46610167622566223,
+   "fullrank": 0.3110169470310211,
+   "rank": 1,
+   "l2": 0.01,
+   "gain": true,
+   "alpha": 20,
+   "gain_full": true,
+   "val_lowrank": 0.4381355941295624,
+   "val_fullrank": 0.2847457528114319
+  },
+  "5": {
+   "lowrank": 0.44661015272140503,
+   "fullrank": 0.2491525411605835,
+   "rank": 1,
+   "l2": 0.01,
+   "gain": true,
+   "alpha": 20,
+   "gain_full": true,
+   "val_lowrank": 0.4389830529689789,
+   "val_fullrank": 0.22542372345924377
+  }
+ }
+}
