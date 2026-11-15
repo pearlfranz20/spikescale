@@ -2647,8 +2647,7 @@ significant across recordings (10 - 50 ms: thalamus +0.014 against cortex
 Recordings, not animals, are the unit here, so this is not the
 animal-level tissue test. It agrees with the finer thalamic scale
 everywhere else in this notebook, now as a gain rather than a smaller
-loss. Some of it may be firing rate: the rate-matched control was not
-run with this decoder.
+loss. Most of the 10 ms part is firing rate (next subsection).
 
 **Caveats.** At 250 ms the factor decoder is below LDA and the logistic
 (0.320 against 0.350 and 0.335): with one bin the template has rank 1 and
@@ -2659,6 +2658,53 @@ by 0.01 to 0.03 per recording). R was limited to 2 and 3 and J to 32; the
 latent prior is a unit Gaussian, independent across trials. The model is
 fitted per recording; a cross-session version (shared temporal shapes,
 recording-specific loadings) is the obvious next step.
+
+### The thalamic fine-bin gain: animals as the unit, and at the cortical rate
+
+`scripts/stats_poisson_factor.py` puts the factor decoder's profile
+(accuracy at 25, 10 and 5 ms over accuracy at 50 ms) through the tissue
+test of `stats_tissue.py`: exact permutation of the tissue labels within
+each animal, 12 animals, 11 with both tissues, Holm over the three widths.
+`poisson_factor.py --thin` reruns the 14 thalamic recordings with spikes
+deleted at random until each fires at the same animal's cortical scenes
+rate (`results/rates_tissue.json`; 44 to 100% of spikes kept), and the
+test is repeated with those (`--thinned`).
+
+| width over 50 ms | thalamus | cortex | difference | 95% CI | p within animals | Holm |
+| --- | --- | --- | --- | --- | --- | --- |
+| 25 ms | 1.002 | 0.990 | +0.012 | [-0.071, +0.068] | 0.62 | 0.62 |
+| 10 ms | 1.021 | 0.972 | +0.049 | [-0.000, +0.098] | 0.021 | 0.064 |
+| 5 ms | 0.973 | 0.892 | +0.080 | [-0.006, +0.158] | 0.022 | 0.064 |
+| 25 ms, rate-matched | 1.025 | 0.990 | +0.036 | [+0.003, +0.079] | 0.037 | 0.11 |
+| 10 ms, rate-matched | 1.004 | 0.972 | +0.032 | [-0.014, +0.082] | 0.18 | 0.18 |
+| 5 ms, rate-matched | 0.957 | 0.892 | +0.065 | [+0.012, +0.129] | 0.065 | 0.13 |
+
+(Rate-matched, LP of 750749662 falls below three times chance and drops
+out: 13 thalamic samples.) Within the thalamus, paired over the 14
+recordings, original / rate-matched: 25 against 50 ms +0.012 (10 of 14,
+p = 0.025) / +0.006 (11 of 14, p = 0.006); 10 against 50 ms +0.014
+(11 of 14, p = 0.009) / +0.002 (8 of 14, p = 0.49); 5 against 50 ms
+-0.000 / -0.012 (2 of 14, p = 0.005). Mean accuracy falls from 0.413 to
+0.352 at 50 ms with the thinning.
+
+**The 10 ms gain is firing rate; a small 25 ms gain is not.** At the
+cortical rate the thalamus no longer reads more at 10 ms than at 50 ms,
+and the thalamus-cortex difference at 10 ms loses significance (p = 0.18).
+What survives is a small gain at 25 ms (+0.006, 11 of 14 recordings),
+still larger relative to 50 ms than cortex's (p = 0.037 within animals,
+not significant after Holm over three widths). This is the same split the
+rate-matched pyramid gave (`SUMMARY.md` section 3.5): the thalamus's
+flatness at 10 ms is about rate, its 25 ms structure is not. None of
+these thalamus-cortex tests survives correction on its own, so the
+factor decoder adds consistent direction, not new significant claims.
+
+(Engineering note: the first run of `--thin` was stopped and restarted
+after the Hessian in the decoding step was rewritten as one matrix
+product; the old einsum built a (trials, images, units x bins, J)
+temporary that overflowed the 12 GB GPU into system memory at 5 ms and
+made some recordings take an hour. The two are equal to float precision,
+relative difference 5e-6; the 39 unthinned results were computed with the
+old form.)
 
 ## Code review: two bugs, no leakage (14 Nov 2026)
 

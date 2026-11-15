@@ -24,6 +24,11 @@ log counts.
     .venv-gpu/Scripts/python.exe scripts/poisson_factor.py
 Output: results/poisson_factor.json  {recording: {width: {"acc", "R", "J", "val": {"R,J": acc}}}}
 written after every recording; recordings already in the file are skipped.
+
+--thin: thalamic recordings only, with spikes deleted at random until the
+population fires at the same animal's cortical rate on the scenes (targets
+from scripts/rates_tissue.py, the same thinning as gratings_pyramid.py --thin-to,
+seed 3000). Output results/poisson_factor_thin.json, with "keep" per recording.
 """
 from __future__ import annotations
 
@@ -80,6 +85,7 @@ def loglik(x, eta, L, chunk=40, iters=8):
     Lf = L.reshape(-1, L.shape[-1])
     J = Lf.shape[1]
     eye = torch.eye(J, device=DEV)
+    LL = (Lf[:, :, None] * Lf[:, None, :]).reshape(-1, J * J)  # H = sum_d lam_d L_d L_d^T as one matmul, no (c, K, D, J) temporary
     out = torch.empty(n, K, device=DEV)
     for i in range(0, n, chunk):
         xc = xf[i:i + chunk]
@@ -87,11 +93,11 @@ def loglik(x, eta, L, chunk=40, iters=8):
         for _ in range(iters):
             lam = (ef[None] + z @ Lf.T).exp()
             grad = (xc[:, None] - lam) @ Lf - z
-            H = torch.einsum("ckd,dj,di->ckji", lam, Lf, Lf) + eye
+            H = (lam @ LL).view(*lam.shape[:2], J, J) + eye
             z = z + torch.linalg.solve(H, grad.unsqueeze(-1)).squeeze(-1)
         e = ef[None] + z @ Lf.T
         lam = e.exp()
-        H = torch.einsum("ckd,dj,di->ckji", lam, Lf, Lf) + eye
+        H = (lam @ LL).view(*lam.shape[:2], J, J) + eye
         out[i:i + chunk] = (xc[:, None] * e).sum(-1) - lam.sum(-1) - 0.5 * z.pow(2).sum(-1) - 0.5 * torch.logdet(H)
     return out
 
@@ -100,9 +106,18 @@ def acc(x, y, eta, L):
     return float((loglik(x, eta, L).argmax(1) == y).float().mean())
 
 
-def run(path, widths, ranks, factors):
+def run(path, widths, ranks, factors, thin_hz=None):
     d = np.load(path)
     sp, yn = d["spikes_ms"], d["labels"].astype(np.int64)
+    out = {}
+    if thin_hz:
+        hz = sp.sum(dtype=np.int64) / sp.size * 1000
+        keep = min(1.0, thin_hz / hz)
+        if keep < 1.0:  # as gratings_pyramid.thin: each spike kept independently with probability keep
+            sp = sp.copy()
+            nz = np.nonzero(sp)
+            sp[nz] = np.random.default_rng(3000).binomial(sp[nz].astype(np.int64), keep).astype(sp.dtype)
+        out["keep"] = float(keep)
     n, U, _ = sp.shape
     tr, te = blocked_split(n, yn)
     tri = np.nonzero(tr)[0]
@@ -110,7 +125,6 @@ def run(path, widths, ranks, factors):
     y = torch.as_tensor(yn, device=DEV)
     idx = {k: torch.as_tensor(v, device=DEV) for k, v in
            {"tr": np.nonzero(tr)[0], "te": np.nonzero(te)[0], "itr": tri[itr], "iva": tri[iva]}.items()}
-    out = {}
     for w in widths:
         x = torch.as_tensor(sp.reshape(n, U, 250 // w, w).sum(-1), dtype=torch.float32, device=DEV)
         val = {}
@@ -130,8 +144,11 @@ def main():
     ap.add_argument("--ranks", default="2,3")
     ap.add_argument("--factors", default="4,8,16,32")
     ap.add_argument("--only", default="")
-    ap.add_argument("--out", default="results/poisson_factor.json")
+    ap.add_argument("--out", default="")
+    ap.add_argument("--thin", action="store_true", help="thalamus only, thinned to the cortical rate")
     args = ap.parse_args()
+    out_path = Path(args.out or ("results/poisson_factor_thin.json" if args.thin else "results/poisson_factor.json"))
+    targets = json.loads(Path("results/rates_tissue.json").read_text())["targets"] if args.thin else {}
     widths = [int(v) for v in args.widths.split(",")]
     ranks = [int(v) for v in args.ranks.split(",")]
     factors = [int(v) for v in args.factors.split(",")]
@@ -139,14 +156,15 @@ def main():
                    if len(f.stem.split("_")) == 3 and f.stem.split("_")[2] != "state")
     if args.only:
         files = [f for f in files if any(o in f for o in args.only.split(","))]
-    out_path = Path(args.out)
+    if args.thin:
+        files = [f for f in files if Path(f).stem.replace("allen_", "") in targets]
     res = json.loads(out_path.read_text()) if out_path.exists() else {}
     for f in files:
         name = Path(f).stem.replace("allen_", "")
         if name in res:
             continue
         t0 = time.time()
-        res[name] = run(f, widths, ranks, factors)
+        res[name] = run(f, widths, ranks, factors, targets[name]["scenes"] if args.thin else None)
         out_path.write_text(json.dumps(res, indent=1))
         print(f"{name} done in {time.time() - t0:.0f}s ({len(res)}/{len(files)})", flush=True)
 

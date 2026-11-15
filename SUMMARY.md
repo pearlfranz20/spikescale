@@ -47,7 +47,8 @@ decoder in 35 of 39 recordings (0.443 against 0.419) and loses almost
 nothing in fine bins (0.021 from 50 to 5 ms, against 0.070), so most of
 the fine-bin decline other decoders show is estimation noise. Even so,
 cortex reads no more below 50 ms. The thalamus, under this decoder, reads
-more at 10 to 25 ms than at 50 ms (+0.014, 11 of 14 recordings). A learned multiscale spike tokenizer, the project's starting
+more at 10 to 25 ms than at 50 ms; at the cortical firing rate the 10 ms
+gain goes and a small 25 ms gain stays. A learned multiscale spike tokenizer, the project's starting
 point, kept under half of the decodable information and beat plain
 k-means quantization by only about 0.03.
 
@@ -296,8 +297,11 @@ in every recording: fine bins no longer cost much, but they add nothing.
 In thalamus it reads more at 25 ms (+0.012, 10 of 14) and 10 ms (+0.014,
 11 of 14, p = 0.009) than at 50 ms, and 5 ms costs nothing; the
 thalamus-cortex difference in that profile is significant across
-recordings (p = 0.002), not yet tested with animals as the unit or at
-matched rate. At 250 ms (one bin) the model is below the linear decoder:
+recordings (p = 0.002) and within animals at 10 ms (p = 0.021; 0.064 after
+Holm over three widths). Thinned to the cortical rate, the thalamus loses
+its 10 ms gain (+0.002, p = 0.49) but keeps a small one at 25 ms (+0.006,
+11 of 14, p = 0.006; against cortex within animals p = 0.037, 0.11 after
+Holm), the same split as the rate-matched pyramid. At 250 ms (one bin) the model is below the linear decoder:
 it is a model of time courses, not of counts.
 
 ## 4. Figures
@@ -362,8 +366,8 @@ removes most of the fine-bin decline. That sharpens the cortical result:
 with fine bins no longer penalised, cortex still reads nothing more below
 50 ms. For the thalamus it turns a smaller loss in fine bins into a gain
 at 10 to 25 ms, consistent with the precise LGN timing of single-cell
-work, but it has not yet been put through the rate-matched and
-animal-level tests the other thalamic claims passed.
+work. Rate matching removes the 10 ms part and leaves a small 25 ms gain,
+the same answer the pyramid gave.
 
 ## 6. Limitations
 
@@ -385,9 +389,8 @@ animal-level tests the other thalamic claims passed.
   stays 0.035 below the linear decoder, so its null below 25 ms is weaker
   evidence than a null from a decoder at least as strong as the linear one.
 - **Poisson factor decoder.** One seed per recording; R up to 3 and J up
-  to 32; per recording, not across sessions. Its thalamic fine-bin gain is
-  tested with recordings, not animals, as the unit and without rate
-  matching.
+  to 32; per recording, not across sessions. Its thalamus-cortex
+  differences do not survive correction over the three widths tested.
 - **Tissue test.** The scenes within-animal p values are estimated from
   200,000 random relabellings. The movie and gratings ones are exact.
 
@@ -426,7 +429,7 @@ The main scripts:
 | `pack_spikes.py`, `spike_transformer.py` | the cross-session spike transformer (GPU), `--res` for the time resolution |
 | `linear_allunits.py` | its linear baseline on all units |
 | `lda_allunits.py` | shrinkage LDA on the pyramid, all units |
-| `poisson_factor.py` | the Poisson factor decoder (GPU) |
+| `poisson_factor.py`, `stats_poisson_factor.py` | the Poisson factor decoder (GPU; `--thin` for the rate-matched thalamus) and its tissue test |
 | `tensor_decoder.py`, `shift_decoder.py` | low-rank Poisson templates and shift-invariant templates (pilots) |
 | `plot_summary.py`, `plot_stimuli.py` | figures |
 
