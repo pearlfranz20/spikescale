@@ -119,7 +119,7 @@ def one(spikes_ms, labels_all, split_labels, window, label_set, readout, seed, t
     accs, cs = [], []
     for k in range(len(lengths)):
         x = feats[k] if readout in ("detail", "shuffled") else pyramid(counts, lengths, k)
-        clf, c = fit_clf_nested(x[tr], y[tr])
+        clf, c = fit_clf_nested(x[tr], y[tr], split_labels=split_labels[tr])
         accs.append(score(clf, x[te], y[te]))
         cs.append(c)
     return accs, cs, keep
@@ -140,6 +140,8 @@ def main():
     ap.add_argument("--readouts", default=",".join(READOUTS))
     ap.add_argument("--out", default="results")
     ap.add_argument("--tag", default="", help="suffix for the output file, e.g. _movie")
+    ap.add_argument("--merge", action="store_true",
+                    help="update the runs computed here in an existing output file and keep the others")
     args = ap.parse_args()
     windows = [int(w) for w in args.windows.split(",") if w]  # --windows "" skips the gratings
     readouts = args.readouts.split(",")
@@ -203,11 +205,17 @@ def main():
            "levels": {f"w{w}": [w // L for L in WINDOWS[w]] for w in set(windows) | {250} | (set(MOVIE_WINDOWS) if args.movie else set())},
            "chance": {**{ls: 1 / len(np.unique(v)) for ls, v in labels_all.items()},
                       **({f"seg_w{w}": 1 / (30000 // w) for w in MOVIE_WINDOWS} if args.movie else {})}, "runs": {}, "mean": {}}
+    path = Path(args.out) / f"gratings_{name}{args.tag}.json"
+    if args.merge and path.exists():
+        prev = json.loads(path.read_text())
+        assert prev["n_units"] == args.n_units and prev["repeats"] == args.repeats, "merge into a different design"
+        out["runs"], out["chance"] = prev["runs"], {**prev["chance"], **out["chance"]}
+        out["levels"] = {**prev["levels"], **out["levels"]}
+        out["merged"] = prev.get("merged", []) + [{"dg_labels": list(dg_labels), "readouts": readouts, "windows": windows}]
     for (ds, seed, w, ls, ro), (accs, cs, keep) in zip(jobs, res):
         out["runs"].setdefault(f"seed{seed}", {})[f"{ds}/w{w}/{ls}/{ro}"] = {"acc": accs, "c": cs, "keep": keep}
     for key in {k for r in out["runs"].values() for k in r}:
         out["mean"][key] = np.mean([r[key]["acc"] for r in out["runs"].values() if key in r], axis=0).tolist()
-    path = Path(args.out) / f"gratings_{name}{args.tag}.json"
     path.write_text(json.dumps(out, indent=1))
     for ds, (_, _, _, ws, lss) in data.items():
         for w in ws:

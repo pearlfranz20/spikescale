@@ -1760,14 +1760,16 @@ thalamic state split below; five areas, 60 units, 5 seeds.
 
 | area (units) | scenes, 250 ms window | gratings, condition, 250 ms | condition, 1000 ms | condition, 2000 ms | direction, 2000 ms | temporal frequency, 2000 ms | 50 ms detail minus control, condition, 2000 ms |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| VISp (60) | 0.33 / 0.40 at 50 | 0.20 / 0.33 at 50 | 0.44 / 0.53 at 25 | 0.57 / 0.58 at 50 | 0.91 / 0.91 at 2000 | 0.65 / 0.76 at 50 | +0.28 |
-| VISpm (68) | 0.09 / 0.12 at 50 | 0.13 / 0.16 at 25 | 0.25 / 0.28 at 125 | 0.27 / 0.31 at 500 | 0.52 / 0.60 at 50 | 0.54 / 0.55 at 50 | +0.02 |
-| VISam (68) | 0.12 / 0.17 at 50 | 0.12 / 0.17 at 50 | 0.23 / 0.32 at 50 | 0.31 / 0.32 at 125 | 0.78 / 0.79 at 250 | 0.52 / 0.58 at 25 | +0.06 |
-| LGd (83) | 0.11 / 0.16 at 25 | 0.12 / 0.19 at 5 | 0.20 / 0.34 at 25 | 0.24 / 0.36 at 50 | 0.40 / 0.44 at 25 | 0.70 / 0.76 at 50 | +0.23 |
-| LP (145) | 0.02 / 0.02 at 25 | 0.05 / 0.08 at 25 | 0.10 / 0.12 at 125 | 0.13 / 0.13 at 2000 | 0.31 / 0.34 at 1000 | 0.52 / 0.52 at 2000 | +0.02 |
+| VISp (60) | 0.33 / 0.40 at 50 | 0.20 / 0.33 at 50 | 0.44 / 0.53 at 25 | 0.57 / 0.58 at 50 | 0.90 / 0.90 at 2000 | 0.62 / 0.78 at 50 | +0.28 |
+| VISpm (68) | 0.09 / 0.12 at 50 | 0.13 / 0.16 at 25 | 0.25 / 0.28 at 125 | 0.27 / 0.31 at 500 | 0.55 / 0.61 at 250 | 0.57 / 0.57 at 2000 | +0.02 |
+| VISam (68) | 0.12 / 0.17 at 50 | 0.12 / 0.17 at 50 | 0.23 / 0.32 at 50 | 0.31 / 0.32 at 125 | 0.77 / 0.77 at 2000 | 0.47 / 0.57 at 50 | +0.06 |
+| LGd (83) | 0.11 / 0.16 at 25 | 0.12 / 0.19 at 5 | 0.20 / 0.34 at 25 | 0.24 / 0.36 at 50 | 0.42 / 0.45 at 25 | 0.72 / 0.77 at 50 | +0.23 |
+| LP (145) | 0.02 / 0.02 at 25 | 0.05 / 0.08 at 25 | 0.10 / 0.12 at 125 | 0.13 / 0.13 at 2000 | 0.34 / 0.34 at 2000 | 0.52 / 0.52 at 1000 | +0.02 |
 
 Chance is 0.008 for scenes, 0.025 for condition, 0.125 for direction and
-0.2 for temporal frequency. Each gratings accuracy rests on 120 held-out
+0.2 for temporal frequency. (Direction and temporal-frequency columns
+corrected on 14 Nov 2026: the inner split that chooses C had held out whole
+conditions instead of the last repeats of each; see "Code review" below.) Each gratings accuracy rests on 120 held-out
 trials (the last 3 repeats of each condition), so differences under about
 0.04 are noise; VISp has exactly 60 units here, so its five seeds use the
 same units and count as one sample.
@@ -1787,7 +1789,7 @@ best level is 0.13 in the 250 ms window, 0.09 in 1000 ms and 0.02 in
 2000 ms: the timing information that matters for a static stimulus is
 concentrated at the response onset, and two seconds of sustained count
 recover what the onset dynamics carried. Direction, the static attribute,
-is read entirely from the 2 s count in VISp (0.91, no level beats it) and
+is read entirely from the 2 s count in VISp (0.90, no level beats it) and
 VISam. LGd keeps a gain of 0.13 to 0.14 at 1000 and 2000 ms, with its
 50 ms detail 0.2 above the control: LGd follows the drifting grating cycle
 by cycle (its well-known phase-locked, F1-dominated response), so for a
@@ -1798,8 +1800,8 @@ throughout, and cortex mostly at onset.
 and 2000 ms windows the optimum for condition and for temporal frequency
 is 25 to 125 ms wherever it is clear (VISp, VISam, LGd), not a fixed
 fraction of the window (the analogue of the 50 ms level would be 200 and
-400 ms). Temporal frequency, the positive control, gains 0.06 to 0.11 over
-the count in VISp, VISam and LGd at 25 to 50 ms bins, the scale of the
+400 ms). Temporal frequency, the positive control, gains 0.05 to 0.16 over
+the count in VISp, VISam and LGd at 50 ms bins, the scale of the
 grating periods (67 to 1000 ms); nothing gains below 25 ms, consistent
 with no stimulus-locked structure faster than the 15 Hz grating. VISpm is
 flat within noise in the long windows, and LP in this animal is barely
@@ -1996,18 +1998,19 @@ LP), beside the sixth animal, with the scenes pyramid of the same units
 
 | sample | scenes, 250 ms | condition, 250 ms: count / best / 5 ms | direction, 250 ms | condition, 2000 ms | direction, 2000 ms | 10 ms jitter cost, condition, 250 ms, 10 ms level |
 | --- | --- | --- | --- | --- | --- | --- |
-| VISp 662 | 0.33 / 0.40 at 50 | 0.20 / 0.33 at 50 / 0.27 | 0.59 / 0.67 at 25 | 0.57 / 0.58 at 50 | 0.91 / 0.91 at 2000 | -0.01 |
-| VISam 662 | 0.12 / 0.17 at 50 | 0.12 / 0.17 at 50 / 0.13 | 0.42 / 0.48 at 25 | 0.31 / 0.32 at 125 | 0.78 / 0.79 at 250 | +0.02 |
-| LGd 662 | 0.11 / 0.16 at 25 | 0.12 / 0.19 at 5 / 0.19 | 0.27 / 0.30 at 10 | 0.24 / 0.36 at 50 | 0.40 / 0.44 at 25 | +0.00 |
-| VISp 393 | 0.54 / 0.62 at 50 | 0.26 / 0.32 at 25 / 0.29 | 0.60 / 0.67 at 25 | 0.49 / 0.71 at 10 | 0.79 / 0.83 at 500 | +0.00 |
-| VISam 393 | 0.33 / 0.44 at 50 | 0.11 / 0.17 at 25 / 0.14 | 0.47 / 0.50 at 25 | 0.40 / 0.47 at 25 | 0.76 / 0.79 at 50 | -0.01 |
-| LGd 393 | 0.57 / 0.70 at 25 | 0.35 / 0.72 at 10 / 0.70 | 0.52 / 0.82 at 10 | 0.70 / 0.87 at 25 | 0.83 / 0.91 at 25 | +0.06 |
-| VISp 464 | 0.40 / 0.49 at 50 | 0.15 / 0.21 at 10 / 0.21 | 0.50 / 0.53 at 50 | 0.49 / 0.54 at 50 | 0.76 / 0.76 at 2000 | +0.03 |
+| VISp 662 | 0.33 / 0.40 at 50 | 0.20 / 0.33 at 50 / 0.27 | 0.61 / 0.68 at 125 | 0.57 / 0.58 at 50 | 0.90 / 0.90 at 2000 | -0.01 |
+| VISam 662 | 0.12 / 0.17 at 50 | 0.12 / 0.17 at 50 / 0.13 | 0.41 / 0.49 at 25 | 0.31 / 0.32 at 125 | 0.77 / 0.77 at 2000 | +0.02 |
+| LGd 662 | 0.11 / 0.16 at 25 | 0.12 / 0.19 at 5 / 0.19 | 0.27 / 0.31 at 10 | 0.24 / 0.36 at 50 | 0.42 / 0.45 at 25 | +0.00 |
+| VISp 393 | 0.54 / 0.62 at 50 | 0.26 / 0.32 at 25 / 0.29 | 0.59 / 0.67 at 10 | 0.49 / 0.71 at 10 | 0.82 / 0.83 at 500 | +0.00 |
+| VISam 393 | 0.33 / 0.44 at 50 | 0.11 / 0.17 at 25 / 0.14 | 0.47 / 0.49 at 25 | 0.40 / 0.47 at 25 | 0.77 / 0.79 at 50 | -0.01 |
+| LGd 393 | 0.57 / 0.70 at 25 | 0.35 / 0.72 at 10 / 0.70 | 0.55 / 0.82 at 10 | 0.70 / 0.87 at 25 | 0.83 / 0.91 at 25 | +0.06 |
+| VISp 464 | 0.40 / 0.49 at 50 | 0.15 / 0.21 at 10 / 0.21 | 0.52 / 0.53 at 50 | 0.49 / 0.54 at 50 | 0.75 / 0.75 at 2000 | +0.03 |
 | LP 464 | 0.18 / 0.32 at 25 | 0.14 / 0.27 at 10 / 0.23 | 0.38 / 0.48 at 25 | 0.32 / 0.57 at 25 | 0.50 / 0.67 at 25 | +0.03 |
 
 Chance: scenes 0.008, condition 0.025, direction 0.125. Each gratings
 figure rests on 120 held-out trials per seed (differences under about
-0.04 are noise).
+0.04 are noise). Direction columns corrected on 14 Nov 2026 (inner split;
+see "Code review" below).
 
 **The cortical onset profile on gratings does not replicate as a 50 ms
 peak.** In the sixth animal VISp and VISam peaked at 50 ms in the first
@@ -2017,9 +2020,10 @@ VISam 0.15, 0.17, 0.17), while the scenes pyramid of the same units peaks
 at 50 ms and falls below it in all five cortical samples. Gratings drift
 from the first frame, at up to 15 Hz, so their onset response already
 carries temporal-frequency information in 10 to 25 ms bins (temporal
-frequency alone rises to the 5 to 10 ms levels in two of the three VISp).
-For direction, the static attribute, cortex is best at 25 to 50 ms and
-loses 0.02 to 0.10 by 5 ms, nearer the scenes profile. So the earlier
+frequency alone rises to the 5 ms level in one of the three VISp and stays
+flat from 50 to 5 ms in another).
+For direction, the static attribute, cortex is best at 10 to 125 ms and
+loses 0.03 to 0.11 by 5 ms, nearer the scenes profile. So the earlier
 claim is narrowed: the fall of cortical accuracy below 50 ms belongs to
 natural images (flashed in the scenes, continuous in the movie, where it
 replicated in two animals); a stimulus with its own fast drive is read
@@ -2030,7 +2034,7 @@ windows is read better coarser.
 **In long windows the robust difference is again thalamus against
 cortex.** Over 2 s, direction is read from the count in cortex (VISp at
 the count or within 0.04 of it in all three animals, VISam flat), while
-LGd gains 0.04 and 0.08 and LP 0.17, all at 25 ms bins. On the 40 conditions
+LGd gains 0.03 and 0.08 and LP 0.17, all at 25 ms bins. On the 40 conditions
 the thalamus gains 0.12 to 0.25 over the count in every sample; cortex
 gains 0.01 to 0.07 in four samples and 0.22 in the fourth animal's VISp,
 so "the count catches up in cortex" holds in most cortical samples but
@@ -2480,6 +2484,39 @@ what fine timing would add should show there whatever the absolute level.
 The answer to the question left open in the previous section is the
 same: for natural-image identity in this data, the information is at 25 ms
 and coarser.
+
+## Code review: two bugs, no leakage (14 Nov 2026)
+
+Two independent reviews of the analysis code (decoding, statistics,
+thinning, the packed spike data, the transformer and the new decoders)
+found no use of test trials in any fitted quantity, and verified the
+packed spike tokens against the raw arrays trial by trial. They found two
+bugs:
+
+- **Gratings direction and temporal frequency: the inner split that
+  chooses C was wrong.** `fit_clf_nested` held out the last 25% of the
+  training trials *of the decoded label*, in array order, and the gratings
+  files are ordered by condition. For direction (temporal frequencies
+  pooled) the inner validation set was therefore the highest temporal
+  frequency, not the last repeats of every condition. `fit_clf_nested`
+  now takes `split_labels`, and `gratings_pyramid.py` passes the
+  condition. All 29 gratings samples were rerun for direction and
+  temporal frequency (`--dg-labels ori,tf --merge`). Mean accuracy per
+  level moved by under 0.01 and the mean gain over the count by under
+  0.005; single values moved by up to 0.1, inside the 120-trial noise.
+  The tables above are corrected. The 40-condition results, and so all
+  four tissue-test claims, are untouched (checked: identical).
+- **The shift decoder's prior had half its intended weight**, and tied
+  shifts went to -20 ms. Fixed; the result (no gain from shift search) is
+  unchanged.
+
+Smaller points, not fixed: the rate regression in the per-scale
+analyses is fitted and applied on the same training trials (in-sample
+residuals; about a 10% shrinkage of the training residuals with all
+units, negligible at 60 units); the within-animal permutation statistic
+is the difference of pooled means, valid but not the most powerful
+choice; the gratings thinning targets are for 2 s windows and would be
+wrong for shorter windows (no reported number uses them).
 
 ## Caveats
 
