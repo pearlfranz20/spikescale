@@ -45,10 +45,12 @@ low-rank image templates and a few latent factors per trial for shared
 variability, decoded by a Laplace marginal likelihood. It beats the linear
 decoder in 35 of 39 recordings (0.443 against 0.419) and loses almost
 nothing in fine bins (0.021 from 50 to 5 ms, against 0.070), so most of
-the fine-bin decline other decoders show is estimation noise. Even so,
-cortex reads no more below 50 ms. The thalamus, under this decoder, reads
-more at 10 to 25 ms than at 50 ms; at the cortical firing rate the 10 ms
-gain goes and a small 25 ms gain stays. A learned multiscale spike tokenizer, the project's starting
+the fine-bin decline other decoders show is estimation noise. With a
+spike-history term as well (0.449, 0.030 above the linear decoder), cortex
+reads slightly more at 25 ms than at 50 ms (+0.010, 19 of 25) and nothing
+more below. The thalamus reads more at 10 to 25 ms than at 50 ms; at the
+cortical firing rate the 10 ms gain goes and a small 25 ms gain stays.
+Sharing an image embedding across recordings does not help. A learned multiscale spike tokenizer, the project's starting
 point, kept under half of the decodable information and beat plain
 k-means quantization by only about 0.03.
 
@@ -228,7 +230,7 @@ LGd shows this more cleanly than LP. Two LP samples that the scenes
 barely drive are as steep below 50 ms as cortex, though their 25 ms share
 is the largest of all 38 samples.
 
-### 3.6 Better decoders: none finds more in cortex below 50 ms
+### 3.6 Better decoders: none finds more in cortex below 25 ms
 
 | sample | decoder (3 seeds) | 50 ms | 5 ms |
 | --- | --- | --- | --- |
@@ -304,6 +306,21 @@ its 10 ms gain (+0.002, p = 0.49) but keeps a small one at 25 ms (+0.006,
 Holm), the same split as the rate-matched pyramid. At 250 ms (one bin) the model is below the linear decoder:
 it is a model of time courses, not of counts.
 
+**Spike history and sharing across recordings.** Adding each unit's own
+recent counts to the model (a point-process history term, a known offset
+at decoding) was meant for thalamic bursts. It does nothing for the
+thalamus (+0.000 to +0.002, though its history weights are positive) and
+helps cortex by 0.014 to 0.018 at 25 ms and finer in nearly every
+recording, by modelling each unit's own trial-to-trial persistence. With
+it, cortex is best at 25 ms (0.456 against 0.445 at 50 ms, 19 of 25
+recordings, p = 0.002; 10 ms 0.450, 5 ms 0.426), the size of the
+transformer's 25 ms gain; below 25 ms there is still nothing. A version
+with one image embedding shared by all 39 recordings (each recording's
+image weights constrained to a common M-dimensional space) loses at every
+M below 118 (50 ms: 0.41 at M = 64 against 0.43): the populations do not
+share a low-dimensional image space this model can use, as expected if
+each sees a different part of the visual field.
+
 ## 4. Figures
 
 - Figure 1, `results/summary.png`: the 18 fully analysed samples. It shows the
@@ -364,7 +381,9 @@ Its gain says the main inefficiency of the other decoders on this data is
 in modelling trial-to-trial covariability, not in model capacity, and it
 removes most of the fine-bin decline. That sharpens the cortical result:
 with fine bins no longer penalised, cortex still reads nothing more below
-50 ms. For the thalamus it turns a smaller loss in fine bins into a gain
+50 ms; with a spike-history term it reads a little more at 25 ms, the
+small 25 ms component found everywhere else, and nothing finer. For the
+thalamus it turns a smaller loss in fine bins into a gain
 at 10 to 25 ms, consistent with the precise LGN timing of single-cell
 work. Rate matching removes the 10 ms part and leaves a small 25 ms gain,
 the same answer the pyramid gave.
@@ -389,7 +408,7 @@ the same answer the pyramid gave.
   stays 0.035 below the linear decoder, so its null below 25 ms is weaker
   evidence than a null from a decoder at least as strong as the linear one.
 - **Poisson factor decoder.** One seed per recording; R up to 3 and J up
-  to 32; per recording, not across sessions. Its thalamus-cortex
+  to 32; per recording (a shared image embedding did not help). Its thalamus-cortex
   differences do not survive correction over the three widths tested.
 - **Tissue test.** The scenes within-animal p values are estimated from
   200,000 random relabellings. The movie and gratings ones are exact.
@@ -429,6 +448,7 @@ The main scripts:
 | `pack_spikes.py`, `spike_transformer.py` | the cross-session spike transformer (GPU), `--res` for the time resolution |
 | `linear_allunits.py` | its linear baseline on all units |
 | `lda_allunits.py` | shrinkage LDA on the pyramid, all units |
+| `poisson_factor_history.py`, `poisson_factor_shared.py` | the factor decoder with spike history; with an image embedding shared across recordings |
 | `poisson_factor.py`, `stats_poisson_factor.py` | the Poisson factor decoder (GPU; `--thin` for the rate-matched thalamus) and its tissue test |
 | `tensor_decoder.py`, `shift_decoder.py` | low-rank Poisson templates and shift-invariant templates (pilots) |
 | `plot_summary.py`, `plot_stimuli.py` | figures |

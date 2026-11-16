@@ -29,7 +29,9 @@ In short, across 38 area samples in twelve mice:
   Poisson model with low-rank templates and latent factors for shared
   trial-to-trial variability: above the linear one in 35 of 39 recordings,
   nearly flat down to 5 ms, still no gain below 50 ms in cortex, a small
-  gain at 25 ms in thalamus that survives rate matching.
+  gain at 25 ms in thalamus that survives rate matching. With a
+  spike-history term it reaches 0.449 and cortex too reads slightly more at
+  25 ms than at 50 ms; nothing below 25 ms.
 
 The analysis started as a test of a multiscale residual VQ tokenizer for
 spikes, which is kept as one of four readouts. Its gate was a clear win over
@@ -86,6 +88,7 @@ information appears. The idea follows Next-Concept Modeling
 - [x] Paper-style summary of the whole analysis (`SUMMARY.md`)
 - [x] Cross-session spike transformer (all 39 populations, 184,000 trials, GPU): spike times at 1 ms read no better than at 25 ms; 25 to 250 ms timing worth 0.08; still 0.035 below the per-recording linear decoder
 - [x] Statistical decoders (shrinkage LDA, shift-invariant and low-rank Poisson templates, Poisson factor model): the factor model beats the linear decoder in 35/39 recordings (0.443 against 0.419) and is nearly flat to 5 ms; cortex still gains nothing below 50 ms, thalamus gains 0.014 at 10 ms (firing rate: at the cortical rate only a 0.006 gain at 25 ms remains)
+- [x] Spike history in the factor decoder: +0.015 in cortex at 25 ms and finer, nothing in thalamus; cortex then best at 25 ms (+0.010 over 50 ms); nothing below 25 ms. A shared cross-session image embedding does not help
 - ~~E4 fixed-resolution ladder comparison~~ dropped on 1 Nov 2026: what the
   ladder should compare was never written down, and the decoder bake-off and
   E3b already answer the per-level question on real data
@@ -124,6 +127,8 @@ scripts/
   stats_poisson_factor.py  the tissue test on the factor decoder's bin-width profile (--thinned: rate-matched thalamus)
   poisson_factor.py    Poisson factor decoder: low-rank templates + per-trial latent factors, Laplace marginal (needs CUDA torch);
                        --thin: thalamus at the cortical firing rate
+  poisson_factor_history.py  the same with a spike-history term per unit (helps cortex, not thalamus)
+  poisson_factor_shared.py   one image embedding shared across all recordings (does not help)
   tensor_decoder.py    low-rank Poisson templates against a full-rank Poisson naive Bayes (pilot)
   shift_decoder.py     shift-invariant template decoder, one latency shift per trial (pilot)
   residual_levels.py   decode from each level's orthogonal detail alone (is the information at a scale unique to it?),

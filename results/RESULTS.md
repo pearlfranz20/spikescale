@@ -2636,7 +2636,8 @@ and lower at 5 ms (-0.033, every recording). The optimum spreads over
 50 / 25 / 10 ms (8 / 11 / 5 of 25 recordings) instead of sitting at 50 ms,
 but no finer bin reads more than 50 ms on average. The cortical answer of
 the whole notebook (image information at 25 ms and coarser) holds for a
-decoder that no longer penalises fine bins.
+decoder that no longer penalises fine bins. (With spike history added,
+below, cortex moves to a small 25 ms optimum, still nothing finer.)
 
 **Thalamus reads more at 10 to 25 ms than at 50 ms.** For the first time
 on the scenes, a decoder reads more from thalamus at 25 ms (+0.012, 10 of
@@ -2705,6 +2706,92 @@ temporary that overflowed the 12 GB GPU into system memory at 5 ms and
 made some recordings take an hour. The two are equal to float precision,
 relative difference 5e-6; the 39 unthinned results were computed with the
 old form.)
+
+### Spike history: helps cortex, not the thalamus, and moves cortex to 25 ms
+
+`scripts/poisson_factor_history.py` adds a point-process history term to
+the factor decoder: each unit's log rate in a bin also depends on its own
+counts in the H preceding bins of the trial, sum_h beta[u, h] x[n, u, t-h]
+(zero before onset). At decoding time the history is a known offset (it
+depends on the observed spikes, not the image) and the Laplace marginal
+over z is computed with it. H in {0, 1, 2, 4} bins is chosen on the inner
+split per recording and width; H = 0 reproduces the factor decoder
+exactly (checked: same values), so the selection includes it. R and J are
+those chosen before. The expectation was a thalamic gain, from burst
+spikes at 5 and 10 ms (`results/poisson_factor_history.json`, 50 ms run
+separately and merged).
+
+| | 50 ms | 25 ms | 10 ms | 5 ms |
+| --- | --- | --- | --- | --- |
+| cortex, with history | 0.445 | **0.456** | 0.450 | 0.426 |
+| cortex, without (H = 0) | 0.442 | 0.442 | 0.435 | 0.409 |
+| gain, recordings higher (of 25) | +0.003, 11 | +0.014, 23 | +0.015, 21 | +0.018, 25 |
+| thalamus, with history | 0.415 | 0.424 | **0.429** | 0.414 |
+| thalamus, without | 0.413 | 0.424 | 0.427 | 0.413 |
+| gain, recordings higher (of 14) | +0.002, 4 | +0.000, 1 | +0.002, 6 | +0.002, 5 |
+
+Mean weight on the previous bin (beta, log rate per spike), cortex /
+thalamus: 25 ms +0.05 / +0.29, 10 ms -0.14 / +0.19, 5 ms -0.37 / +0.06.
+
+**The thalamus gains nothing.** Its history weights are positive at every
+width, as bursts would make them, but modelling them does not change which
+image is read (+0.000 to +0.002, at most 6 of 14 recordings higher).
+Whatever burst structure these LGd and LP populations have, it does not
+carry image identity beyond what the template and factors already read.
+
+**Cortex gains 0.014 to 0.018 at 25 ms and finer,** in nearly every
+recording, with negative weights at 5 and 10 ms (refractoriness) and
+small positive ones at 25 ms. The latent factors model variability shared
+across units; history models each unit's own trial-to-trial persistence,
+which the factors cannot. That it helps cortex and not the thalamus is
+another difference between the two noise structures, not an image code.
+
+**With history, cortex is best at 25 ms.** Paired over recordings, with
+history at every width:
+
+| | 25 against 50 ms | 10 against 50 ms | 5 against 50 ms | best width 50 / 25 / 10 / 5 ms |
+| --- | --- | --- | --- | --- |
+| cortex | +0.010, 19 of 25, p = 0.002 | +0.005, 16, p = 0.22 | -0.019, 5, p < 0.001 | 6 / 15 / 4 / 0 |
+| thalamus | +0.009, 10 of 14, p = 0.028 | +0.013, 11, p = 0.020 | -0.001, 6, p = 0.63 | 2 / 4 / 6 / 2 |
+
+The best level rises to 0.458 in cortex (+0.009 over the factor decoder,
+p < 0.001; +0.035 over the logistic, 23 of 25) and 0.434 in thalamus
+(+0.002, p = 0.12). Across all 39 recordings it is 0.449, 0.030 above the
+logistic (35 of 39).
+
+This revises the cortical statement of the previous subsection. With a
+decoder that models both shared and unit-own variability, cortex reads
+slightly more at 25 ms than at 50 ms (+0.010), the size of the 25 ms gain
+the cross-session transformer found (+0.006 to +0.009) and of the 25 ms
+component of the per-scale analysis. Below 25 ms there is still nothing:
+10 ms ties 50 ms and 5 ms is lower. The thalamus is unchanged by history:
+best at 10 to 25 ms, of which the rate-matched run left only the 25 ms
+part.
+
+### Sharing an image embedding across recordings does not help
+
+`scripts/poisson_factor_shared.py` fits the factor decoder to all 39
+recordings at once with the image weights factored through one embedding
+common to all of them, a[k, u, r] = sum_m E[k, m] W[u, r, m] (E: 118 x M,
+fitted from about 1,600 training trials per image; everything else per
+recording, and J per recording as chosen above). If the populations shared
+a low-dimensional image space, E would be estimated far better than each
+recording's own weights. Mean over the 39 recordings at 50 ms:
+
+| embedding dimension M | 8 | 16 | 32 | 64 | 118 (unconstrained) | per-recording model |
+| --- | --- | --- | --- | --- | --- | --- |
+| validation accuracy | 0.143 | 0.239 | 0.340 | 0.407 | 0.426 | 0.426 |
+| test accuracy | | | | 0.409 | 0.432 | 0.432 |
+
+(`results/poisson_factor_shared.json`, `results/poisson_factor_shared_M118.json`.)
+Accuracy rises with M and only matches the per-recording model at M = 118,
+where the shared embedding constrains nothing (the M = 118 control also
+shows the joint fit converges to the same solution). The run was stopped
+after 50 ms. The 39 populations do not share a low-dimensional image
+space that this model can exploit: what each population reads from an
+image is largely its own, as expected if each covers a different part of
+the visual field. A shared embedding would need receptive-field positions
+(or the image pixels) as input, which this model does not have.
 
 ## Code review: two bugs, no leakage (14 Nov 2026)
 
